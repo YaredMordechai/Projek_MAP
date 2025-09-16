@@ -1,0 +1,38 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="20dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/text_dashboard"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="Dashboard"
+        android:textSize="20sp"/>
+
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnGoSimpanan"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Lihat Simpanan"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnGoPinjaman"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Lihat Pinjaman"
+        android:layout_marginTop="12dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnGoProfil"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Lihat Profil"
+        android:layout_marginTop="12dp"/>
+
+</LinearLayout>
