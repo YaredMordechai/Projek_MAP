@@ -28,7 +28,7 @@ class DashboardFragment : Fragment() {
 
         tvWelcome.text = "Halo, Andi"
         tvUserId.text = "ID: K001"
-        imgProfile.setImageResource(R.drawable.ic_person) // bisa load dari URL dengan Glide/Picasso
+        imgProfile.setImageResource(R.drawable.ic_profil) // bisa load dari URL dengan Glide/Picasso
 
         // Ringkasan (dummy data dulu)
         val tvTotalSimpanan = view.findViewById<TextView>(R.id.tvTotalSimpanan)

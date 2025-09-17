@@ -23,7 +23,7 @@
                 android:id="@+id/imgProfile"
                 android:layout_width="64dp"
                 android:layout_height="64dp"
-                android:src="@drawable/ic_person"
+                android:src="@drawable/ic_profil"
             android:background="@drawable/bg_circle"
             android:scaleType="centerCrop"
             android:contentDescription="Foto Profil" />
@@ -38,7 +38,7 @@
                     android:id="@+id/tvWelcome"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Halo, Andi"
+                    android:text="Halo, Andi Setiawan"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="#000"/>
@@ -108,7 +108,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Lihat Simpanan"
-                app:icon="@drawable/ic_savings"
+                app:icon="@drawable/ic_simpanan"
                 app:iconTint="@color/black"
                 app:iconGravity="textStart"/>
 
@@ -119,7 +119,7 @@
                 android:layout_height="wrap_content"
                 android:text="Lihat Pinjaman"
                 android:layout_marginTop="12dp"
-                app:icon="@drawable/ic_loan"
+                app:icon="@drawable/ic_pinjaman"
                 app:iconTint="@color/black"
                 app:iconGravity="textStart"/>
 
@@ -130,7 +130,7 @@
                 android:layout_height="wrap_content"
                 android:text="Lihat Cicilan"
                 android:layout_marginTop="12dp"
-                app:icon="@drawable/ic_payment"
+                app:icon="@drawable/ic_cicilan"
                 app:iconTint="@color/black"
                 app:iconGravity="textStart"/>
 
@@ -141,7 +141,7 @@
                 android:layout_height="wrap_content"
                 android:text="Lihat Laporan"
                 android:layout_marginTop="12dp"
-                app:icon="@drawable/ic_report"
+                app:icon="@drawable/ic_laporan"
                 app:iconTint="@color/black"
                 app:iconGravity="textStart"/>
 
@@ -152,7 +152,7 @@
                 android:layout_height="wrap_content"
                 android:text="Lihat Profil"
                 android:layout_marginTop="12dp"
-                app:icon="@drawable/ic_person"
+                app:icon="@drawable/ic_profil"
                 app:iconTint="@color/black"
                 app:iconGravity="textStart"/>
         </LinearLayout>
