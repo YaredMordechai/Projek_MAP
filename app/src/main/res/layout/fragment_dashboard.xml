@@ -1,38 +1,160 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="20dp"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#F5F5F5">
 
-    <TextView
-        android:id="@+id/text_dashboard"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:text="Dashboard"
-        android:textSize="20sp"/>
-
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnGoSimpanan"
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Lihat Simpanan"/>
+        android:padding="16dp">
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnGoPinjaman"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Lihat Pinjaman"
-        android:layout_marginTop="12dp"/>
+        <!-- Header User -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="8dp">
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnGoProfil"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Lihat Profil"
-        android:layout_marginTop="12dp"/>
+            <ImageView
+                android:id="@+id/imgProfile"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:src="@drawable/ic_person"
+            android:background="@drawable/bg_circle"
+            android:scaleType="centerCrop"
+            android:contentDescription="Foto Profil" />
 
-</LinearLayout>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginStart="12dp">
+
+                <TextView
+                    android:id="@+id/tvWelcome"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Halo, Andi"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#000"/>
+
+                <TextView
+                    android:id="@+id/tvUserId"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ID: K001"
+                    android:textSize="14sp"
+                    android:textColor="#666"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Ringkasan Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="6dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/tvTotalSimpanan"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Total Simpanan: Rp 0"
+                    android:textSize="16sp"
+                    android:textColor="#333"/>
+
+                <TextView
+                    android:id="@+id/tvPinjamanAktif"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Pinjaman Aktif: Rp 0"
+                    android:textSize="16sp"
+                    android:textColor="#333"
+                    android:layout_marginTop="8dp"/>
+
+                <TextView
+                    android:id="@+id/tvCicilanBulanan"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Cicilan / bulan: Rp 0"
+                    android:textSize="16sp"
+                    android:textColor="#333"
+                    android:layout_marginTop="8dp"/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Menu Utama -->
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnGoSimpanan"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton.Icon"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Lihat Simpanan"
+                app:icon="@drawable/ic_savings"
+                app:iconTint="@color/black"
+                app:iconGravity="textStart"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnGoPinjaman"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton.Icon"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Lihat Pinjaman"
+                android:layout_marginTop="12dp"
+                app:icon="@drawable/ic_loan"
+                app:iconTint="@color/black"
+                app:iconGravity="textStart"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnGoCicilan"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton.Icon"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Lihat Cicilan"
+                android:layout_marginTop="12dp"
+                app:icon="@drawable/ic_payment"
+                app:iconTint="@color/black"
+                app:iconGravity="textStart"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnGoLaporan"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton.Icon"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Lihat Laporan"
+                android:layout_marginTop="12dp"
+                app:icon="@drawable/ic_report"
+                app:iconTint="@color/black"
+                app:iconGravity="textStart"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnGoProfil"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton.Icon"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Lihat Profil"
+                android:layout_marginTop="12dp"
+                app:icon="@drawable/ic_person"
+                app:iconTint="@color/black"
+                app:iconGravity="textStart"/>
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>
