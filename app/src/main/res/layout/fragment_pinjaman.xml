@@ -1,21 +1,40 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="20dp"
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:padding="12dp">
 
+    <!-- Title -->
     <TextView
-        android:id="@+id/text_pinjaman"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:text="Pinjaman"
-        android:textSize="20sp"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnBackDashboard"
+        android:id="@+id/tvTitlePinjaman"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Kembali ke Dashboard"/>
-</LinearLayout>
+        android:text="Daftar Pinjaman"
+        android:textStyle="bold"
+        android:textSize="20sp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:paddingBottom="8dp" />
+
+    <!-- RecyclerView untuk daftar pinjaman -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvPinjaman"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/tvTitlePinjaman"
+        android:layout_marginBottom="72dp"
+        android:clipToPadding="false" />
+
+    <!-- Tombol Ajukan Pinjaman -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAjukanPinjaman"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="16dp"
+        android:contentDescription="Ajukan Pinjaman"
+        app:srcCompat="@drawable/ic_add" />
+
+</RelativeLayout>
