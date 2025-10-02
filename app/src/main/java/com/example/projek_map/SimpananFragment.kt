@@ -30,8 +30,7 @@ class SimpananFragment : Fragment() {
             Simpanan("Simpanan Sukarela", "Rp 50.000", "15-01-2025")
         )
 
-        binding.rvSimpanan.layoutManager = LinearLayoutManager(requireContext())
-        binding.rvSimpanan.adapter = SimpananAdapter(dataSimpanan)
+
     }
 
     override fun onDestroyView() {

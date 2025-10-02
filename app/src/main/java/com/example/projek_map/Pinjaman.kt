@@ -5,5 +5,5 @@ data class Pinjaman(
     val jenis: String,
     val jumlah: Long,
     val status: String,
-    val tanggal: String? = null
+    val tanggal: String
 )

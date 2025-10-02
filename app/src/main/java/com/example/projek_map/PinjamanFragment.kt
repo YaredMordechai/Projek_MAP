@@ -4,16 +4,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class PinjamanFragment : Fragment() {
 
     private lateinit var rvPinjaman: RecyclerView
-    private lateinit var fabAjukan: FloatingActionButton
+    private lateinit var btnAjukan: Button
     private lateinit var adapter: PinjamanAdapter
     private val data = mutableListOf<Pinjaman>()
 
@@ -24,13 +24,13 @@ class PinjamanFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_pinjaman, container, false)
 
-        rvPinjaman = view.findViewById(R.id.rvPinjaman)
-        fabAjukan = view.findViewById(R.id.fabAjukanPinjaman)
+        // pakai id dari XML yang baru
+        rvPinjaman = view.findViewById(R.id.rvRiwayatPinjaman)
+        btnAjukan = view.findViewById(R.id.btnAjukanPinjaman)
 
         // Setup RecyclerView
         rvPinjaman.layoutManager = LinearLayoutManager(requireContext())
         adapter = PinjamanAdapter(data) { pinjaman ->
-            // contoh click: tampilkan toast
             Toast.makeText(
                 requireContext(),
                 "${pinjaman.jenis} — Rp ${pinjaman.jumlah}",
@@ -41,9 +41,8 @@ class PinjamanFragment : Fragment() {
 
         loadDummyData()
 
-        fabAjukan.setOnClickListener {
-            // TODO: ganti dengan aksi nyata (Activity / Dialog pengajuan)
-            Toast.makeText(requireContext(), "Fungsionalitas ajukan pinjaman belum diimplementasikan", Toast.LENGTH_SHORT).show()
+        btnAjukan.setOnClickListener {
+            Toast.makeText(requireContext(), "Ajukan Pinjaman ditekan", Toast.LENGTH_SHORT).show()
         }
 
         return view
