@@ -9,6 +9,13 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.projek_map.model.Pinjaman
+import com.example.projek_map.model.PinjamanResponse
+import com.example.projek_map.api.ApiClient
+import com.google.android.material.textfield.TextInputEditText
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class PinjamanFragment : Fragment() {
 
@@ -17,6 +24,10 @@ class PinjamanFragment : Fragment() {
     private lateinit var adapter: PinjamanAdapter
     private val data = mutableListOf<Pinjaman>()
 
+    // Input field dari layout
+    private lateinit var inputNominal: TextInputEditText
+    private lateinit var inputTenor: TextInputEditText
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -24,35 +35,81 @@ class PinjamanFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_pinjaman, container, false)
 
-        // pakai id dari XML yang baru
         rvPinjaman = view.findViewById(R.id.rvRiwayatPinjaman)
         btnAjukan = view.findViewById(R.id.btnAjukanPinjaman)
+        inputNominal = view.findViewById(R.id.inputNominalPinjaman)
+        inputTenor = view.findViewById(R.id.inputTenor)
 
         // Setup RecyclerView
         rvPinjaman.layoutManager = LinearLayoutManager(requireContext())
         adapter = PinjamanAdapter(data) { pinjaman ->
             Toast.makeText(
                 requireContext(),
-                "${pinjaman.jenis} — Rp ${pinjaman.jumlah}",
+                "Rp ${pinjaman.jumlah} — tenor ${pinjaman.jenis}",
                 Toast.LENGTH_SHORT
             ).show()
         }
         rvPinjaman.adapter = adapter
 
-        loadDummyData()
+        // Load data pertama kali
+        loadPinjamanFromApi()
 
+        // Tombol Ajukan Pinjaman
         btnAjukan.setOnClickListener {
-            Toast.makeText(requireContext(), "Ajukan Pinjaman ditekan", Toast.LENGTH_SHORT).show()
+            val nominal = inputNominal.text.toString().trim()
+            val tenor = inputTenor.text.toString().trim()
+
+            if (nominal.isEmpty() || tenor.isEmpty()) {
+                Toast.makeText(requireContext(), "Isi semua kolom", Toast.LENGTH_SHORT).show()
+            } else {
+                // langsung kirim nominal + tenor
+                ajukanPinjamanBaru(nominal, tenor)
+            }
         }
 
         return view
     }
 
-    private fun loadDummyData() {
-        data.clear()
-        data.add(Pinjaman(1, "Pinjaman Pendidikan", 2000000L, "Berjalan", "2025-08-01"))
-        data.add(Pinjaman(2, "Pinjaman Darurat", 1500000L, "Lunas", "2024-12-10"))
-        data.add(Pinjaman(3, "Pinjaman Modal Usaha", 5000000L, "Pengajuan", "2025-09-15"))
-        adapter.notifyDataSetChanged()
+    private fun loadPinjamanFromApi() {
+        ApiClient.instance.getPinjaman().enqueue(object : Callback<List<Pinjaman>> {
+            override fun onResponse(call: Call<List<Pinjaman>>, response: Response<List<Pinjaman>>) {
+                if (response.isSuccessful && response.body() != null) {
+                    data.clear()
+                    data.addAll(response.body()!!)
+                    adapter.notifyDataSetChanged()
+                } else {
+                    Toast.makeText(requireContext(), "Gagal ambil data", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<List<Pinjaman>>, t: Throwable) {
+                Toast.makeText(requireContext(), "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+
+    private fun ajukanPinjamanBaru(jumlah: String, tenor: String) {
+        ApiClient.instance.insertPinjaman(jumlah, tenor)
+            .enqueue(object : Callback<PinjamanResponse> {
+                override fun onResponse(
+                    call: Call<PinjamanResponse>,
+                    response: Response<PinjamanResponse>
+                ) {
+                    if (response.isSuccessful && response.body() != null) {
+                        Toast.makeText(
+                            requireContext(),
+                            response.body()!!.message,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        loadPinjamanFromApi() // Refresh list setelah berhasil
+                    } else {
+                        Toast.makeText(requireContext(), "Gagal mengajukan pinjaman", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onFailure(call: Call<PinjamanResponse>, t: Throwable) {
+                    Toast.makeText(requireContext(), "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+                }
+            })
     }
 }
