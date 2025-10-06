@@ -1,14 +1,16 @@
 package com.example.projek_map
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.google.android.material.button.MaterialButton
+import com.example.projek_map.ui.LoginActivity
+import com.example.projek_map.utils.PrefManager
 
 class ProfilFragment : Fragment() {
 
@@ -22,6 +24,7 @@ class ProfilFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // --- Inisialisasi komponen ---
         val imgProfile = view.findViewById<ImageView>(R.id.imgProfile)
         val tvNamaUser = view.findViewById<TextView>(R.id.tvNamaUser)
         val tvIdUser = view.findViewById<TextView>(R.id.tvIdUser)
@@ -32,8 +35,11 @@ class ProfilFragment : Fragment() {
         val btnLogout = view.findViewById<MaterialButton>(R.id.btnLogout)
         val btnBackDashboard = view.findViewById<MaterialButton>(R.id.btnBackDashboard)
 
-        // --- Dummy Data (nanti bisa ambil dari database / API / SharedPreferences) ---
-        tvNamaUser.text = "Andi Setiawan"
+        // --- Ambil data dari argument (dikirim dari MainActivity) ---
+        val userNama = arguments?.getString("nama") ?: "Andi Setiawan"
+
+        // --- Dummy data pengguna ---
+        tvNamaUser.text = userNama
         tvIdUser.text = "ID: K001"
         tvEmail.text = "Email: andi@gmail.com"
         tvTelepon.text = "Nomor Telepon: 08123456789"
@@ -45,15 +51,16 @@ class ProfilFragment : Fragment() {
                 .replace(R.id.fragmentContainer, EditProfilFragment())
                 .addToBackStack(null)
                 .commit()
-
         }
 
         // --- Tombol Logout ---
         btnLogout.setOnClickListener {
-            Toast.makeText(requireContext(), "Logout berhasil", Toast.LENGTH_SHORT).show()
-            // contoh: arahkan ke LoginActivity
-            // startActivity(Intent(requireContext(), LoginActivity::class.java))
-            // requireActivity().finish()
+            val pref = PrefManager(requireContext())
+            pref.logout()
+
+            val intent = Intent(requireContext(), LoginActivity::class.java)
+            startActivity(intent)
+            requireActivity().finish()
         }
 
         // --- Tombol Kembali ke Dashboard ---

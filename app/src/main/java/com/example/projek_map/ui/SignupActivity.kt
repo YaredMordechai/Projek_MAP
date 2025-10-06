@@ -1,16 +1,15 @@
 package com.example.projek_map.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.projek_map.api.ApiClient
+import com.example.projek_map.data.DummyUserData
+import com.example.projek_map.data.User
 import com.example.projek_map.databinding.ActivitySignupBinding
-import com.example.projek_map.model.UserResponse
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 class SignupActivity : AppCompatActivity() {
+
     private lateinit var binding: ActivitySignupBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,31 +18,32 @@ class SignupActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.btnSignup.setOnClickListener {
+            val kodePegawai = binding.etKodePegawai.text.toString().trim()
             val nama = binding.etNama.text.toString().trim()
             val email = binding.etEmail.text.toString().trim()
             val password = binding.etPassword.text.toString().trim()
 
-            if (nama.isEmpty() || email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Semua field wajib diisi", Toast.LENGTH_SHORT).show()
+            if (kodePegawai.isEmpty() || nama.isEmpty() || email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, "Semua field harus diisi!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            ApiClient.instance.registerUser(nama, email, password)
-                .enqueue(object : Callback<UserResponse> {
-                    override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {
-                        val body = response.body()
-                        if (response.isSuccessful && body?.success == true) {
-                            Toast.makeText(this@SignupActivity, "Registrasi berhasil", Toast.LENGTH_SHORT).show()
-                            finish()
-                        } else {
-                            Toast.makeText(this@SignupActivity, body?.message ?: "Registrasi gagal", Toast.LENGTH_SHORT).show()
-                        }
-                    }
+            // Cek apakah user sudah terdaftar
+            val exists = DummyUserData.users.any { it.email == email || it.kodePegawai == kodePegawai }
 
-                    override fun onFailure(call: Call<UserResponse>, t: Throwable) {
-                        Toast.makeText(this@SignupActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-                    }
-                })
+            if (exists) {
+                Toast.makeText(this, "User sudah terdaftar!", Toast.LENGTH_SHORT).show()
+            } else {
+                DummyUserData.users.add(User(kodePegawai, email, password, nama))
+                Toast.makeText(this, "Registrasi berhasil!", Toast.LENGTH_SHORT).show()
+                startActivity(Intent(this, LoginActivity::class.java))
+                finish()
+            }
+        }
+
+        binding.tvLogin.setOnClickListener {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
         }
     }
 }

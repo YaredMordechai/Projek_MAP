@@ -7,13 +7,10 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.example.projek_map.databinding.ActivityMainBinding
 import com.example.projek_map.ui.LoginActivity
-import com.example.projek_map.api.ApiClient
-import com.example.projek_map.model.User
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private var userId: Int = -1
     private var userNama: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -21,12 +18,11 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Cek apakah user sudah login (dikirim dari LoginActivity)
-        userId = intent.getIntExtra("user_id", -1)
-        userNama = intent.getStringExtra("nama") ?: ""
+        // Ambil data user dari intent (dummy login)
+        userNama = intent.getStringExtra("userName") ?: ""
 
-        if (userId == -1) {
-            // Kalau belum login, arahkan ke halaman login
+        // Jika user belum login (tidak ada nama)
+        if (userNama.isEmpty()) {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
             return
@@ -37,6 +33,7 @@ class MainActivity : AppCompatActivity() {
             loadFragment(DashboardFragment())
         }
 
+        // Setup bottom navigation
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
@@ -51,7 +48,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.navigation_pinjaman -> {
                     val fragment = PinjamanFragment()
                     val bundle = Bundle()
-                    bundle.putInt("user_id", userId)
+                    bundle.putString("nama", userNama)
                     fragment.arguments = bundle
                     loadFragment(fragment)
                     true

@@ -11,6 +11,7 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import com.google.android.material.button.MaterialButton
 
@@ -28,7 +29,19 @@ class EditProfilFragment : Fragment() {
     private lateinit var btnBatal: MaterialButton
     private lateinit var btnChangePhoto: MaterialButton
 
-    private val PICK_IMAGE_REQUEST = 1
+    private var selectedImageUri: Uri? = null
+
+    // ✅ Launcher baru pengganti onActivityResult
+    private val pickImageLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK && result.data != null) {
+            selectedImageUri = result.data?.data
+            imgEditProfile.setImageURI(selectedImageUri)
+        } else {
+            Toast.makeText(requireContext(), "Batal memilih foto", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -59,9 +72,10 @@ class EditProfilFragment : Fragment() {
 
         // Ganti Foto Profil
         btnChangePhoto.setOnClickListener {
-            val intent = Intent(Intent.ACTION_PICK)
-            intent.type = "image/*"
-            startActivityForResult(intent, PICK_IMAGE_REQUEST)
+            val intent = Intent(Intent.ACTION_PICK).apply {
+                type = "image/*"
+            }
+            pickImageLauncher.launch(intent)
         }
 
         // Simpan Perubahan
@@ -83,14 +97,6 @@ class EditProfilFragment : Fragment() {
         // Batal
         btnBatal.setOnClickListener {
             parentFragmentManager.popBackStack()
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null) {
-            val selectedImage: Uri? = data.data
-            imgEditProfile.setImageURI(selectedImage)
         }
     }
 }
