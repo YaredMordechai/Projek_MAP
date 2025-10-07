@@ -55,7 +55,8 @@ object DummyUserData {
 
     // 🔹 Data pinjaman dummy
     val pinjamanList = mutableListOf(
-        Pinjaman(1, "EMP001", 2000000, 12, "Disetujui"),
-        Pinjaman(2, "EMP002", 1500000, 6, "Proses")
+        Pinjaman(1, "EMP001", 500000, 12, "Disetujui"),
+        Pinjaman(2, "EMP002", 800000, 8, "Lunas"),
+        Pinjaman(3, "EMP003", 1200000, 3, "Proses")
     )
 }
