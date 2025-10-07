@@ -1,6 +1,6 @@
 package com.example.projek_map.api
 
-import com.example.projek_map.model.Pinjaman
+import com.example.projek_map.data.Pinjaman
 import com.example.projek_map.model.PinjamanResponse
 import retrofit2.Call
 import retrofit2.http.*

@@ -1,21 +1,86 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="20dp"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:padding="20dp">
 
-    <TextView
-        android:id="@+id/text_simpanan"
+    <LinearLayout
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:text="Simpanan"
-        android:textSize="20sp"/>
+        android:layout_height="wrap_content">
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnBackDashboard"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Kembali ke Dashboard"/>
-</LinearLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Simpanan Anggota"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="20dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Simpanan Pokok"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvSimpananPokok"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Rp 0"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Simpanan Wajib"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvSimpananWajib"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Rp 0"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Simpanan Sukarela"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvSimpananSukarela"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Rp 0"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Total Simpanan"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:layout_marginTop="12dp" />
+
+        <TextView
+            android:id="@+id/tvTotalSimpanan"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Rp 0"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="24dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnBackDashboard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Kembali ke Dashboard" />
+
+    </LinearLayout>
+</ScrollView>

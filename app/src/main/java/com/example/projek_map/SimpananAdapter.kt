@@ -3,6 +3,7 @@ package com.example.projek_map
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.example.projek_map.data.Simpanan
 import com.example.projek_map.databinding.ItemSimpananBinding
 
 class SimpananAdapter(private val listSimpanan: List<Simpanan>) :
@@ -12,15 +13,29 @@ class SimpananAdapter(private val listSimpanan: List<Simpanan>) :
         RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SimpananViewHolder {
-        val binding = ItemSimpananBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val binding = ItemSimpananBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
         return SimpananViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: SimpananViewHolder, position: Int) {
         val simpanan = listSimpanan[position]
-        holder.binding.tvJenisSimpanan.text = simpanan.jenis
-        holder.binding.tvJumlahSimpanan.text = simpanan.jumlah
-        holder.binding.tvTanggalSimpanan.text = simpanan.tanggal
+
+        // Gabungkan semua jenis simpanan dalam satu card
+        val simpananDetail = """
+            Simpanan Pokok   : Rp ${simpanan.simpananPokok}
+            Simpanan Wajib   : Rp ${simpanan.simpananWajib}
+            Simpanan Sukarela: Rp ${simpanan.simpananSukarela}
+        """.trimIndent()
+
+        holder.binding.apply {
+            tvJenisSimpanan.text = "Kode Pegawai: ${simpanan.kodePegawai}"
+            tvJumlahSimpanan.text = simpananDetail
+            tvTanggalSimpanan.text = "—"
+        }
     }
 
     override fun getItemCount(): Int = listSimpanan.size

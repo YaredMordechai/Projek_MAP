@@ -4,9 +4,9 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.projek_map.MainActivity
 import com.example.projek_map.data.DummyUserData
 import com.example.projek_map.databinding.ActivityLoginBinding
+import com.example.projek_map.utils.PrefManager
 
 class LoginActivity : AppCompatActivity() {
 
@@ -17,6 +17,8 @@ class LoginActivity : AppCompatActivity() {
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val pref = PrefManager(this)
+
         binding.btnLogin.setOnClickListener {
             val email = binding.etEmail.text.toString().trim()
             val password = binding.etPassword.text.toString().trim()
@@ -26,6 +28,9 @@ class LoginActivity : AppCompatActivity() {
             }
 
             if (user != null) {
+                // 🔹 Simpan data user login ke PrefManager
+                pref.saveLogin(user.nama, user.email, user.kodePegawai)
+
                 Toast.makeText(this, "Login berhasil! Selamat datang ${user.nama}", Toast.LENGTH_SHORT).show()
 
                 val intent = Intent(this, MainActivity::class.java)
@@ -35,7 +40,6 @@ class LoginActivity : AppCompatActivity() {
                 intent.putExtra("userTelepon", user.telepon)
                 intent.putExtra("userStatusKeanggotaan", user.statusKeanggotaan)
                 intent.putExtra("userKodePegawai", user.kodePegawai)
-
                 startActivity(intent)
                 finish()
             } else {

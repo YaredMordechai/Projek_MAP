@@ -4,39 +4,47 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.example.projek_map.model.Pinjaman
+import com.example.projek_map.data.Pinjaman
 
 class PinjamanAdapter(
-    private val items: List<Pinjaman>,
-    private val onClick: (Pinjaman) -> Unit
-) : RecyclerView.Adapter<PinjamanAdapter.ViewHolder>() {
+    private val pinjamanList: List<Pinjaman>,
+    private val onItemClick: (Pinjaman) -> Unit
+) : RecyclerView.Adapter<PinjamanAdapter.PinjamanViewHolder>() {
 
-    inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val tvJenis: TextView = view.findViewById(R.id.tvJenis)
-        val tvJumlah: TextView = view.findViewById(R.id.tvJumlah)
-        val tvStatus: TextView = view.findViewById(R.id.tvStatus)
-        val tvTanggal: TextView = view.findViewById(R.id.tvTanggal)
+    inner class PinjamanViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val tvJumlah: TextView = itemView.findViewById(R.id.tvJumlahPinjaman)
+        val tvTenor: TextView = itemView.findViewById(R.id.tvTenorPinjaman)
+        val tvStatus: TextView = itemView.findViewById(R.id.tvStatusPinjaman)
+    }
 
-        fun bind(pinjaman: Pinjaman) {
-            tvJenis.text = pinjaman.jenis
-            tvJumlah.text = "Rp ${pinjaman.jumlah}"
-            tvStatus.text = pinjaman.status
-            tvTanggal.text = pinjaman.tanggal
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PinjamanViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_pinjaman, parent, false)
+        return PinjamanViewHolder(view)
+    }
 
-            itemView.setOnClickListener { onClick(pinjaman) }
+    override fun onBindViewHolder(holder: PinjamanViewHolder, position: Int) {
+        val pinjaman = pinjamanList[position]
+        holder.tvJumlah.text = "Rp ${pinjaman.jumlah}"
+        holder.tvTenor.text = "${pinjaman.tenor} bulan"
+        holder.tvStatus.text = pinjaman.status
+
+        // 🔹 Warna status dinamis
+        val context = holder.itemView.context
+        val statusColor = when (pinjaman.status.lowercase()) {
+            "disetujui" -> R.color.green_600
+            "proses" -> R.color.orange_600
+            "ditolak" -> R.color.red_600
+            else -> android.R.color.darker_gray
+        }
+        holder.tvStatus.setTextColor(ContextCompat.getColor(context, statusColor))
+
+        holder.itemView.setOnClickListener {
+            onItemClick(pinjaman)
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_pinjaman, parent, false)
-        return ViewHolder(view)
-    }
-
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(items[position])
-    }
-
-    override fun getItemCount() = items.size
+    override fun getItemCount(): Int = pinjamanList.size
 }

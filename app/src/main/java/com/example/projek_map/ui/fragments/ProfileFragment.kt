@@ -1,4 +1,4 @@
-package com.example.projek_map
+package com.example.projek_map.ui.fragments
 
 import android.content.Intent
 import android.os.Bundle
@@ -8,12 +8,13 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import com.example.projek_map.R
 import com.example.projek_map.data.DummyUserData
 import com.example.projek_map.ui.LoginActivity
 import com.example.projek_map.utils.PrefManager
 import com.google.android.material.button.MaterialButton
 
-class ProfilFragment : Fragment() {
+class ProfileFragment : Fragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -31,13 +32,11 @@ class ProfilFragment : Fragment() {
         val tvEmail = view.findViewById<TextView>(R.id.tvEmail)
         val tvTelepon = view.findViewById<TextView>(R.id.tvTelepon)
         val tvStatus = view.findViewById<TextView>(R.id.tvStatus)
-
         val btnLogout = view.findViewById<MaterialButton>(R.id.btnLogout)
         val btnBackDashboard = view.findViewById<MaterialButton>(R.id.btnBackDashboard)
 
         val pref = PrefManager(requireContext())
 
-        // 🔹 Ambil data dari argument (jika dikirim dari MainActivity)
         val namaArg = arguments?.getString("nama")
         val emailArg = arguments?.getString("email")
         val teleponArg = arguments?.getString("telepon")
@@ -45,14 +44,12 @@ class ProfilFragment : Fragment() {
         val kodePegawaiArg = arguments?.getString("kodePegawai")
 
         if (!namaArg.isNullOrEmpty()) {
-            // tampilkan data dari intent bundle
             tvNamaUser.text = namaArg
             tvIdUser.text = "Kode Pegawai: ${kodePegawaiArg ?: "-"}"
             tvEmail.text = "Email: ${emailArg ?: "-"}"
             tvTelepon.text = "Nomor Telepon: ${teleponArg ?: "-"}"
             tvStatus.text = "Status Keanggotaan: ${statusArg ?: "-"}"
         } else {
-            // fallback ke PrefManager + DummyUserData
             val loggedEmail = pref.getEmail() ?: ""
             val loggedKode = pref.getKodePegawai() ?: ""
 
@@ -77,7 +74,6 @@ class ProfilFragment : Fragment() {
 
         imgProfile.setImageResource(R.drawable.ic_profil)
 
-        // Tombol Logout
         btnLogout.setOnClickListener {
             pref.logout()
             val intent = Intent(requireContext(), LoginActivity::class.java)
@@ -85,7 +81,6 @@ class ProfilFragment : Fragment() {
             requireActivity().finish()
         }
 
-        // Tombol Kembali ke Dashboard
         btnBackDashboard.setOnClickListener {
             parentFragmentManager.popBackStack()
         }

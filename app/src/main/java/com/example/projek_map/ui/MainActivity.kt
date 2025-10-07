@@ -1,12 +1,16 @@
-package com.example.projek_map
+package com.example.projek_map.ui
 
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.example.projek_map.ui.fragments.DashboardFragment
+import com.example.projek_map.ui.fragments.PinjamanFragment
+import com.example.projek_map.ui.fragments.ProfileFragment
+import com.example.projek_map.R
+import com.example.projek_map.ui.fragments.SimpananFragment
 import com.example.projek_map.databinding.ActivityMainBinding
-import com.example.projek_map.ui.LoginActivity
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
 
@@ -22,26 +26,22 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Ambil data user dari Intent (dummy login)
         userNama = intent.getStringExtra("userName") ?: ""
         userEmail = intent.getStringExtra("userEmail") ?: ""
         userTelepon = intent.getStringExtra("userTelepon") ?: ""
         userStatus = intent.getStringExtra("userStatusKeanggotaan") ?: ""
         userKodePegawai = intent.getStringExtra("userKodePegawai") ?: ""
 
-        // Jika user belum login (tidak ada nama)
         if (userNama.isEmpty()) {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
             return
         }
 
-        // Set fragment default (Dashboard)
         if (savedInstanceState == null) {
             loadFragment(DashboardFragment())
         }
 
-        // Setup bottom navigation
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
@@ -62,7 +62,7 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.navigation_profil -> {
-                    val fragment = ProfilFragment()
+                    val fragment = ProfileFragment()
                     val bundle = Bundle()
                     bundle.putString("nama", userNama)
                     bundle.putString("email", userEmail)

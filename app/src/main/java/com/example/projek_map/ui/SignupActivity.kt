@@ -8,68 +8,61 @@ import com.example.projek_map.data.DummyUserData
 import com.example.projek_map.data.User
 import com.example.projek_map.databinding.ActivitySignupBinding
 import com.example.projek_map.utils.PrefManager
+import com.example.projek_map.ui.MainActivity
+import com.google.android.material.button.MaterialButton
 
 class SignupActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySignupBinding
-    private lateinit var prefManager: PrefManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySignupBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        prefManager = PrefManager(this)
+        val pref = PrefManager(this)
 
         binding.btnSignup.setOnClickListener {
             val kodePegawai = binding.etKodePegawai.text.toString().trim()
-            val nama = binding.etNama.text.toString().trim()
             val email = binding.etEmail.text.toString().trim()
             val password = binding.etPassword.text.toString().trim()
+            val nama = binding.etNama.text.toString().trim()
 
-            if (kodePegawai.isEmpty() || nama.isEmpty() || email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Semua field harus diisi!", Toast.LENGTH_SHORT).show()
+            if (kodePegawai.isEmpty() || email.isEmpty() || password.isEmpty() || nama.isEmpty()) {
+                Toast.makeText(this, "Harap isi semua field", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             // Cek apakah user sudah terdaftar
-            val exists = DummyUserData.users.any {
-                it.email.equals(email, ignoreCase = true) || it.kodePegawai == kodePegawai
+            val existingUser = DummyUserData.users.find {
+                it.email.equals(email, true) || it.kodePegawai.equals(kodePegawai, true)
             }
 
-            if (exists) {
+            if (existingUser != null) {
                 Toast.makeText(this, "User sudah terdaftar!", Toast.LENGTH_SHORT).show()
-            } else {
-                // Buat user baru (dengan nilai default)
-                val newUser = User(
-                    kodePegawai = kodePegawai,
-                    email = email,
-                    password = password,
-                    nama = nama,
-                    telepon = "-",
-                    statusKeanggotaan = "Aktif"
-                )
-
-                // Tambahkan user ke data dummy
-                DummyUserData.users.add(newUser)
-
-                // Simpan ke PrefManager (sesi login)
-                prefManager.saveLogin(
-                    userName = nama,
-                    email = email,
-                    kodePegawai = kodePegawai
-                )
-
-                Toast.makeText(this, "Registrasi berhasil!", Toast.LENGTH_SHORT).show()
-
-                // Arahkan ke halaman login
-                startActivity(Intent(this, LoginActivity::class.java))
-                finish()
+                return@setOnClickListener
             }
-        }
 
-        binding.tvLogin.setOnClickListener {
-            startActivity(Intent(this, LoginActivity::class.java))
+            // Tambah user baru ke dummy list
+            val newUser = User(
+                kodePegawai = kodePegawai,
+                email = email,
+                password = password,
+                nama = nama,
+                telepon = "-",
+                statusKeanggotaan = "Anggota Baru"
+            )
+            // This line will now work correctly without the wrong import
+            DummyUserData.users.add(newUser)
+
+            // Simpan data login ke PrefManager
+            pref.saveLogin(nama, email, kodePegawai)
+
+            Toast.makeText(this, "Pendaftaran berhasil!", Toast.LENGTH_SHORT).show()
+
+            // Pindah ke MainActivity
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
             finish()
         }
     }
