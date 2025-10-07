@@ -27,8 +27,15 @@ class LoginActivity : AppCompatActivity() {
 
             if (user != null) {
                 Toast.makeText(this, "Login berhasil! Selamat datang ${user.nama}", Toast.LENGTH_SHORT).show()
+
                 val intent = Intent(this, MainActivity::class.java)
+                // Kirim semua data user ke MainActivity
                 intent.putExtra("userName", user.nama)
+                intent.putExtra("userEmail", user.email)
+                intent.putExtra("userTelepon", user.telepon)
+                intent.putExtra("userStatusKeanggotaan", user.statusKeanggotaan)
+                intent.putExtra("userKodePegawai", user.kodePegawai)
+
                 startActivity(intent)
                 finish()
             } else {

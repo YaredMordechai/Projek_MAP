@@ -28,7 +28,7 @@
             android:id="@+id/tvNamaUser"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Andi Setiawan"
+            android:text="Nama User"
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="#000"/>
@@ -37,7 +37,7 @@
             android:id="@+id/tvIdUser"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="ID: K001"
+            android:text="Kode Pegawai: -"
             android:textSize="16sp"
             android:textColor="#666"
             android:layout_marginBottom="20dp"/>
@@ -60,7 +60,7 @@
                     android:id="@+id/tvEmail"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Email: andisetiawan123@email.com"
+                    android:text="Email: -"
                     android:textSize="16sp"
                     android:textColor="#333"/>
 
@@ -68,7 +68,16 @@
                     android:id="@+id/tvTelepon"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Nomor Telepon: 08123456789"
+                    android:text="Nomor Telepon: -"
+                    android:textSize="16sp"
+                    android:textColor="#333"
+                    android:layout_marginTop="8dp"/>
+
+                <TextView
+                    android:id="@+id/tvStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Status Keanggotaan: -"
                     android:textSize="16sp"
                     android:textColor="#333"
                     android:layout_marginTop="8dp"/>
@@ -76,14 +85,6 @@
         </com.google.android.material.card.MaterialCardView>
 
         <!-- Tombol Aksi -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnEditProfil"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Edit Data Diri"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_marginBottom="12dp"/>
-
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLogout"
             android:layout_width="match_parent"

@@ -12,14 +12,22 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private var userNama: String = ""
+    private var userEmail: String = ""
+    private var userTelepon: String = ""
+    private var userStatus: String = ""
+    private var userKodePegawai: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Ambil data user dari intent (dummy login)
+        // Ambil data user dari Intent (dummy login)
         userNama = intent.getStringExtra("userName") ?: ""
+        userEmail = intent.getStringExtra("userEmail") ?: ""
+        userTelepon = intent.getStringExtra("userTelepon") ?: ""
+        userStatus = intent.getStringExtra("userStatusKeanggotaan") ?: ""
+        userKodePegawai = intent.getStringExtra("userKodePegawai") ?: ""
 
         // Jika user belum login (tidak ada nama)
         if (userNama.isEmpty()) {
@@ -57,6 +65,10 @@ class MainActivity : AppCompatActivity() {
                     val fragment = ProfilFragment()
                     val bundle = Bundle()
                     bundle.putString("nama", userNama)
+                    bundle.putString("email", userEmail)
+                    bundle.putString("telepon", userTelepon)
+                    bundle.putString("statusKeanggotaan", userStatus)
+                    bundle.putString("kodePegawai", userKodePegawai)
                     fragment.arguments = bundle
                     loadFragment(fragment)
                     true

@@ -43,6 +43,7 @@ class PinjamanFragment : Fragment() {
         // Setup RecyclerView
         rvPinjaman.layoutManager = LinearLayoutManager(requireContext())
         adapter = PinjamanAdapter(data) { pinjaman ->
+            // This context is safe because it's a direct user interaction
             Toast.makeText(
                 requireContext(),
                 "Rp ${pinjaman.jumlah} — tenor ${pinjaman.jenis}",
@@ -60,6 +61,7 @@ class PinjamanFragment : Fragment() {
             val tenor = inputTenor.text.toString().trim()
 
             if (nominal.isEmpty() || tenor.isEmpty()) {
+                // This context is also safe
                 Toast.makeText(requireContext(), "Isi semua kolom", Toast.LENGTH_SHORT).show()
             } else {
                 // langsung kirim nominal + tenor
@@ -71,44 +73,60 @@ class PinjamanFragment : Fragment() {
     }
 
     private fun loadPinjamanFromApi() {
+        // We only proceed if the fragment's view is available
+        if (!isAdded) return
+
         ApiClient.instance.getPinjaman().enqueue(object : Callback<List<Pinjaman>> {
             override fun onResponse(call: Call<List<Pinjaman>>, response: Response<List<Pinjaman>>) {
+                // Check if the fragment is still attached before using context or updating UI
+                if (!isAdded) return
+
                 if (response.isSuccessful && response.body() != null) {
                     data.clear()
                     data.addAll(response.body()!!)
                     adapter.notifyDataSetChanged()
                 } else {
-                    Toast.makeText(requireContext(), "Gagal ambil data", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Gagal ambil data", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<List<Pinjaman>>, t: Throwable) {
-                Toast.makeText(requireContext(), "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+                // Check if the fragment is still attached
+                if (!isAdded) return
+                Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
 
     private fun ajukanPinjamanBaru(jumlah: String, tenor: String) {
+        // We only proceed if the fragment's view is available
+        if (!isAdded) return
+
         ApiClient.instance.insertPinjaman(jumlah, tenor)
             .enqueue(object : Callback<PinjamanResponse> {
                 override fun onResponse(
                     call: Call<PinjamanResponse>,
                     response: Response<PinjamanResponse>
                 ) {
+                    // Check if the fragment is still attached
+                    if (!isAdded) return
+
                     if (response.isSuccessful && response.body() != null) {
                         Toast.makeText(
-                            requireContext(),
+                            context,
                             response.body()!!.message,
                             Toast.LENGTH_SHORT
                         ).show()
                         loadPinjamanFromApi() // Refresh list setelah berhasil
                     } else {
-                        Toast.makeText(requireContext(), "Gagal mengajukan pinjaman", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Gagal mengajukan pinjaman", Toast.LENGTH_SHORT).show()
                     }
                 }
 
                 override fun onFailure(call: Call<PinjamanResponse>, t: Throwable) {
-                    Toast.makeText(requireContext(), "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+                    // Check if the fragment is still attached
+                    if (!isAdded) return
+                    Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             })
     }

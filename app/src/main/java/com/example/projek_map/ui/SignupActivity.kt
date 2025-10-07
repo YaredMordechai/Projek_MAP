@@ -7,15 +7,19 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.projek_map.data.DummyUserData
 import com.example.projek_map.data.User
 import com.example.projek_map.databinding.ActivitySignupBinding
+import com.example.projek_map.utils.PrefManager
 
 class SignupActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySignupBinding
+    private lateinit var prefManager: PrefManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySignupBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        prefManager = PrefManager(this)
 
         binding.btnSignup.setOnClickListener {
             val kodePegawai = binding.etKodePegawai.text.toString().trim()
@@ -29,13 +33,36 @@ class SignupActivity : AppCompatActivity() {
             }
 
             // Cek apakah user sudah terdaftar
-            val exists = DummyUserData.users.any { it.email == email || it.kodePegawai == kodePegawai }
+            val exists = DummyUserData.users.any {
+                it.email.equals(email, ignoreCase = true) || it.kodePegawai == kodePegawai
+            }
 
             if (exists) {
                 Toast.makeText(this, "User sudah terdaftar!", Toast.LENGTH_SHORT).show()
             } else {
-                DummyUserData.users.add(User(kodePegawai, email, password, nama))
+                // Buat user baru (dengan nilai default)
+                val newUser = User(
+                    kodePegawai = kodePegawai,
+                    email = email,
+                    password = password,
+                    nama = nama,
+                    telepon = "-",
+                    statusKeanggotaan = "Aktif"
+                )
+
+                // Tambahkan user ke data dummy
+                DummyUserData.users.add(newUser)
+
+                // Simpan ke PrefManager (sesi login)
+                prefManager.saveLogin(
+                    userName = nama,
+                    email = email,
+                    kodePegawai = kodePegawai
+                )
+
                 Toast.makeText(this, "Registrasi berhasil!", Toast.LENGTH_SHORT).show()
+
+                // Arahkan ke halaman login
                 startActivity(Intent(this, LoginActivity::class.java))
                 finish()
             }
