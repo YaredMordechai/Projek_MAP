@@ -1,4 +1,3 @@
-// DummyUserData.kt
 package com.example.projek_map.data
 
 data class User(
@@ -15,7 +14,9 @@ data class Pinjaman(
     val kodePegawai: String,
     val jumlah: Int,
     val tenor: Int,
-    val status: String
+    val status: String,
+    val bunga: Double = 0.1,
+    val angsuranTerbayar: Int = 0,
 )
 
 data class Simpanan(
@@ -25,9 +26,19 @@ data class Simpanan(
     val simpananSukarela: Double
 )
 
+// 🔹 Tambahkan data class histori di bawah sini
+data class HistoriPembayaran(
+    val id: Int,
+    val kodePegawai: String,
+    val pinjamanId: Int,
+    val tanggal: String,
+    val jumlah: Int,
+    val status: String
+)
+
 object DummyUserData {
 
-    // 🔹 Ubah dari listOf() ➜ mutableListOf()
+    // 🔹 User dummy
     val users = mutableListOf(
         User(
             kodePegawai = "EMP001",
@@ -47,16 +58,51 @@ object DummyUserData {
         )
     )
 
-    // 🔹 Data simpanan dummy
+    // 🔹 Simpanan dummy
     val simpananList = listOf(
         Simpanan("EMP001", 500000.0, 200000.0, 300000.0),
         Simpanan("EMP002", 500000.0, 250000.0, 150000.0)
     )
 
-    // 🔹 Data pinjaman dummy
+    // 🔹 Pinjaman dummy (mutableList biar bisa ditambah dari fragment)
     val pinjamanList = mutableListOf(
-        Pinjaman(1, "EMP001", 500000, 12, "Disetujui"),
-        Pinjaman(2, "EMP002", 800000, 8, "Lunas"),
-        Pinjaman(3, "EMP003", 1200000, 3, "Proses")
+        Pinjaman(1, "EMP001", 2000000, 12, "Disetujui"),
+        Pinjaman(2, "EMP002", 1500000, 6, "Proses")
     )
+
+    // 🔹 Histori pembayaran dummy
+    val historiPembayaranList = mutableListOf(
+        HistoriPembayaran(1, "EMP001",1, "2025-07-10", 200000, "Lunas"),
+        HistoriPembayaran(2, "EMP002",1, "2025-08-10", 200000, "Lunas"),
+        HistoriPembayaran(3, "EMP001",1, "2025-09-10", 200000, "Belum Lunas"),
+        HistoriPembayaran(4, "EMP002",2, "2025-07-05", 250000, "Belum Lunas")
+    )
+
+    // 🔹 Fungsi helper buat ambil histori per pinjaman
+    fun getHistoriPembayaran(pinjamanId: Int): List<HistoriPembayaran> {
+        return historiPembayaranList.filter { it.pinjamanId == pinjamanId }
+    }
+
+    // 🔹 Hitung total simpanan untuk user tertentu
+    fun getTotalSimpanan(kodePegawai: String): Double {
+        val simpanan = simpananList.find { it.kodePegawai == kodePegawai }
+        return if (simpanan != null) {
+            simpanan.simpananPokok + simpanan.simpananWajib + simpanan.simpananSukarela
+        } else 0.0
+    }
+
+    // 🔹 Hitung total pinjaman aktif (status != "Lunas")
+    fun getTotalPinjamanAktif(kodePegawai: String): Double {
+        return pinjamanList
+            .filter { it.kodePegawai == kodePegawai && it.status != "Lunas" }
+            .sumOf { it.jumlah.toDouble() }
+    }
+
+    // 🔹 Hitung total angsuran dibayar untuk bulan tertentu
+    fun getTotalAngsuranBulanan(kodePegawai: String, bulan: Int): Double {
+        return historiPembayaranList
+            .filter { it.kodePegawai == kodePegawai && it.tanggal.contains("-${bulan.toString().padStart(2, '0')}-") }
+            .sumOf { it.jumlah.toDouble() }
+    }
+
 }

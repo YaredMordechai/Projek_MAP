@@ -10,30 +10,30 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
-import com.example.projek_map.PinjamanAdapter
 import com.example.projek_map.data.Pinjaman
 import com.example.projek_map.data.DummyUserData
-import com.example.projek_map.utils.PrefManager
+import com.example.projek_map.ui.adapters.HistoriPembayaranAdapter
+import com.example.projek_map.ui.adapters.PinjamanAdapter
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 
 class PinjamanFragment : Fragment() {
 
-    private lateinit var txtPinjamanAktif: TextView
-    private lateinit var rvPendingPinjaman: RecyclerView
+    private lateinit var rvPending: RecyclerView
     private lateinit var rvPinjamanAktif: RecyclerView
-    private lateinit var rvRiwayatSelesai: RecyclerView
+    private lateinit var rvSelesai: RecyclerView
+    private lateinit var btnAjukan: MaterialButton
     private lateinit var inputNominal: TextInputEditText
     private lateinit var inputTenor: TextInputEditText
-    private lateinit var btnAjukan: MaterialButton
+    private lateinit var txtPinjamanAktif: TextView
 
-    private lateinit var pendingAdapter: PinjamanAdapter
-    private lateinit var aktifAdapter: PinjamanAdapter
-    private lateinit var selesaiAdapter: PinjamanAdapter
+    private lateinit var adapterPending: PinjamanAdapter
+    private lateinit var adapterAktif: PinjamanAdapter
+    private lateinit var adapterSelesai: PinjamanAdapter
 
-    private val pendingList = mutableListOf<Pinjaman>()
-    private val aktifList = mutableListOf<Pinjaman>()
-    private val selesaiList = mutableListOf<Pinjaman>()
+    private val dataPending = mutableListOf<Pinjaman>()
+    private val dataAktif = mutableListOf<Pinjaman>()
+    private val dataSelesai = mutableListOf<Pinjaman>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -41,104 +41,158 @@ class PinjamanFragment : Fragment() {
     ): View {
         val view = inflater.inflate(R.layout.fragment_pinjaman, container, false)
 
-        // 🔹 Bind views
+        // 🔹 Inisialisasi view
         txtPinjamanAktif = view.findViewById(R.id.txtPinjamanAktif)
-        rvPendingPinjaman = view.findViewById(R.id.rvPendingPinjaman)
-        rvPinjamanAktif = view.findViewById(R.id.rvRiwayatPinjaman)
-        rvRiwayatSelesai = view.findViewById(R.id.rvRiwayatSelesai)
         inputNominal = view.findViewById(R.id.inputNominalPinjaman)
         inputTenor = view.findViewById(R.id.inputTenor)
         btnAjukan = view.findViewById(R.id.btnAjukanPinjaman)
+        rvPending = view.findViewById(R.id.rvPendingPinjaman)
+        rvPinjamanAktif = view.findViewById(R.id.rvRiwayatPinjaman)
+        rvSelesai = view.findViewById(R.id.rvRiwayatSelesai)
 
-        // 🔹 Setup RecyclerViews
-        rvPendingPinjaman.layoutManager = LinearLayoutManager(requireContext())
+        // 🔹 Layout Manager
+        rvPending.layoutManager = LinearLayoutManager(requireContext())
         rvPinjamanAktif.layoutManager = LinearLayoutManager(requireContext())
-        rvRiwayatSelesai.layoutManager = LinearLayoutManager(requireContext())
+        rvSelesai.layoutManager = LinearLayoutManager(requireContext())
 
-        pendingAdapter = PinjamanAdapter(pendingList) {
-            Toast.makeText(requireContext(), "Menunggu: Rp ${it.jumlah}", Toast.LENGTH_SHORT).show()
-        }
+        // 🔹 Setup adapter (awal kosong dulu)
+        adapterPending = PinjamanAdapter(dataPending) { showPinjamanDetailDialog(it) }
+        adapterAktif = PinjamanAdapter(dataAktif) { showPinjamanDetailDialog(it) }
+        adapterSelesai = PinjamanAdapter(dataSelesai) { showPinjamanDetailDialog(it) }
 
-        aktifAdapter = PinjamanAdapter(aktifList) {
-            Toast.makeText(requireContext(), "Aktif: Rp ${it.jumlah}", Toast.LENGTH_SHORT).show()
-        }
-
-        selesaiAdapter = PinjamanAdapter(selesaiList) {
-            Toast.makeText(requireContext(), "Selesai: Rp ${it.jumlah}", Toast.LENGTH_SHORT).show()
-        }
-
-        rvPendingPinjaman.adapter = pendingAdapter
-        rvPinjamanAktif.adapter = aktifAdapter
-        rvRiwayatSelesai.adapter = selesaiAdapter
+        rvPending.adapter = adapterPending
+        rvPinjamanAktif.adapter = adapterAktif
+        rvSelesai.adapter = adapterSelesai
 
         // 🔹 Load data awal
-        loadDummyData()
+        loadDummyPinjaman()
+        updateStatusCard()
 
         // 🔹 Tombol ajukan pinjaman
-        btnAjukan.setOnClickListener { ajukanPinjamanBaru() }
+        btnAjukan.setOnClickListener {
+            val nominalText = inputNominal.text?.toString()?.trim()
+            val tenorText = inputTenor.text?.toString()?.trim()
+
+            if (nominalText.isNullOrEmpty() || tenorText.isNullOrEmpty()) {
+                Toast.makeText(requireContext(), "Isi semua kolom dulu", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val nominal = nominalText.toIntOrNull()
+            val tenor = tenorText.toIntOrNull()
+
+            if (nominal == null || tenor == null) {
+                Toast.makeText(requireContext(), "Nominal dan Tenor harus berupa angka", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val newPinjaman = Pinjaman(
+                id = DummyUserData.pinjamanList.size + 1,
+                kodePegawai = "EMP001",
+                jumlah = nominal,
+                tenor = tenor,
+                bunga = 10.0,
+                angsuranTerbayar = 0,
+                status = "Proses"
+            )
+
+            DummyUserData.pinjamanList.add(0, newPinjaman)
+            dataPending.add(0, newPinjaman)
+            adapterPending.notifyItemInserted(0)
+            rvPending.scrollToPosition(0)
+
+            inputNominal.setText("")
+            inputTenor.setText("")
+
+            Toast.makeText(requireContext(), "Pinjaman diajukan!", Toast.LENGTH_SHORT).show()
+            updateStatusCard()
+        }
 
         return view
     }
 
-    private fun loadDummyData() {
-        pendingList.clear()
-        aktifList.clear()
-        selesaiList.clear()
-
-        val allPinjaman = DummyUserData.pinjamanList
-
-        pendingList.addAll(allPinjaman.filter { it.status.equals("Proses", true) })
-        aktifList.addAll(allPinjaman.filter { it.status.equals("Disetujui", true) })
-        selesaiList.addAll(allPinjaman.filter { it.status.equals("Lunas", true) || it.status.equals("Ditolak", true) })
-
-        pendingAdapter.notifyDataSetChanged()
-        aktifAdapter.notifyDataSetChanged()
-        selesaiAdapter.notifyDataSetChanged()
-
-        updatePinjamanAktif()
+    // ✅ Tambahan: refresh data agar “Selesai” tampil otomatis
+    override fun onResume() {
+        super.onResume()
+        refreshAllLists()
     }
 
-    private fun ajukanPinjamanBaru() {
-        val nominal = inputNominal.text?.toString()?.trim()?.toIntOrNull()
-        val tenor = inputTenor.text?.toString()?.trim()?.toIntOrNull()
+    private fun refreshAllLists() {
+        loadDummyPinjaman()
+        adapterPending.notifyDataSetChanged()
+        adapterAktif.notifyDataSetChanged()
+        adapterSelesai.notifyDataSetChanged()
+        updateStatusCard()
+    }
 
-        if (nominal == null || tenor == null) {
-            Toast.makeText(requireContext(), "Isi nominal dan tenor dengan benar", Toast.LENGTH_SHORT).show()
-            return
+    private fun loadDummyPinjaman() {
+        dataPending.clear()
+        dataAktif.clear()
+        dataSelesai.clear()
+
+        DummyUserData.pinjamanList.forEach { pinjaman ->
+            when (pinjaman.status.lowercase()) {
+                "proses", "menunggu" -> dataPending.add(pinjaman)
+                "disetujui", "aktif" -> dataAktif.add(pinjaman)
+                "selesai", "lunas" -> dataSelesai.add(pinjaman)
+            }
         }
-
-        val pref = PrefManager(requireContext())
-        val kodePegawai = pref.getKodePegawai() ?: "UNKNOWN"
-
-        val newPinjaman = Pinjaman(
-            id = DummyUserData.pinjamanList.size + 1,
-            kodePegawai = kodePegawai,
-            jumlah = nominal,
-            tenor = tenor,
-            status = "Proses"
-        )
-
-        DummyUserData.pinjamanList.add(0, newPinjaman)
-        pendingList.add(0, newPinjaman)
-        pendingAdapter.notifyItemInserted(0)
-        rvPendingPinjaman.scrollToPosition(0)
-
-        inputNominal.setText("")
-        inputTenor.setText("")
-
-        updatePinjamanAktif()
-        Toast.makeText(requireContext(), "Pinjaman diajukan!", Toast.LENGTH_SHORT).show()
     }
 
-    private fun updatePinjamanAktif() {
-        val aktifLoans = aktifList.filter { it.status.equals("Disetujui", true) }
-
-        if (aktifLoans.isNotEmpty()) {
-            val total = aktifLoans.sumOf { it.jumlah }
-            val longestTenor = aktifLoans.maxOfOrNull { it.tenor } ?: 0
-            txtPinjamanAktif.text = "Pinjaman aktif: Rp $total (${longestTenor} bulan)"
+    private fun updateStatusCard() {
+        val aktif = dataAktif.firstOrNull()
+        txtPinjamanAktif.text = if (aktif != null) {
+            "Pinjaman Aktif: Rp ${formatRupiah(aktif.jumlah.toDouble())} (${aktif.tenor} bulan)"
         } else {
-            txtPinjamanAktif.text = "Belum ada pinjaman aktif"
+            "Belum ada pinjaman aktif"
         }
+    }
+
+    private fun showPinjamanDetailDialog(pinjaman: Pinjaman) {
+        val bungaPersen = 0.1
+        val bunga = pinjaman.jumlah * bungaPersen
+        val totalCicilan = pinjaman.jumlah + bunga
+        val angsuranPerBulan = totalCicilan / pinjaman.tenor
+
+        val historiPembayaran = DummyUserData.getHistoriPembayaran(pinjaman.id)
+        val sudahDibayar = historiPembayaran.sumOf { it.jumlah }
+        val sisaCicilan = totalCicilan - sudahDibayar
+
+        val message = """
+        Pokok Pinjaman  : Rp ${formatRupiah(pinjaman.jumlah.toDouble())}
+        Bunga (10%)     : Rp ${formatRupiah(bunga)}
+        Total Cicilan   : Rp ${formatRupiah(totalCicilan)}
+        Tenor           : ${pinjaman.tenor} bulan
+        Angsuran/Bulan  : Rp ${formatRupiah(angsuranPerBulan)}
+        Sisa Cicilan    : Rp ${formatRupiah(sisaCicilan)}
+        Status          : ${pinjaman.status}
+        """.trimIndent()
+
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("Rincian Pinjaman #${pinjaman.id}")
+            .setMessage(message)
+            .setPositiveButton("OK", null)
+            .setNeutralButton("Lihat Riwayat Angsuran") { _, _ ->
+                showHistoriPembayaran(pinjaman.id)
+            }
+            .show()
+    }
+
+    private fun showHistoriPembayaran(pinjamanId: Int) {
+        val histori = DummyUserData.getHistoriPembayaran(pinjamanId)
+        val view = layoutInflater.inflate(R.layout.dialog_histori_pembayaran, null)
+        val rvHistori = view.findViewById<RecyclerView>(R.id.rvHistoriPembayaran)
+        rvHistori.layoutManager = LinearLayoutManager(requireContext())
+        rvHistori.adapter = HistoriPembayaranAdapter(histori)
+
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("Histori Pembayaran")
+            .setView(view)
+            .setPositiveButton("Tutup", null)
+            .show()
+    }
+
+    private fun formatRupiah(value: Double): String {
+        return String.format("%,.0f", value).replace(',', '.')
     }
 }

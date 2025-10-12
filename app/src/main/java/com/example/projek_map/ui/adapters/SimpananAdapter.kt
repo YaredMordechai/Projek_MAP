@@ -1,4 +1,4 @@
-package com.example.projek_map
+package com.example.projek_map.ui.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

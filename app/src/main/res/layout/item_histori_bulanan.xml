@@ -1,0 +1,31 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="8dp"
+    android:orientation="horizontal"
+    android:background="@drawable/bg_card_light">
+
+    <TextView
+        android:id="@+id/txtTanggal"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:text="2025-07-10"
+        android:textSize="14sp"
+        android:layout_height="24dp"/>
+
+    <TextView
+        android:id="@+id/txtJumlah"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:text="Rp200.000"
+        android:textSize="14sp"
+        android:layout_height="24dp"/>
+
+    <TextView
+        android:id="@+id/txtStatus"
+        android:layout_width="wrap_content"
+        android:text="Lunas"
+        android:textSize="14sp"
+        android:textColor="@android:color/holo_green_dark"
+        android:layout_height="24dp"/>
+</LinearLayout>

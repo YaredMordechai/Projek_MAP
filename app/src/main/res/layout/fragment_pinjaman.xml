@@ -30,7 +30,7 @@
                     android:layout_height="wrap_content"
                     android:text="Belum ada pinjaman aktif"
                     android:textSize="16sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -99,7 +99,7 @@
             android:nestedScrollingEnabled="false"
             android:layout_marginTop="8dp" />
 
-        <!-- ⚪ Daftar Riwayat Selesai -->
+        <!-- 🔹 Riwayat Pinjaman Selesai -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
