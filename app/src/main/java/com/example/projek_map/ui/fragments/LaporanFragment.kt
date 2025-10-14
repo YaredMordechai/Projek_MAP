@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.ImageButton
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.fragment.app.Fragment
@@ -29,6 +30,12 @@ class LaporanFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         val view = inflater.inflate(R.layout.fragment_laporan, container, false)
+        val btnBackDashboard = view.findViewById<ImageButton>(R.id.btnBackDashboard)
+        btnBackDashboard.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, DashboardFragment())
+                .commit()
+        }
 
         txtTotalSimpanan = view.findViewById(R.id.txtTotalSimpanan)
         txtTotalPinjaman = view.findViewById(R.id.txtTotalPinjaman)

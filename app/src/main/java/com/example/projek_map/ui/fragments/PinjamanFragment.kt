@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -89,6 +90,7 @@ class PinjamanFragment : Fragment() {
         loadDummyPinjaman()
         updateStatusCard()
 
+
         // 🔹 Tombol Ajukan Pinjaman
         btnAjukan.setOnClickListener {
             val nominalText = inputNominal.text?.toString()?.trim()
@@ -116,6 +118,7 @@ class PinjamanFragment : Fragment() {
                 angsuranTerbayar = 0,
                 status = "Proses"
             )
+
 
             DummyUserData.pinjamanList.add(0, newPinjaman)
             dataPending.add(0, newPinjaman)

@@ -1,17 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:gravity="center"
-    android:background="@color/white"
+    android:background="#E8F5E9"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/ic_pinjaman"
+        android:layout_marginBottom="16dp"
+        app:tint="#4CAF50" />
 
     <TextView
         android:id="@+id/tvAppName"
         android:text="Koperasi Simpan Pinjam"
-        android:textSize="28sp"
-        android:textColor="@android:color/black"
-        android:textStyle="normal"
-        android:fontFamily="sans-serif-medium"
+        android:textSize="26sp"
+        android:textColor="#2E7D32"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        />
 </LinearLayout>

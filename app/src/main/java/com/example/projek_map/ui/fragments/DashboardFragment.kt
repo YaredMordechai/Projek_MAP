@@ -6,12 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
 import com.example.projek_map.R
 import com.example.projek_map.data.DummyUserData
 import com.example.projek_map.utils.PrefManager
-import com.google.android.material.button.MaterialButton
 
 class DashboardFragment : Fragment() {
 
@@ -32,22 +31,23 @@ class DashboardFragment : Fragment() {
         val tvWelcome = view.findViewById<TextView>(R.id.tvWelcome)
         val tvUserId = view.findViewById<TextView>(R.id.tvUserId)
         val imgProfile = view.findViewById<ImageView>(R.id.imgProfile)
-        val btnSimpanan = view.findViewById<MaterialButton>(R.id.btnGoSimpanan)
-        val btnPinjaman = view.findViewById<MaterialButton>(R.id.btnGoPinjaman)
-//        val btnCicilan = view.findViewById<MaterialButton>(R.id.btnGoCicilan)
-        val btnLaporan = view.findViewById<MaterialButton>(R.id.btnGoLaporan)
-        val btnProfil = view.findViewById<MaterialButton>(R.id.btnGoProfil)
+
+        // ✅ Disesuaikan ke CardView (bukan MaterialButton)
+        val cardSimpanan = view.findViewById<CardView>(R.id.cardSimpanan)
+        val cardPinjaman = view.findViewById<CardView>(R.id.cardPinjaman)
+        val cardLaporan = view.findViewById<CardView>(R.id.cardLaporan)
+        val cardProfil = view.findViewById<CardView>(R.id.cardProfil)
+//        val cardLogout = view.findViewById<CardView>(R.id.cardLogout)
 
         val pref = PrefManager(requireContext())
 
         if (isAdmin) {
             tvWelcome.text = "Halo, Admin"
             tvUserId.text = ""
-            btnSimpanan.visibility = View.GONE
-            btnPinjaman.visibility = View.GONE
-//            btnCicilan.visibility = View.GONE
-            btnLaporan.visibility = View.GONE
-            btnProfil.visibility = View.GONE
+            cardSimpanan.visibility = View.GONE
+            cardPinjaman.visibility = View.GONE
+            cardLaporan.visibility = View.GONE
+            cardProfil.visibility = View.GONE
         } else {
             val loggedEmail = pref.getEmail() ?: ""
             val loggedKode = pref.getKodePegawai() ?: ""
@@ -67,25 +67,61 @@ class DashboardFragment : Fragment() {
             imgProfile.setImageResource(R.drawable.ic_profil)
         }
 
-        // ✅ Navigasi aman tanpa unresolved reference
-        btnSimpanan.setOnClickListener {
-            findNavController().navigate(R.id.navigation_simpanan)
+        // ✅ Navigasi (tetap sama seperti versi sebelumnya)
+        cardSimpanan.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .setCustomAnimations(
+                    R.anim.slide_in_right,
+                    R.anim.slide_out_left,
+                    R.anim.slide_in_left,
+                    R.anim.slide_out_right
+                )
+                .replace(R.id.fragmentContainer, SimpananFragment())
+                .addToBackStack(null)
+                .commit()
         }
 
-        btnPinjaman.setOnClickListener {
-            findNavController().navigate(R.id.navigation_pinjaman)
+        cardPinjaman.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .setCustomAnimations(
+                    R.anim.slide_in_right,
+                    R.anim.slide_out_left,
+                    R.anim.slide_in_left,
+                    R.anim.slide_out_right
+                )
+                .replace(R.id.fragmentContainer, PinjamanFragment())
+                .addToBackStack(null)
+                .commit()
         }
 
-//        btnCicilan.setOnClickListener {
-//            findNavController().navigate(R.id.nav_cicilan)
+        cardLaporan.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .setCustomAnimations(
+                    R.anim.slide_in_right,
+                    R.anim.slide_out_left,
+                    R.anim.slide_in_left,
+                    R.anim.slide_out_right
+                )
+                .replace(R.id.fragmentContainer, LaporanFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+
+        cardProfil.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .setCustomAnimations(
+                    R.anim.slide_in_right,
+                    R.anim.slide_out_left,
+                    R.anim.slide_in_left,
+                    R.anim.slide_out_right
+                )
+                .replace(R.id.fragmentContainer, ProfileFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+
+//        cardLogout.setOnClickListener {
+//            // TODO: Implementasikan logout (kalau sudah siap)
 //        }
-
-        btnLaporan.setOnClickListener {
-            findNavController().navigate(R.id.navigation_laporan)
-        }
-
-        btnProfil.setOnClickListener {
-            findNavController().navigate(R.id.navigation_profil)
-        }
     }
 }

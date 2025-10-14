@@ -16,10 +16,10 @@
         android:icon="@drawable/ic_pinjaman"
         android:title="Pinjaman" />
 
-    <item
-        android:id="@+id/navigation_laporan"
-        android:icon="@drawable/ic_laporan"
-        android:title="Laporan" />
+<!--    <item-->
+<!--        android:id="@+id/navigation_laporan"-->
+<!--        android:icon="@drawable/ic_laporan"-->
+<!--        android:title="Laporan" />-->
 
     <item
         android:id="@+id/navigation_profil"

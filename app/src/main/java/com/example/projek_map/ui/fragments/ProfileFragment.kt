@@ -84,5 +84,6 @@ class ProfileFragment : Fragment() {
         btnBackDashboard.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
+
     }
 }

@@ -52,7 +52,6 @@ class MainActivity : AppCompatActivity() {
                 R.id.navigation_dashboard -> loadFragment(DashboardFragment())
                 R.id.navigation_simpanan -> loadFragment(SimpananFragment())
                 R.id.navigation_pinjaman -> loadFragment(PinjamanFragment())
-//                R.id.navigation_laporan -> loadFragment(LaporanFragment())
                 R.id.navigation_profil -> {
                     val fragment = ProfileFragment().apply {
                         arguments = Bundle().apply {
