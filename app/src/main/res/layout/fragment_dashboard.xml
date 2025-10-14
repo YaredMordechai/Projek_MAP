@@ -3,158 +3,107 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5F5">
+    android:padding="16dp"
+    android:background="@color/white">
 
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:gravity="center_horizontal">
 
-        <!-- Header User -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:padding="8dp">
-
-            <ImageView
-                android:id="@+id/imgProfile"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:src="@drawable/ic_profil"
-            android:background="@drawable/bg_circle"
-            android:scaleType="centerCrop"
-            android:contentDescription="Foto Profil" />
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginStart="12dp">
-
-                <TextView
-                    android:id="@+id/tvWelcome"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Halo, Andi Setiawan"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="#000"/>
-
-                <TextView
-                    android:id="@+id/tvUserId"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="ID: K001"
-                    android:textSize="14sp"
-                    android:textColor="#666"/>
-            </LinearLayout>
-        </LinearLayout>
-
-        <!-- Ringkasan Card -->
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="6dp"
+        <!-- Foto Profil -->
+        <ImageView
+            android:id="@+id/imgProfile"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
             android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp">
+            android:src="@drawable/ic_profil"
+            android:background="@drawable/bg_card_light"
+            android:padding="12dp"
+            android:scaleType="centerInside"
+            android:elevation="3dp"
+            android:layout_gravity="center" />
 
-            <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="16dp">
+        <!-- Nama & ID User -->
+        <TextView
+            android:id="@+id/tvWelcome"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Halo, User"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginTop="12dp"
+            android:textColor="@color/black" />
 
-                <TextView
-                    android:id="@+id/tvTotalSimpanan"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Total Simpanan: Rp 0"
-                    android:textSize="16sp"
-                    android:textColor="#333"/>
+        <TextView
+            android:id="@+id/tvUserId"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="KodePegawai"
+            android:textColor="@color/grey_600"
+            android:layout_marginBottom="20dp" />
 
-                <TextView
-                    android:id="@+id/tvPinjamanAktif"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Pinjaman Aktif: Rp 0"
-                    android:textSize="16sp"
-                    android:textColor="#333"
-                    android:layout_marginTop="8dp"/>
-
-                <TextView
-                    android:id="@+id/tvCicilanBulanan"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Cicilan / bulan: Rp 0"
-                    android:textSize="16sp"
-                    android:textColor="#333"
-                    android:layout_marginTop="8dp"/>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Menu Utama -->
+        <!-- Tombol Navigasi -->
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:gravity="center">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnGoSimpanan"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton.Icon"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Lihat Simpanan"
+                android:layout_height="60dp"
+                android:text="Kelola Simpanan"
                 app:icon="@drawable/ic_simpanan"
-                app:iconTint="@color/black"
-                app:iconGravity="textStart"/>
+                app:iconGravity="textStart"
+                app:iconPadding="12dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_marginBottom="8dp"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnGoPinjaman"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton.Icon"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Lihat Pinjaman"
-                android:layout_marginTop="12dp"
+                android:layout_height="60dp"
+                android:text="Kelola Pinjaman"
                 app:icon="@drawable/ic_pinjaman"
-                app:iconTint="@color/black"
-                app:iconGravity="textStart"/>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnGoCicilan"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton.Icon"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="Lihat Cicilan"
-                app:icon="@drawable/ic_cicilan"
                 app:iconGravity="textStart"
-                app:iconTint="@color/black" />
+                app:iconPadding="12dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_marginBottom="8dp"/>
+
+<!--            <com.google.android.material.button.MaterialButton-->
+<!--                android:id="@+id/btnGoCicilan"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="60dp"-->
+<!--                android:text="Lihat Cicilan"-->
+<!--                app:icon="@drawable/ic_cicilan"-->
+<!--                app:iconGravity="textStart"-->
+<!--                app:iconPadding="12dp"-->
+<!--                style="@style/Widget.MaterialComponents.Button.OutlinedButton"-->
+<!--                android:layout_marginBottom="8dp"/>-->
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnGoLaporan"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton.Icon"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Lihat Laporan"
-                android:layout_marginTop="12dp"
+                android:layout_height="60dp"
+                android:text="Laporan Bulanan"
                 app:icon="@drawable/ic_laporan"
-                app:iconTint="@color/black"
-                app:iconGravity="textStart"/>
+                app:iconGravity="textStart"
+                app:iconPadding="12dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_marginBottom="8dp"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnGoProfil"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton.Icon"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Lihat Profil"
-                android:layout_marginTop="12dp"
+                android:layout_height="60dp"
+                android:text="Profil Pengguna"
                 app:icon="@drawable/ic_profil"
-                app:iconTint="@color/black"
-                app:iconGravity="textStart"/>
+                app:iconGravity="textStart"
+                app:iconPadding="12dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

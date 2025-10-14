@@ -8,6 +8,10 @@ import com.example.projek_map.R
 import com.example.projek_map.databinding.ActivityMainBinding
 import com.example.projek_map.ui.fragments.*
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.example.projek_map.ui.LoginActivity
+import com.example.projek_map.ui.fragments.DashboardFragment
+import com.example.projek_map.ui.fragments.KelolaAnggotaFragment
+import com.example.projek_map.ui.fragments.LaporanFragment
 
 class MainActivity : AppCompatActivity() {
 
@@ -48,6 +52,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.navigation_dashboard -> loadFragment(DashboardFragment())
                 R.id.navigation_simpanan -> loadFragment(SimpananFragment())
                 R.id.navigation_pinjaman -> loadFragment(PinjamanFragment())
+//                R.id.navigation_laporan -> loadFragment(LaporanFragment())
                 R.id.navigation_profil -> {
                     val fragment = ProfileFragment().apply {
                         arguments = Bundle().apply {

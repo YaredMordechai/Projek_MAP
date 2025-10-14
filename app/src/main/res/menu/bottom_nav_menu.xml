@@ -17,6 +17,11 @@
         android:title="Pinjaman" />
 
     <item
+        android:id="@+id/navigation_laporan"
+        android:icon="@drawable/ic_laporan"
+        android:title="Laporan" />
+
+    <item
         android:id="@+id/navigation_profil"
         android:icon="@drawable/ic_profil"
         android:title="Profil" />

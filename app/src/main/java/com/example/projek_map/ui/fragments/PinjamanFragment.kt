@@ -16,6 +16,10 @@ import com.example.projek_map.ui.adapters.HistoriPembayaranAdapter
 import com.example.projek_map.ui.adapters.PinjamanAdapter
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
+import java.text.NumberFormat
+import java.util.Calendar
+import java.util.Locale
+
 
 class PinjamanFragment : Fragment() {
 
@@ -123,6 +127,7 @@ class PinjamanFragment : Fragment() {
 
             Toast.makeText(requireContext(), "Pinjaman diajukan!", Toast.LENGTH_SHORT).show()
             updateStatusCard()
+
         }
 
         return view
@@ -210,6 +215,25 @@ class PinjamanFragment : Fragment() {
             .setPositiveButton("Tutup", null)
             .show()
     }
+
+    private fun tampilkanLaporanBulanan() {
+        val kodePegawai = "EMP001" // nanti bisa dari PrefManager kalau sudah login
+        val bulanSekarang = Calendar.getInstance().get(Calendar.MONTH) + 1
+
+        val totalSimpanan = DummyUserData.getTotalSimpanan(kodePegawai)
+        val totalPinjaman = DummyUserData.getTotalPinjamanAktif(kodePegawai)
+        val totalAngsuran = DummyUserData.getTotalAngsuranBulanan(kodePegawai, bulanSekarang)
+
+        val formatter = NumberFormat.getCurrencyInstance(Locale("in", "ID"))
+
+        view?.findViewById<TextView>(R.id.txtTotalSimpanan)?.text =
+            "Total Simpanan: ${formatter.format(totalSimpanan)}"
+        view?.findViewById<TextView>(R.id.txtTotalPinjaman)?.text =
+            "Total Pinjaman Aktif: ${formatter.format(totalPinjaman)}"
+        view?.findViewById<TextView>(R.id.txtTotalAngsuran)?.text =
+            "Total Angsuran Bulan Ini: ${formatter.format(totalAngsuran)}"
+    }
+
 
     private fun formatRupiah(value: Double): String {
         return String.format("%,.0f", value).replace(',', '.')
