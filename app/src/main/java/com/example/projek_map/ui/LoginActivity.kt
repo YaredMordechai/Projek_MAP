@@ -23,27 +23,47 @@ class LoginActivity : AppCompatActivity() {
             val email = binding.etEmail.text.toString().trim()
             val password = binding.etPassword.text.toString().trim()
 
+            // 🔹 Cek user biasa
             val user = DummyUserData.users.find {
                 (it.email == email || it.kodePegawai == email) && it.password == password
             }
 
-            if (user != null) {
-                // 🔹 Simpan data user login ke PrefManager
-                pref.saveLogin(user.nama, user.email, user.kodePegawai)
+            // 🔹 Cek admin
+            val admin = DummyUserData.admins.find {
+                (it.email == email || it.kodePegawai == email) && it.password == password
+            }
 
-                Toast.makeText(this, "Login berhasil! Selamat datang ${user.nama}", Toast.LENGTH_SHORT).show()
+            when {
+                admin != null -> {
+                    pref.saveLogin(admin.nama, admin.email, admin.kodePegawai)
+                    Toast.makeText(this, "Login Admin berhasil: ${admin.nama}", Toast.LENGTH_SHORT).show()
 
-                val intent = Intent(this, MainActivity::class.java)
-                // Kirim semua data user ke MainActivity
-                intent.putExtra("userName", user.nama)
-                intent.putExtra("userEmail", user.email)
-                intent.putExtra("userTelepon", user.telepon)
-                intent.putExtra("userStatusKeanggotaan", user.statusKeanggotaan)
-                intent.putExtra("userKodePegawai", user.kodePegawai)
-                startActivity(intent)
-                finish()
-            } else {
-                Toast.makeText(this, "Email/Kode Pegawai atau password salah", Toast.LENGTH_SHORT).show()
+                    val intent = Intent(this, MainActivity::class.java)
+                    intent.putExtra("userName", admin.nama)
+                    intent.putExtra("userEmail", admin.email)
+                    intent.putExtra("isAdmin", true)
+                    startActivity(intent)
+                    finish()
+                }
+
+                user != null -> {
+                    pref.saveLogin(user.nama, user.email, user.kodePegawai)
+                    Toast.makeText(this, "Login berhasil! Selamat datang ${user.nama}", Toast.LENGTH_SHORT).show()
+
+                    val intent = Intent(this, MainActivity::class.java)
+                    intent.putExtra("userName", user.nama)
+                    intent.putExtra("userEmail", user.email)
+                    intent.putExtra("userTelepon", user.telepon)
+                    intent.putExtra("userStatusKeanggotaan", user.statusKeanggotaan)
+                    intent.putExtra("userKodePegawai", user.kodePegawai)
+                    intent.putExtra("isAdmin", false)
+                    startActivity(intent)
+                    finish()
+                }
+
+                else -> {
+                    Toast.makeText(this, "Email / Password salah!", Toast.LENGTH_SHORT).show()
+                }
             }
         }
 

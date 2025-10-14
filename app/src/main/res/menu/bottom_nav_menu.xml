@@ -21,4 +21,8 @@
         android:icon="@drawable/ic_profil"
         android:title="Profil" />
 
+    <item
+        android:id="@+id/navigation_kelola_anggota"
+        android:title="Kelola Anggota"
+        android:icon="@drawable/ic_group" />
 </menu>

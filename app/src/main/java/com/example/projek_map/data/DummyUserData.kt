@@ -2,11 +2,19 @@ package com.example.projek_map.data
 
 data class User(
     val kodePegawai: String,
+    var email: String,
+    var password: String,
+    var nama: String,
+    var telepon: String,
+    var statusKeanggotaan: String
+)
+
+data class Admin(
+    val kodePegawai: String,
     val email: String,
     val password: String,
     val nama: String,
-    val telepon: String,
-    val statusKeanggotaan: String
+    val role: String = "Admin"
 )
 
 data class Pinjaman(
@@ -76,6 +84,22 @@ object DummyUserData {
         HistoriPembayaran(2, "EMP002",1, "2025-08-10", 200000, "Lunas"),
         HistoriPembayaran(3, "EMP001",1, "2025-09-10", 200000, "Belum Lunas"),
         HistoriPembayaran(4, "EMP002",2, "2025-07-05", 250000, "Belum Lunas")
+    )
+
+    val admins = listOf(
+        Admin(
+            kodePegawai = "ADM001",
+            email = "admin@koperasi.com",
+            password = "admin123",
+            nama = "Admin Utama"
+
+        ),
+        Admin(
+            kodePegawai = "ADM002",
+            email = "supervisor@koperasi.com",
+            password = "admin123",
+            nama = "Supervisor Koperasi"
+        )
     )
 
     // 🔹 Fungsi helper buat ambil histori per pinjaman

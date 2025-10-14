@@ -35,13 +35,18 @@ class PinjamanFragment : Fragment() {
     private val dataAktif = mutableListOf<Pinjaman>()
     private val dataSelesai = mutableListOf<Pinjaman>()
 
+    private var isAdmin: Boolean = false
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         val view = inflater.inflate(R.layout.fragment_pinjaman, container, false)
 
-        // 🔹 Inisialisasi view
+        // ✅ Ambil flag admin dari arguments
+        isAdmin = arguments?.getBoolean("isAdmin", false) ?: false
+
+        // ✅ Inisialisasi semua view
         txtPinjamanAktif = view.findViewById(R.id.txtPinjamanAktif)
         inputNominal = view.findViewById(R.id.inputNominalPinjaman)
         inputTenor = view.findViewById(R.id.inputTenor)
@@ -50,12 +55,24 @@ class PinjamanFragment : Fragment() {
         rvPinjamanAktif = view.findViewById(R.id.rvRiwayatPinjaman)
         rvSelesai = view.findViewById(R.id.rvRiwayatSelesai)
 
+        // ✅ Jika admin → tampilkan pesan kosong dan sembunyikan semua elemen
+        if (isAdmin) {
+            txtPinjamanAktif.text = "Admin tidak memiliki data pinjaman"
+            inputNominal.visibility = View.GONE
+            inputTenor.visibility = View.GONE
+            btnAjukan.visibility = View.GONE
+            rvPending.visibility = View.GONE
+            rvPinjamanAktif.visibility = View.GONE
+            rvSelesai.visibility = View.GONE
+            return view
+        }
+
         // 🔹 Layout Manager
         rvPending.layoutManager = LinearLayoutManager(requireContext())
         rvPinjamanAktif.layoutManager = LinearLayoutManager(requireContext())
         rvSelesai.layoutManager = LinearLayoutManager(requireContext())
 
-        // 🔹 Setup adapter (awal kosong dulu)
+        // 🔹 Setup adapter
         adapterPending = PinjamanAdapter(dataPending) { showPinjamanDetailDialog(it) }
         adapterAktif = PinjamanAdapter(dataAktif) { showPinjamanDetailDialog(it) }
         adapterSelesai = PinjamanAdapter(dataSelesai) { showPinjamanDetailDialog(it) }
@@ -68,7 +85,7 @@ class PinjamanFragment : Fragment() {
         loadDummyPinjaman()
         updateStatusCard()
 
-        // 🔹 Tombol ajukan pinjaman
+        // 🔹 Tombol Ajukan Pinjaman
         btnAjukan.setOnClickListener {
             val nominalText = inputNominal.text?.toString()?.trim()
             val tenorText = inputTenor.text?.toString()?.trim()
@@ -111,10 +128,12 @@ class PinjamanFragment : Fragment() {
         return view
     }
 
-    // ✅ Tambahan: refresh data agar “Selesai” tampil otomatis
+    // ✅ Jangan refresh kalau admin
     override fun onResume() {
         super.onResume()
-        refreshAllLists()
+        if (!isAdmin) {
+            refreshAllLists()
+        }
     }
 
     private fun refreshAllLists() {
