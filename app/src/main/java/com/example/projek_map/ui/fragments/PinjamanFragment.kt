@@ -1,5 +1,8 @@
 package com.example.projek_map.ui.fragments
 
+import android.app.AlertDialog
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,6 +10,8 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -42,11 +47,38 @@ class PinjamanFragment : Fragment() {
 
     private var isAdmin: Boolean = false
 
+    // 📷 ActivityResultLauncher untuk memilih gambar (gallery)
+    private lateinit var pickImageLauncher: ActivityResultLauncher<String>
+    private var currentPinjamanForUpload: Int? = null // store pinjamanId saat upload
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         val view = inflater.inflate(R.layout.fragment_pinjaman, container, false)
+
+        // inisialisasi pickImageLauncher (harus di lifecycle sebelum dipakai)
+        pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            if (uri != null) {
+                // simpan ke dummy data sebagai histori pembayaran (saat ini: status "Bukti Diupload")
+                val pinjamanId = currentPinjamanForUpload
+                if (pinjamanId != null) {
+                    DummyUserData.addHistoriPembayaranWithBukti(
+                        kodePegawai = "EMP001",
+                        pinjamanId = pinjamanId,
+                        jumlah = 0,
+                        status = "Bukti Diupload",
+                        buktiUri = uri.toString()
+                    )
+                    Toast.makeText(requireContext(), "Bukti pembayaran tersimpan (dummy).", Toast.LENGTH_SHORT).show()
+                    refreshAllLists()
+                } else {
+                    Toast.makeText(requireContext(), "Gagal menyimpan bukti (pinjaman tidak diketahui).", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Toast.makeText(requireContext(), "Tidak ada gambar terpilih.", Toast.LENGTH_SHORT).show()
+            }
+        }
 
         // ✅ Ambil flag admin dari arguments
         isAdmin = arguments?.getBoolean("isAdmin", false) ?: false
@@ -195,14 +227,21 @@ class PinjamanFragment : Fragment() {
         Status          : ${pinjaman.status}
         """.trimIndent()
 
-        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        val builder = AlertDialog.Builder(requireContext())
             .setTitle("Rincian Pinjaman #${pinjaman.id}")
             .setMessage(message)
             .setPositiveButton("OK", null)
             .setNeutralButton("Lihat Riwayat Angsuran") { _, _ ->
                 showHistoriPembayaran(pinjaman.id)
             }
-            .show()
+            // 📷 Tambah tombol Unggah Bukti (opens gallery)
+            .setNegativeButton("Unggah Bukti") { _, _ ->
+                // simpan id pinjaman yang sedang diproses, lalu buka gallery
+                currentPinjamanForUpload = pinjaman.id
+                pickImageLauncher.launch("image/*")
+            }
+
+        builder.show()
     }
 
     private fun showHistoriPembayaran(pinjamanId: Int) {
@@ -212,7 +251,7 @@ class PinjamanFragment : Fragment() {
         rvHistori.layoutManager = LinearLayoutManager(requireContext())
         rvHistori.adapter = HistoriPembayaranAdapter(histori)
 
-        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        AlertDialog.Builder(requireContext())
             .setTitle("Histori Pembayaran")
             .setView(view)
             .setPositiveButton("Tutup", null)
@@ -236,6 +275,7 @@ class PinjamanFragment : Fragment() {
         view?.findViewById<TextView>(R.id.txtTotalAngsuran)?.text =
             "Total Angsuran Bulan Ini: ${formatter.format(totalAngsuran)}"
     }
+
 
 
     private fun formatRupiah(value: Double): String {

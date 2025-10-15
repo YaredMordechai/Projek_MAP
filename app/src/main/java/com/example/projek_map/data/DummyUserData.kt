@@ -41,7 +41,8 @@ data class HistoriPembayaran(
     val pinjamanId: Int,
     val tanggal: String,
     val jumlah: Int,
-    val status: String
+    val status: String,
+    val buktiPembayaranUri: String? = null // 📷 optional URI ke gambar bukti
 )
 
 data class HistoriSimpanan(
@@ -155,6 +156,21 @@ object DummyUserData {
                 simpananSukarela = simpanan.simpananSukarela + jumlah
             )
         }
+    }
+
+    // 📷 Tambah helper untuk menyimpan histori pembayaran dengan bukti (dummy)
+    fun addHistoriPembayaranWithBukti(
+        kodePegawai: String,
+        pinjamanId: Int,
+        jumlah: Int,
+        status: String,
+        buktiUri: String
+    ) {
+        val idBaru = (historiPembayaranList.maxOfOrNull { it.id } ?: 0) + 1
+        val tanggal = java.text.SimpleDateFormat("yyyy-MM-dd").format(java.util.Date())
+        historiPembayaranList.add(
+            HistoriPembayaran(idBaru, kodePegawai, pinjamanId, tanggal, jumlah, status, buktiUri)
+        )
     }
 
     // 🔹 Hitung total angsuran dibayar untuk bulan tertentu
