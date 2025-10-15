@@ -221,5 +221,17 @@
 <!--                </LinearLayout>-->
 <!--            </androidx.cardview.widget.CardView>-->
         </GridLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnKirimPengumuman"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Kirim Pengumuman (Tes)"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/green_700"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone" />
+
     </LinearLayout>
 </ScrollView>

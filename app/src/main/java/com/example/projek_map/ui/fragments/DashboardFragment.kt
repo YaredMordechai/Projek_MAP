@@ -135,27 +135,17 @@ class DashboardFragment : Fragment() {
 
         // 🔔 Add a programmatic button at bottom of grid to "Kirim Pengumuman (Tes)".
         // This keeps original XML intact; kita hanya menambahkan view programmatically.
-        val grid = view.findViewById<View>(R.id.gridMenu)
-        val parentLinear = grid?.parent
-        if (parentLinear is LinearLayout) {
-            val btn = MaterialButton(requireContext()).apply {
-                text = "Kirim Pengumuman (Tes)"
-                setOnClickListener {
-                    // langsung munculkan notifikasi pengumuman contoh
-                    NotificationHelper.showNotification(
-                        requireContext(),
-                        2001,
-                        "Pengumuman Koperasi",
-                        "Halo anggota, ada pengumuman penting dari pengurus. Cek aplikasi."
-                    )
-                }
+        val btnKirimPengumuman = view.findViewById<MaterialButton>(R.id.btnKirimPengumuman)
+        if (isAdmin) {
+            btnKirimPengumuman.visibility = View.VISIBLE
+            btnKirimPengumuman.setOnClickListener {
+                NotificationHelper.showNotification(
+                    requireContext(),
+                    2001,
+                    "Pengumuman Koperasi",
+                    "Halo anggota, ada pengumuman penting dari pengurus. Cek aplikasi."
+                )
             }
-            val lp = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-            lp.setMargins(0, 24, 0, 8)
-            parentLinear.addView(btn, lp)
         }
 
     }
