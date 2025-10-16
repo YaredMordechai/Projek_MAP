@@ -213,11 +213,29 @@ class PinjamanFragment : Fragment() {
     }
 
     private fun updateStatusCard() {
-        val aktif = dataAktif.firstOrNull()
-        txtPinjamanAktif.text = if (aktif != null) {
-            "Pinjaman Aktif: Rp ${formatRupiah(aktif.jumlah.toDouble())} (${aktif.tenor} bulan)"
-        } else "Belum ada pinjaman aktif"
+        // Ambil semua pinjaman aktif
+        val aktifList = dataAktif
+
+        if (aktifList.isEmpty()) {
+            txtPinjamanAktif.text = "Belum ada pinjaman aktif"
+            return
+        }
+
+        // 🔹 Hitung total pinjaman aktif (akumulasi semua)
+        val totalPinjaman = aktifList.sumOf { it.jumlah.toDouble() }
+        val totalTenor = aktifList.sumOf { it.tenor }
+
+        // 🔹 Ambil info ringkas untuk pinjaman pertama (sebagai contoh tampilan)
+        val pertama = aktifList.first()
+
+        // 🔹 Format tampilan lebih informatif
+        txtPinjamanAktif.text = buildString {
+            append("Total Pinjaman Aktif: Rp ${formatRupiah(totalPinjaman)}\n")
+            append("Jumlah Pinjaman Aktif: ${aktifList.size} pinjaman\n")
+            append("Contoh: Rp ${formatRupiah(pertama.jumlah.toDouble())} (${pertama.tenor} bulan)")
+        }
     }
+
 
     // =========================
     // Dialog detail pinjaman
