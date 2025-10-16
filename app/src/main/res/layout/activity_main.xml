@@ -4,50 +4,26 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF">
+    android:background="#F5FFF8">
 
-    <!-- 🔹 Toolbar sederhana (menampilkan nama user) -->
+    <!-- Header Hijau -->
 
-    <!-- 🔹 Tempat fragment ditampilkan -->
 
-    <!--<LinearLayout
-        android:id="@+id/headerLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/colorPrimary"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:padding="16dp">
-
-        <ImageView
-            android:id="@+id/imgUserIcon"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_marginEnd="8dp"
-            android:src="@drawable/ic_profil"
-            app:tint="@android:color/white" />
-
-        <TextView
-            android:id="@+id/tvUserName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Halo, User"
-            android:textColor="@android:color/white"
-            android:textSize="16sp" />
-    </LinearLayout>-->
-
+    <!-- Tempat fragment -->
     <FrameLayout
         android:id="@+id/fragmentContainer"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"/>
 
-    <!-- 🔹 Bottom Navigation Bar -->
+    <!-- Bottom Navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigationView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?android:attr/windowBackground"
+        android:background="@color/green_100"
+        app:itemIconTint="@color/green_800"
+        app:itemTextColor="@color/green_800"
+        app:labelVisibilityMode="labeled"
         app:menu="@menu/bottom_nav_menu" />
-
 </LinearLayout>

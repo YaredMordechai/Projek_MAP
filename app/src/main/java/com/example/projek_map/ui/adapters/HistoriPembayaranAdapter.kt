@@ -28,7 +28,13 @@ class HistoriPembayaranAdapter(
         val pembayaran = data[position]
         holder.tvTanggal.text = pembayaran.tanggal
         holder.tvJumlah.text = "Rp ${pembayaran.jumlah}"
-        holder.tvStatus.text = pembayaran.status
+        // 📷 Jika ada bukti pembayarannya, tambahkan tanda pada status
+        val statusText = if (!pembayaran.buktiPembayaranUri.isNullOrEmpty()) {
+            "${pembayaran.status}  •  Bukti: ✓"
+        } else {
+            pembayaran.status
+        }
+        holder.tvStatus.text = statusText
     }
 
     override fun getItemCount() = data.size
