@@ -81,7 +81,7 @@
                 android:layout_height="wrap_content" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Dropdown Jenis Simpanan (dipindah ke bawah jumlah) -->
+        <!-- Dropdown Jenis Simpanan-->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/layoutJenisSimpanan"
             android:hint="Jenis Simpanan"

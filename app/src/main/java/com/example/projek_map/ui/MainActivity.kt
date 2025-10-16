@@ -1,6 +1,9 @@
 package com.example.projek_map.ui
 
 import android.Manifest
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -21,6 +24,7 @@ import com.example.projek_map.utils.NotificationHelper
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationView
+import java.util.Calendar
 
 class MainActivity : AppCompatActivity() {
 
@@ -40,14 +44,23 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         NotificationHelper.createNotificationChannel(this)
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
                     this, Manifest.permission.POST_NOTIFICATIONS
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
                 requestNotificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+            } else {
+                scheduleDailyDueCheck()
             }
+        } else {
+            scheduleDailyDueCheck()
         }
+
+
+        // ✅ Jadwalkan pengecekan harian jatuh tempo & pengumuman (Mode B - AlarmReceiver tanpa extra "type")
+        scheduleDailyDueCheck()
 
         val userName = intent.getStringExtra("userName") ?: ""
         val userEmail = intent.getStringExtra("userEmail") ?: ""
@@ -167,5 +180,82 @@ class MainActivity : AppCompatActivity() {
         } else {
             super.onBackPressed()
         }
+    }
+
+    // =========================================
+    // Alarm harian untuk due & pengumuman (Mode B)
+    // =========================================
+    private fun scheduleDailyDueCheck() {
+        try {
+            val am = getSystemService(AlarmManager::class.java)
+
+            // Intent ke AlarmReceiver dengan action unik
+            val intent = Intent(this, com.example.projek_map.utils.AlarmReceiver::class.java).apply {
+                action = "com.example.projek_map.ALARM_DUE_CHECK_DAILY"
+                // (opsional) untuk Mode A:
+                // putExtra("type", "jatuh_tempo")
+            }
+
+            val flags = PendingIntent.FLAG_UPDATE_CURRENT or
+                    (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
+
+            val pi = PendingIntent.getBroadcast(this, 9001, intent, flags)
+
+            // Batalkan alarm lama agar tidak dobel
+            am?.cancel(pi)
+
+            // Jadwalkan ke jam tertentu (ubah sesuai kebutuhanmu)
+            val cal = Calendar.getInstance().apply {
+                timeInMillis = System.currentTimeMillis()
+                set(Calendar.HOUR_OF_DAY, 22)
+                set(Calendar.MINUTE, 46)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+                if (timeInMillis <= System.currentTimeMillis()) {
+                    add(Calendar.DAY_OF_YEAR, 1)
+                }
+            }
+
+            // === Exact jika diizinkan, kalau tidak fallback ke inexact ===
+            val canExact = if (Build.VERSION.SDK_INT >= 31) {
+                am?.canScheduleExactAlarms() == true
+            } else true
+
+            if (canExact) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    am?.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.timeInMillis, pi)
+                } else {
+                    am?.setExact(AlarmManager.RTC_WAKEUP, cal.timeInMillis, pi)
+                }
+            } else {
+                // fallback: tidak butuh permission khusus, tetap jalan
+                am?.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, cal.timeInMillis, pi)
+            }
+
+        } catch (t: Throwable) {
+            // Jika tetap kena SecurityException, fallback sekali lagi ke inexact supaya tidak crash
+            android.util.Log.e("MainActivity", "scheduleDailyDueCheck failed", t)
+            val am = getSystemService(AlarmManager::class.java)
+            val intent = Intent(this, com.example.projek_map.utils.AlarmReceiver::class.java).apply {
+                action = "com.example.projek_map.ALARM_DUE_CHECK_DAILY"
+            }
+            val flags = PendingIntent.FLAG_UPDATE_CURRENT or
+                    (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
+            val pi = PendingIntent.getBroadcast(this, 9001, intent, flags)
+            val fallbackTime = System.currentTimeMillis() + 2 * 60 * 1000 // 2 menit lagi
+            am?.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, fallbackTime, pi)
+        }
+    }
+
+
+    // (Opsional) untuk membatalkan alarm saat logout
+    @Suppress("unused")
+    private fun cancelDailyDueCheck() {
+        val am = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(this, com.example.projek_map.utils.AlarmReceiver::class.java)
+        val flags = PendingIntent.FLAG_UPDATE_CURRENT or
+                (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
+        val pi = PendingIntent.getBroadcast(this, 9001, intent, flags)
+        am.cancel(pi)
     }
 }
