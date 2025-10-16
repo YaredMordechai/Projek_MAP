@@ -91,6 +91,13 @@ data class RincianPinjaman(
     val angsuranDibayar: Int   // sudah berapa kali angsuran (pembulatan ke bawah)
 )
 
+data class DueReminder(
+    val pinjamanId: Int,
+    val kodePegawai: String,
+    val dueDate: String,  // yyyy-MM-dd
+    val nominalCicilan: Int
+)
+
 
 // =====================
 // Dummy store & helpers
@@ -543,5 +550,56 @@ object DummyUserData {
         return historiPembayaranList
             .filter { it.kodePegawai == kodePegawai && it.tanggal.contains(bulanStr) }
             .sumOf { it.jumlah.toDouble() }
+    }
+
+    // =====================
+    // NOTIFIKASI JATUH TEMPO
+    // =====================
+
+    fun getUpcomingDues(kodePegawai: String, daysAhead: Int = 3): List<DueReminder> {
+        val todayCal = java.util.Calendar.getInstance()
+        val y = todayCal.get(java.util.Calendar.YEAR)
+        val m = todayCal.get(java.util.Calendar.MONTH) // 0..11
+        val d = todayCal.get(java.util.Calendar.DAY_OF_MONTH)
+
+        // tanggal jatuh tempo default = tanggal 10
+        val DUE_DAY = 10
+
+        val list = mutableListOf<DueReminder>()
+
+        pinjamanList
+            .filter { it.kodePegawai == kodePegawai && it.status.equals("Disetujui", true) || it.status.equals("Aktif", true) }
+            .forEach { p ->
+                // hitung cicilan per bulan (pakai helper yang sudah ada; kalau kamu punya anuitas gunakan yg itu)
+                val cicilan = hitungCicilanPerBulan(p.id).coerceAtLeast(0)
+
+                // due di bulan ini:
+                val dueCal = java.util.Calendar.getInstance().apply {
+                    set(java.util.Calendar.YEAR, y)
+                    set(java.util.Calendar.MONTH, m)
+                    set(java.util.Calendar.DAY_OF_MONTH, DUE_DAY)
+                    set(java.util.Calendar.HOUR_OF_DAY, 0)
+                    set(java.util.Calendar.MINUTE, 0)
+                    set(java.util.Calendar.SECOND, 0)
+                    set(java.util.Calendar.MILLISECOND, 0)
+                }
+
+                // jika sudah lewat tanggal 10 bulan ini, geser ke bulan depan
+                if (d > DUE_DAY) {
+                    dueCal.add(java.util.Calendar.MONTH, 1)
+                }
+
+                // selisih hari
+                val diffMs = dueCal.timeInMillis - todayCal.timeInMillis
+                val diffDays = kotlin.math.ceil(diffMs / (1000.0 * 60 * 60 * 24)).toInt()
+
+                if (diffDays in 0..daysAhead) {
+                    val dueStr = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale("id","ID"))
+                        .format(dueCal.time)
+                    list.add(DueReminder(p.id, p.kodePegawai, dueStr, cicilan))
+                }
+            }
+
+        return list
     }
 }

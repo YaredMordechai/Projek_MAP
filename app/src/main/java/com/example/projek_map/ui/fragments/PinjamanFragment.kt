@@ -167,7 +167,31 @@ class PinjamanFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         if (!isAdmin) refreshAllLists()
+        showDuePopupIfAny()
     }
+
+    private fun showDuePopupIfAny() {
+        val kodePegawai = "EMP001" // ganti ke PrefManager kalau sudah ada login
+        val upcoming = DummyUserData.getUpcomingDues(kodePegawai, daysAhead = 3)
+        if (upcoming.isEmpty()) return
+
+        // Gabungkan semua due jadi satu popup
+        val text = StringBuilder().apply {
+            appendLine("Ada cicilan yang akan jatuh tempo dalam 3 hari:")
+            appendLine()
+            upcoming.forEach { r ->
+                appendLine("• Pinjaman #${r.pinjamanId} | Jatuh tempo: ${r.dueDate}")
+                appendLine("  Angsuran: Rp ${formatRupiah(r.nominalCicilan.toDouble())}")
+            }
+        }.toString()
+
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("Pengingat Jatuh Tempo")
+            .setMessage(text)
+            .setPositiveButton("Oke", null)
+            .show()
+    }
+
 
     private fun refreshAllLists() {
         loadDummyPinjaman()
