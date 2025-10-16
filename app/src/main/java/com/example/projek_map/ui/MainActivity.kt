@@ -77,6 +77,7 @@ class MainActivity : AppCompatActivity() {
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.navigation_dashboard -> loadFragment(DashboardFragment())
+                R.id.navigation_pengumuman -> loadFragment(PengumumanFragment())
                 R.id.navigation_simpanan -> loadFragment(SimpananFragment())
                 R.id.navigation_pinjaman -> loadFragment(PinjamanFragment())
                 R.id.navigation_profil -> {

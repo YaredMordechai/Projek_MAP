@@ -98,6 +98,12 @@ data class DueReminder(
     val nominalCicilan: Int
 )
 
+data class Pengumuman(
+    val id: Int,
+    val judul: String,
+    val isi: String,
+    val tanggal: String  // yyyy-MM-dd
+)
 
 // =====================
 // Dummy store & helpers
@@ -602,4 +608,14 @@ object DummyUserData {
 
         return list
     }
+
+    // =====================
+    // Pengumuman Koperasi
+    // =====================
+
+    val pengumumanList = mutableListOf(
+        Pengumuman(1, "Rapat Anggota Tahunan", "RAT akan dilaksanakan di aula kantor pukul 09.00 WIB.", "2025-10-18"),
+        Pengumuman(2, "Update Suku Bunga", "Suku bunga pinjaman bulanan ditetapkan 1.2% flat efektif.", "2025-10-10"),
+        Pengumuman(3, "Libur Operasional", "Koperasi libur tanggal 28-29 Okt untuk maintenance sistem.", "2025-10-28")
+    )
 }

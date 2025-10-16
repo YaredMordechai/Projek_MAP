@@ -7,6 +7,11 @@
         android:title="Dashboard" />
 
     <item
+        android:id="@+id/navigation_pengumuman"
+        android:icon="@drawable/ic_announcement"
+        android:title="Pengumuman" />
+
+    <item
         android:id="@+id/navigation_simpanan"
         android:icon="@drawable/ic_simpanan"
         android:title="Simpanan" />
