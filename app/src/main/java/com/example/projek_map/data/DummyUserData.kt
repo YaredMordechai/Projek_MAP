@@ -72,6 +72,26 @@ data class BuktiPembayaranAnggota(
     val tanggal: String
 )
 
+data class AngsuranItem(
+    val periode: Int,          // 1..tenor
+    val pokok: Int,            // porsi pokok bulan ini
+    val bunga: Int,            // porsi bunga bulan ini
+    val total: Int,            // cicilan bulan ini
+    val sisaPokok: Int         // sisa pokok setelah bayar bulan ini
+)
+
+data class RincianPinjaman(
+    val cicilanPerBulan: Int,
+    val totalBunga: Int,
+    val totalBayar: Int,
+    val totalPokok: Int,
+    val terbayar: Int,
+    val sisaBayar: Int,
+    val sisaPokok: Int,
+    val angsuranDibayar: Int   // sudah berapa kali angsuran (pembulatan ke bawah)
+)
+
+
 // =====================
 // Dummy store & helpers
 // =====================
@@ -339,6 +359,179 @@ object DummyUserData {
         val total = (p.jumlah * (1.0 + p.bunga)).toInt()
         val terbayar = getTotalAngsuranDibayar(pinjamanId)
         return max(total - terbayar, 0)
+    }
+
+    // =====================
+    // Perhitungan bunga & angsuran
+    // =====================
+
+    private fun monthlyRate(p: Pinjaman): Double {
+        // Asumsi: p.bunga adalah bunga TAHUNAN (mis. 0.12 = 12% per tahun)
+        // Jika kamu menyimpan bunga bulanan, ubah ke return p.bunga
+        return p.bunga / 12.0
+    }
+
+    /** Rumus anuitas:
+     * A = P * i / (1 - (1+i)^-n)
+     * P = pokok pinjaman, i = bunga per bulan, n = tenor (bulan)
+     */
+    fun hitungCicilanPerBulanAnuitas(pinjamanId: Int): Int {
+        val p = pinjamanList.find { it.id == pinjamanId } ?: return 0
+        val P = p.jumlah.toDouble()
+        val n = p.tenor
+        if (n <= 0) return 0
+
+        val i = monthlyRate(p)
+        if (i == 0.0) return (P / n).toInt()
+
+        val faktor = i / (1 - Math.pow(1 + i, -n.toDouble()))
+        return (P * faktor).toInt()
+    }
+
+    /** Buat jadwal angsuran (anuitas). */
+    fun generateJadwalAnuitas(pinjamanId: Int): List<AngsuranItem> {
+        val p = pinjamanList.find { it.id == pinjamanId } ?: return emptyList()
+        val n = p.tenor
+        if (n <= 0) return emptyList()
+
+        val i = monthlyRate(p)
+        val cicilan = hitungCicilanPerBulanAnuitas(pinjamanId)
+        var sisa = p.jumlah.toDouble()
+
+        val items = mutableListOf<AngsuranItem>()
+        for (k in 1..n) {
+            val bunga = (sisa * i).toInt()
+            val pokok = (cicilan - bunga).coerceAtLeast(0)
+            sisa -= pokok
+            items.add(
+                AngsuranItem(
+                    periode = k,
+                    pokok = pokok,
+                    bunga = bunga,
+                    total = cicilan,
+                    sisaPokok = sisa.toInt().coerceAtLeast(0)
+                )
+            )
+        }
+        // Koreksi rounding: pastikan sisa pokok terakhir 0
+        if (items.isNotEmpty()) {
+            val last = items.last()
+            if (last.sisaPokok != 0) {
+                val delta = last.sisaPokok
+                val fixedLast = last.copy(pokok = last.pokok + delta, total = last.total + delta, sisaPokok = 0)
+                items[items.lastIndex] = fixedLast
+            }
+        }
+        return items
+    }
+
+    /** Ringkasan pinjaman (anuitas) + membaca pembayaran dari histori. */
+    fun getRincianPinjamanAnuitas(pinjamanId: Int): RincianPinjaman {
+        val p = pinjamanList.find { it.id == pinjamanId }
+            ?: return RincianPinjaman(0,0,0,0,0,0,0,0)
+
+        val jadwal = generateJadwalAnuitas(pinjamanId)
+        val cicilan = hitungCicilanPerBulanAnuitas(pinjamanId)
+        val totalPokok = jadwal.sumOf { it.pokok }
+        val totalBunga = jadwal.sumOf { it.bunga }
+        val totalBayar = jadwal.sumOf { it.total }
+
+        val terbayar = historiPembayaranList
+            .filter { it.pinjamanId == pinjamanId }
+            .sumOf { it.jumlah }
+
+        val sisaBayar = (totalBayar - terbayar).coerceAtLeast(0)
+
+        // Estimasi angsuran yang sudah dibayar (jika pembayaran sesuai cicilan)
+        val angsuranDibayar = if (cicilan > 0) (terbayar / cicilan) else 0
+
+        // Hitung sisa pokok: total pokok - pokok yang “diasumsikan” sudah dibayar
+        val pokokTerbayar = jadwal.take(angsuranDibayar).sumOf { it.pokok }
+        val sisaPokok = (totalPokok - pokokTerbayar).coerceAtLeast(0)
+
+        return RincianPinjaman(
+            cicilanPerBulan = cicilan,
+            totalBunga = totalBunga,
+            totalBayar = totalBayar,
+            totalPokok = totalPokok,
+            terbayar = terbayar,
+            sisaBayar = sisaBayar,
+            sisaPokok = sisaPokok,
+            angsuranDibayar = angsuranDibayar
+        )
+    }
+
+    // ====== Versi FLAT (opsional, untuk perbandingan / fallback) ======
+
+    /** Cicilan per bulan (flat): (pokok/tenor) + (pokok * bunga_tahunan/12) */
+    fun hitungCicilanPerBulanFlat(pinjamanId: Int): Int {
+        val p = pinjamanList.find { it.id == pinjamanId } ?: return 0
+        val P = p.jumlah.toDouble()
+        val n = p.tenor
+        if (n <= 0) return 0
+
+        val i = monthlyRate(p)
+        val pokokPerBulan = P / n
+        val bungaPerBulan = P * i
+        return (pokokPerBulan + bungaPerBulan).toInt()
+    }
+
+    fun generateJadwalFlat(pinjamanId: Int): List<AngsuranItem> {
+        val p = pinjamanList.find { it.id == pinjamanId } ?: return emptyList()
+        val n = p.tenor
+        if (n <= 0) return emptyList()
+
+        val i = monthlyRate(p)
+        val P = p.jumlah.toDouble()
+        val pokokPerBulan = (P / n).toInt()
+        val bungaPerBulan = (P * i).toInt()
+        val totalPerBulan = pokokPerBulan + bungaPerBulan
+
+        var sisa = P.toInt()
+        val items = mutableListOf<AngsuranItem>()
+        for (k in 1..n) {
+            val pokok = if (k < n) pokokPerBulan else sisa // koreksi rounding di bulan terakhir
+            val bunga = bungaPerBulan
+            sisa -= pokok
+            items.add(
+                AngsuranItem(
+                    periode = k,
+                    pokok = pokok,
+                    bunga = bunga,
+                    total = pokok + bunga,
+                    sisaPokok = sisa.coerceAtLeast(0)
+                )
+            )
+        }
+        return items
+    }
+
+    fun getRincianPinjamanFlat(pinjamanId: Int): RincianPinjaman {
+        val jadwal = generateJadwalFlat(pinjamanId)
+        val cicilan = hitungCicilanPerBulanFlat(pinjamanId)
+        val totalPokok = jadwal.sumOf { it.pokok }
+        val totalBunga = jadwal.sumOf { it.bunga }
+        val totalBayar = jadwal.sumOf { it.total }
+
+        val terbayar = historiPembayaranList
+            .filter { it.pinjamanId == pinjamanId }
+            .sumOf { it.jumlah }
+
+        val sisaBayar = (totalBayar - terbayar).coerceAtLeast(0)
+        val angsuranDibayar = if (cicilan > 0) (terbayar / cicilan) else 0
+        val pokokTerbayar = jadwal.take(angsuranDibayar).sumOf { it.pokok }
+        val sisaPokok = (totalPokok - pokokTerbayar).coerceAtLeast(0)
+
+        return RincianPinjaman(
+            cicilanPerBulan = cicilan,
+            totalBunga = totalBunga,
+            totalBayar = totalBayar,
+            totalPokok = totalPokok,
+            terbayar = terbayar,
+            sisaBayar = sisaBayar,
+            sisaPokok = sisaPokok,
+            angsuranDibayar = angsuranDibayar
+        )
     }
 
     // =====================

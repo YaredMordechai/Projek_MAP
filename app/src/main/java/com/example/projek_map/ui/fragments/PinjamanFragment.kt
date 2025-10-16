@@ -1,31 +1,36 @@
 package com.example.projek_map.ui.fragments
 
 import android.app.AlertDialog
-import android.content.Intent
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
-import com.example.projek_map.data.Pinjaman
 import com.example.projek_map.data.DummyUserData
+import com.example.projek_map.data.Pinjaman
 import com.example.projek_map.ui.adapters.HistoriPembayaranAdapter
 import com.example.projek_map.ui.adapters.PinjamanAdapter
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
+import java.io.File
 import java.text.NumberFormat
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
 import java.util.Locale
-
 
 class PinjamanFragment : Fragment() {
 
@@ -47,9 +52,12 @@ class PinjamanFragment : Fragment() {
 
     private var isAdmin: Boolean = false
 
-    // 📷 ActivityResultLauncher untuk memilih gambar (gallery)
+    // ==== Upload Bukti ====
     private lateinit var pickImageLauncher: ActivityResultLauncher<String>
-    private var currentPinjamanForUpload: Int? = null // store pinjamanId saat upload
+    private lateinit var takePictureLauncher: ActivityResultLauncher<Uri>
+    private lateinit var requestCameraPermission: ActivityResultLauncher<String>
+    private var currentPinjamanForUpload: Int? = null
+    private var pendingCameraUri: Uri? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -57,33 +65,33 @@ class PinjamanFragment : Fragment() {
     ): View {
         val view = inflater.inflate(R.layout.fragment_pinjaman, container, false)
 
-        // inisialisasi pickImageLauncher (harus di lifecycle sebelum dipakai)
+        // --- Launchers ---
         pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-            if (uri != null) {
-                // simpan ke dummy data sebagai histori pembayaran (saat ini: status "Bukti Diupload")
-                val pinjamanId = currentPinjamanForUpload
-                if (pinjamanId != null) {
-                    DummyUserData.addHistoriPembayaranWithBukti(
-                        kodePegawai = "EMP001",
-                        pinjamanId = pinjamanId,
-                        jumlah = 0,
-                        status = "Bukti Diupload",
-                        buktiUri = uri.toString()
-                    )
-                    Toast.makeText(requireContext(), "Bukti pembayaran tersimpan (dummy).", Toast.LENGTH_SHORT).show()
-                    refreshAllLists()
-                } else {
-                    Toast.makeText(requireContext(), "Gagal menyimpan bukti (pinjaman tidak diketahui).", Toast.LENGTH_SHORT).show()
-                }
+            if (uri != null) onBuktiSelected(uri) else toast("Tidak ada gambar terpilih.")
+        }
+
+        takePictureLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+            val uri = pendingCameraUri
+            if (success && uri != null) {
+                onBuktiSelected(uri)
             } else {
-                Toast.makeText(requireContext(), "Tidak ada gambar terpilih.", Toast.LENGTH_SHORT).show()
+                toast("Gagal mengambil foto.")
+            }
+            pendingCameraUri = null
+        }
+
+        requestCameraPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (granted) {
+                launchCamera()
+            } else {
+                toast("Izin kamera ditolak.")
             }
         }
 
-        // ✅ Ambil flag admin dari arguments
+        // Ambil flag admin dari arguments
         isAdmin = arguments?.getBoolean("isAdmin", false) ?: false
 
-        // ✅ Inisialisasi semua view
+        // Inisialisasi view
         txtPinjamanAktif = view.findViewById(R.id.txtPinjamanAktif)
         inputNominal = view.findViewById(R.id.inputNominalPinjaman)
         inputTenor = view.findViewById(R.id.inputTenor)
@@ -92,7 +100,6 @@ class PinjamanFragment : Fragment() {
         rvPinjamanAktif = view.findViewById(R.id.rvRiwayatPinjaman)
         rvSelesai = view.findViewById(R.id.rvRiwayatSelesai)
 
-        // ✅ Jika admin → tampilkan pesan kosong dan sembunyikan semua elemen
         if (isAdmin) {
             txtPinjamanAktif.text = "Admin tidak memiliki data pinjaman"
             inputNominal.visibility = View.GONE
@@ -104,12 +111,10 @@ class PinjamanFragment : Fragment() {
             return view
         }
 
-        // 🔹 Layout Manager
         rvPending.layoutManager = LinearLayoutManager(requireContext())
         rvPinjamanAktif.layoutManager = LinearLayoutManager(requireContext())
         rvSelesai.layoutManager = LinearLayoutManager(requireContext())
 
-        // 🔹 Setup adapter
         adapterPending = PinjamanAdapter(dataPending) { showPinjamanDetailDialog(it) }
         adapterAktif = PinjamanAdapter(dataAktif) { showPinjamanDetailDialog(it) }
         adapterSelesai = PinjamanAdapter(dataSelesai) { showPinjamanDetailDialog(it) }
@@ -118,27 +123,21 @@ class PinjamanFragment : Fragment() {
         rvPinjamanAktif.adapter = adapterAktif
         rvSelesai.adapter = adapterSelesai
 
-        // 🔹 Load data awal
         loadDummyPinjaman()
         updateStatusCard()
 
-
-        // 🔹 Tombol Ajukan Pinjaman
         btnAjukan.setOnClickListener {
             val nominalText = inputNominal.text?.toString()?.trim()
             val tenorText = inputTenor.text?.toString()?.trim()
 
             if (nominalText.isNullOrEmpty() || tenorText.isNullOrEmpty()) {
-                Toast.makeText(requireContext(), "Isi semua kolom dulu", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
+                toast("Isi semua kolom dulu"); return@setOnClickListener
             }
 
             val nominal = nominalText.toIntOrNull()
             val tenor = tenorText.toIntOrNull()
-
             if (nominal == null || tenor == null) {
-                Toast.makeText(requireContext(), "Nominal dan Tenor harus berupa angka", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
+                toast("Nominal dan Tenor harus berupa angka"); return@setOnClickListener
             }
 
             val newPinjaman = Pinjaman(
@@ -146,11 +145,10 @@ class PinjamanFragment : Fragment() {
                 kodePegawai = "EMP001",
                 jumlah = nominal,
                 tenor = tenor,
-                bunga = 10.0,
+                bunga = 0.10,          // 10% per tahun
                 angsuranTerbayar = 0,
                 status = "Proses"
             )
-
 
             DummyUserData.pinjamanList.add(0, newPinjaman)
             dataPending.add(0, newPinjaman)
@@ -159,21 +157,16 @@ class PinjamanFragment : Fragment() {
 
             inputNominal.setText("")
             inputTenor.setText("")
-
-            Toast.makeText(requireContext(), "Pinjaman diajukan!", Toast.LENGTH_SHORT).show()
+            toast("Pinjaman diajukan!")
             updateStatusCard()
-
         }
 
         return view
     }
 
-    // ✅ Jangan refresh kalau admin
     override fun onResume() {
         super.onResume()
-        if (!isAdmin) {
-            refreshAllLists()
-        }
+        if (!isAdmin) refreshAllLists()
     }
 
     private fun refreshAllLists() {
@@ -185,15 +178,12 @@ class PinjamanFragment : Fragment() {
     }
 
     private fun loadDummyPinjaman() {
-        dataPending.clear()
-        dataAktif.clear()
-        dataSelesai.clear()
-
-        DummyUserData.pinjamanList.forEach { pinjaman ->
-            when (pinjaman.status.lowercase()) {
-                "proses", "menunggu" -> dataPending.add(pinjaman)
-                "disetujui", "aktif" -> dataAktif.add(pinjaman)
-                "selesai", "lunas" -> dataSelesai.add(pinjaman)
+        dataPending.clear(); dataAktif.clear(); dataSelesai.clear()
+        DummyUserData.pinjamanList.forEach { p ->
+            when (p.status.lowercase()) {
+                "proses", "menunggu" -> dataPending.add(p)
+                "disetujui", "aktif" -> dataAktif.add(p)
+                "selesai", "lunas" -> dataSelesai.add(p)
             }
         }
     }
@@ -202,48 +192,111 @@ class PinjamanFragment : Fragment() {
         val aktif = dataAktif.firstOrNull()
         txtPinjamanAktif.text = if (aktif != null) {
             "Pinjaman Aktif: Rp ${formatRupiah(aktif.jumlah.toDouble())} (${aktif.tenor} bulan)"
-        } else {
-            "Belum ada pinjaman aktif"
-        }
+        } else "Belum ada pinjaman aktif"
     }
 
+    // =========================
+    // Dialog detail pinjaman
+    // =========================
     private fun showPinjamanDetailDialog(pinjaman: Pinjaman) {
-        val bungaPersen = 0.1
-        val bunga = pinjaman.jumlah * bungaPersen
-        val totalCicilan = pinjaman.jumlah + bunga
-        val angsuranPerBulan = totalCicilan / pinjaman.tenor
-
-        val historiPembayaran = DummyUserData.getHistoriPembayaran(pinjaman.id)
-        val sudahDibayar = historiPembayaran.sumOf { it.jumlah }
-        val sisaCicilan = totalCicilan - sudahDibayar
+        val r = DummyUserData.getRincianPinjamanAnuitas(pinjaman.id)
+        val bungaPersenTahun = (pinjaman.bunga * 100).toInt()
 
         val message = """
         Pokok Pinjaman  : Rp ${formatRupiah(pinjaman.jumlah.toDouble())}
-        Bunga (10%)     : Rp ${formatRupiah(bunga)}
-        Total Cicilan   : Rp ${formatRupiah(totalCicilan)}
+        Bunga ($bungaPersenTahun%) : (anuitas)
+        Total Cicilan   : Rp ${formatRupiah(r.totalBayar.toDouble())}
         Tenor           : ${pinjaman.tenor} bulan
-        Angsuran/Bulan  : Rp ${formatRupiah(angsuranPerBulan)}
-        Sisa Cicilan    : Rp ${formatRupiah(sisaCicilan)}
+        Angsuran/Bulan  : Rp ${formatRupiah(r.cicilanPerBulan.toDouble())}
+        Terbayar        : Rp ${formatRupiah(r.terbayar.toDouble())}
+        Sisa Cicilan    : Rp ${formatRupiah(r.sisaBayar.toDouble())}
+        Sisa Pokok      : Rp ${formatRupiah(r.sisaPokok.toDouble())}
         Status          : ${pinjaman.status}
         """.trimIndent()
 
-        val builder = AlertDialog.Builder(requireContext())
+        AlertDialog.Builder(requireContext())
             .setTitle("Rincian Pinjaman #${pinjaman.id}")
             .setMessage(message)
             .setPositiveButton("OK", null)
             .setNeutralButton("Lihat Riwayat Angsuran") { _, _ ->
                 showHistoriPembayaran(pinjaman.id)
             }
-            // 📷 Tambah tombol Unggah Bukti (opens gallery)
             .setNegativeButton("Unggah Bukti") { _, _ ->
-                // simpan id pinjaman yang sedang diproses, lalu buka gallery
                 currentPinjamanForUpload = pinjaman.id
-                pickImageLauncher.launch("image/*")
+                showUploadChooser()
             }
-
-        builder.show()
+            .show()
     }
 
+    // =========================
+    // Upload bukti (kamera/galeri)
+    // =========================
+    private fun showUploadChooser() {
+        val items = arrayOf("Ambil Foto", "Pilih dari Galeri")
+        AlertDialog.Builder(requireContext())
+            .setTitle("Unggah Bukti Pembayaran")
+            .setItems(items) { _, which ->
+                when (which) {
+                    0 -> checkAndOpenCamera()
+                    1 -> pickImageLauncher.launch("image/*")
+                }
+            }
+            .setNegativeButton("Batal", null)
+            .show()
+    }
+
+    private fun checkAndOpenCamera() {
+        val granted = ContextCompat.checkSelfPermission(
+            requireContext(), Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (granted) {
+            launchCamera()
+        } else {
+            requestCameraPermission.launch(Manifest.permission.CAMERA)
+        }
+    }
+
+    private fun launchCamera() {
+        val uri = createImageUri() ?: run {
+            toast("Gagal menyiapkan file foto"); return
+        }
+        pendingCameraUri = uri
+        takePictureLauncher.launch(uri)
+    }
+
+    private fun createImageUri(): Uri? {
+        return try {
+            val dir = requireContext().getExternalFilesDir(android.os.Environment.DIRECTORY_PICTURES)
+            val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+            val imageFile = File(dir, "IMG_BUKTI_${time}.jpg")
+            FileProvider.getUriForFile(
+                requireContext(),
+                "com.example.projek_map.fileprovider",
+                imageFile
+            )
+        } catch (e: Exception) { null }
+    }
+
+    private fun onBuktiSelected(uri: Uri) {
+        val pinjamanId = currentPinjamanForUpload
+        if (pinjamanId == null) {
+            toast("Pinjaman tidak diketahui."); return
+        }
+        DummyUserData.addHistoriPembayaranWithBukti(
+            kodePegawai = "EMP001",
+            pinjamanId = pinjamanId,
+            jumlah = 0,
+            status = "Bukti Diupload",
+            buktiUri = uri.toString()
+        )
+        toast("Bukti pembayaran tersimpan (dummy).")
+        refreshAllLists()
+    }
+
+    // =========================
+    // Dialog histori pembayaran
+    // =========================
     private fun showHistoriPembayaran(pinjamanId: Int) {
         val histori = DummyUserData.getHistoriPembayaran(pinjamanId)
         val view = layoutInflater.inflate(R.layout.dialog_histori_pembayaran, null)
@@ -258,16 +311,16 @@ class PinjamanFragment : Fragment() {
             .show()
     }
 
+    // =========================
+    // Util
+    // =========================
     private fun tampilkanLaporanBulanan() {
-        val kodePegawai = "EMP001" // nanti bisa dari PrefManager kalau sudah login
+        val kodePegawai = "EMP001"
         val bulanSekarang = Calendar.getInstance().get(Calendar.MONTH) + 1
-
         val totalSimpanan = DummyUserData.getTotalSimpanan(kodePegawai)
         val totalPinjaman = DummyUserData.getTotalPinjamanAktif(kodePegawai)
         val totalAngsuran = DummyUserData.getTotalAngsuranBulanan(kodePegawai, bulanSekarang)
-
         val formatter = NumberFormat.getCurrencyInstance(Locale("in", "ID"))
-
         view?.findViewById<TextView>(R.id.txtTotalSimpanan)?.text =
             "Total Simpanan: ${formatter.format(totalSimpanan)}"
         view?.findViewById<TextView>(R.id.txtTotalPinjaman)?.text =
@@ -276,9 +329,9 @@ class PinjamanFragment : Fragment() {
             "Total Angsuran Bulan Ini: ${formatter.format(totalAngsuran)}"
     }
 
+    private fun formatRupiah(value: Double): String =
+        String.format("%,.0f", value).replace(',', '.')
 
-
-    private fun formatRupiah(value: Double): String {
-        return String.format("%,.0f", value).replace(',', '.')
-    }
+    private fun toast(msg: String) =
+        Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
 }
