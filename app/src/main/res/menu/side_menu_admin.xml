@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/navigation_kelola_anggota"
+            android:icon="@drawable/ic_group"
+            android:title="Kelola Anggota" />
+
+        <item
+            android:id="@+id/navigation_kelola_simpanan"
+            android:icon="@drawable/ic_simpanan"
+            android:title="Kelola Simpanan" />
+    </group>
+
+</menu>

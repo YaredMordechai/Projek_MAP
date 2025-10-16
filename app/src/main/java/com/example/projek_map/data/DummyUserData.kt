@@ -38,9 +38,9 @@ data class Pinjaman(
 
 data class Simpanan(
     val kodePegawai: String,
-    val simpananPokok: Double,
-    val simpananWajib: Double,
-    val simpananSukarela: Double
+    var simpananPokok: Double,
+    var simpananWajib: Double,
+    var simpananSukarela: Double
 )
 
 // 🔹 histori ANGsuran pinjaman
@@ -182,6 +182,29 @@ object DummyUserData {
 
     // ====== BUKTI PEMBAYARAN (tanpa pinjamanId) untuk UI SimpananFragment ======
     private val buktiAnggotaList = mutableListOf<BuktiPembayaranAnggota>()
+
+    val transaksiSimpananList = mutableListOf<TransaksiSimpanan>()
+
+    fun tambahTransaksiSimpanan(kodePegawai: String, jenis: String, jumlah: Double) {
+        val simpanan = simpananList.find { it.kodePegawai == kodePegawai }
+        if (simpanan != null) {
+            when (jenis.lowercase()) {
+                "pokok" -> simpanan.simpananPokok += jumlah
+                "wajib" -> simpanan.simpananWajib += jumlah
+                "sukarela" -> simpanan.simpananSukarela += jumlah
+            }
+        }
+
+        transaksiSimpananList.add(
+            TransaksiSimpanan(
+                id = transaksiSimpananList.size + 1,
+                kodePegawai = kodePegawai,
+                jenis = jenis,
+                jumlah = jumlah,
+                tanggal = java.time.LocalDate.now().toString()
+            )
+        )
+    }
 
     /** Dipanggil dari SimpananFragment saat user memilih gambar bukti (dummy). */
     fun simpanBuktiPembayaran(kodePegawai: String, uri: String) {

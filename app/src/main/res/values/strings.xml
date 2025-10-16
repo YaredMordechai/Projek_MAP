@@ -4,5 +4,7 @@
     <string name="kembali">Kembali</string>
     <string name="kembali_ke_dashboard">Kembali ke Dashboard</string>
     <string name="logout">Logout</string>
+    <string name="open">Open Navigation Drawer</string>
+    <string name="close">Close Navigation Drawer</string>
 
 </resources>
