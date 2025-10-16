@@ -168,6 +168,8 @@
                     android:layout_height="wrap_content" />
             </LinearLayout>
 
+
+
             <TextView
                 android:id="@+id/txtTotalAngsuran"
                 android:text="Rp 0"
@@ -177,6 +179,38 @@
                 android:layout_marginTop="8dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- 🔽 Tambahan: Grafik Rekap Simpanan & Pinjaman (untuk Pengurus) -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardGrafikRekap"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="6dp"
+        app:cardBackgroundColor="@color/white">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Grafik Rekap Simpanan &amp; Pinjaman"
+                android:textStyle="bold"
+                android:textColor="@color/green_900"
+                android:textSize="16sp"
+                android:layout_marginBottom="8dp"/>
+
+            <com.github.mikephil.charting.charts.BarChart
+                android:id="@+id/chartRekapKeuangan"
+                android:layout_width="match_parent"
+                android:layout_height="260dp"/>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 

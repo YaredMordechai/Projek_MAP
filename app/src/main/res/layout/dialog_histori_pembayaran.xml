@@ -8,4 +8,14 @@
         android:id="@+id/rvHistoriPembayaran"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
+
+    <!-- 🔽 Tambahan tombol upload bukti pembayaran -->
+    <Button
+        android:id="@+id/btnUploadBukti"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Unggah Bukti Pembayaran"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="@color/green_700"
+        android:textColor="@color/white"/>
 </LinearLayout>

@@ -158,6 +158,7 @@ class MainActivity : AppCompatActivity() {
             }
             true
         }
+        supportActionBar?.hide()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -174,13 +175,13 @@ class MainActivity : AppCompatActivity() {
             .commit()
     }
 
-    override fun onBackPressed() {
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            drawerLayout.closeDrawer(GravityCompat.START)
-        } else {
-            super.onBackPressed()
-        }
-    }
+//    override fun onBackPressed() {
+//        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+//            drawerLayout.closeDrawer(GravityCompat.START)
+//        } else {
+//            super.onBackPressed()
+//        }
+//    }
 
     // =========================================
     // Alarm harian untuk due & pengumuman (Mode B)

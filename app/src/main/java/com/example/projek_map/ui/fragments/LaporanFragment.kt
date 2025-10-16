@@ -4,90 +4,88 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import android.widget.ImageButton
-import android.widget.Spinner
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.example.projek_map.R
 import com.example.projek_map.data.DummyUserData
-import com.example.projek_map.utils.PrefManager
-import java.text.NumberFormat
-import java.util.*
+import com.github.mikephil.charting.charts.BarChart
+import com.github.mikephil.charting.components.Description
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.utils.ColorTemplate
 
 class LaporanFragment : Fragment() {
 
-    private lateinit var txtTotalSimpanan: TextView
-    private lateinit var txtTotalPinjaman: TextView
-    private lateinit var txtTotalAngsuran: TextView
-    private lateinit var spinnerBulan: Spinner
-
-    private var kodePegawaiAktif: String? = null
+    private lateinit var chartRekapKeuangan: BarChart
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
+    ): View? {
         val view = inflater.inflate(R.layout.fragment_laporan, container, false)
+        chartRekapKeuangan = view.findViewById(R.id.chartRekapKeuangan)
+
+        // 🔹 Tombol kembali ke dashboard
         val btnBackDashboard = view.findViewById<ImageButton>(R.id.btnBackDashboard)
-        btnBackDashboard.setOnClickListener {
+        btnBackDashboard?.setOnClickListener {
             parentFragmentManager.beginTransaction()
+                .setCustomAnimations(
+                    R.anim.slide_in_left, R.anim.slide_out_right,
+                    R.anim.slide_in_right, R.anim.slide_out_left
+                )
                 .replace(R.id.fragmentContainer, DashboardFragment())
+                .addToBackStack(null)
                 .commit()
         }
 
-        txtTotalSimpanan = view.findViewById(R.id.txtTotalSimpanan)
-        txtTotalPinjaman = view.findViewById(R.id.txtTotalPinjaman)
-        txtTotalAngsuran = view.findViewById(R.id.txtTotalAngsuran)
-        spinnerBulan = view.findViewById(R.id.spinnerBulan)
-
-        // 🔹 Ambil data pegawai aktif dari PrefManager
-        val pref = PrefManager(requireContext())
-        kodePegawaiAktif = pref.getKodePegawai() ?: "EMP001"
-
-        setupSpinner()
-        updateLaporan(Calendar.getInstance().get(Calendar.MONTH) + 1) // bulan saat ini
+        setupRekapChart()
 
         return view
     }
 
-    private fun setupSpinner() {
-        val bulanList = listOf(
-            "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-            "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-        )
+    private fun setupRekapChart() {
+        val bulan = listOf("Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des")
 
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, bulanList)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerBulan.adapter = adapter
+        // 🔹 Contoh data dummy rekap per bulan (bisa diganti pakai DummyUserData nantinya)
+        val simpanan = listOf(1500000, 1600000, 1700000, 2000000, 2300000, 2500000)
+        val pinjaman = listOf(800000, 900000, 1100000, 1300000, 1400000, 1550000)
 
-        // 🔹 Set spinner ke bulan sekarang
-        spinnerBulan.setSelection(Calendar.getInstance().get(Calendar.MONTH))
+        val entriesSimpanan = simpanan.mapIndexed { i, v -> BarEntry(i.toFloat(), v.toFloat()) }
+        val entriesPinjaman = pinjaman.mapIndexed { i, v -> BarEntry(i.toFloat(), v.toFloat()) }
 
-        spinnerBulan.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>, view: View?, position: Int, id: Long
-            ) {
-                updateLaporan(position + 1)
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>) {}
+        val dataSetSimpanan = BarDataSet(entriesSimpanan, "Total Simpanan").apply {
+            color = ColorTemplate.MATERIAL_COLORS[0]
+            valueTextSize = 10f
         }
-    }
+        val dataSetPinjaman = BarDataSet(entriesPinjaman, "Total Pinjaman").apply {
+            color = ColorTemplate.MATERIAL_COLORS[2]
+            valueTextSize = 10f
+        }
 
-    private fun updateLaporan(bulan: Int) {
-        val formatter = NumberFormat.getCurrencyInstance(Locale("in", "ID"))
+        val barData = BarData(dataSetSimpanan, dataSetPinjaman)
+        barData.barWidth = 0.35f
 
-        // 🔹 Pastikan kode pegawai tidak null
-        val kode = kodePegawaiAktif ?: return
+        chartRekapKeuangan.data = barData
 
-        val totalSimpanan = DummyUserData.getTotalSimpanan(kode)
-        val totalPinjaman = DummyUserData.getTotalPinjamanAktif(kode)
-        val totalAngsuran = DummyUserData.getTotalAngsuranBulanan(kode, bulan)
+        val xAxis = chartRekapKeuangan.xAxis
+        xAxis.valueFormatter = com.github.mikephil.charting.formatter.IndexAxisValueFormatter(bulan)
+        xAxis.granularity = 1f
+        xAxis.setCenterAxisLabels(true)
+        xAxis.setDrawGridLines(false)
+        xAxis.textSize = 10f
+        xAxis.position = com.github.mikephil.charting.components.XAxis.XAxisPosition.BOTTOM
 
-        txtTotalSimpanan.text = formatter.format(totalSimpanan)
-        txtTotalPinjaman.text = formatter.format(totalPinjaman)
-        txtTotalAngsuran.text = formatter.format(totalAngsuran)
+        chartRekapKeuangan.axisLeft.textSize = 10f
+        chartRekapKeuangan.axisRight.isEnabled = false
+        chartRekapKeuangan.description = Description().apply {
+            text = "Rekap Keuangan Koperasi"
+            textSize = 10f
+        }
+
+        chartRekapKeuangan.setFitBars(true)
+        chartRekapKeuangan.groupBars(0f, 0.4f, 0.05f)
+        chartRekapKeuangan.animateY(1200)
+        chartRekapKeuangan.invalidate()
     }
 }

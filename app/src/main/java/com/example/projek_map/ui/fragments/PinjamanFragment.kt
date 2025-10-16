@@ -4,7 +4,6 @@ import android.app.AlertDialog
 import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -145,7 +144,7 @@ class PinjamanFragment : Fragment() {
                 kodePegawai = "EMP001",
                 jumlah = nominal,
                 tenor = tenor,
-                bunga = 0.10,          // 10% per tahun
+                bunga = 0.10,
                 angsuranTerbayar = 0,
                 status = "Proses"
             )
@@ -158,6 +157,9 @@ class PinjamanFragment : Fragment() {
             inputNominal.setText("")
             inputTenor.setText("")
             toast("Pinjaman diajukan!")
+
+            // 🔹 Refresh data & update total semua pinjaman (aktif + pending)
+            loadDummyPinjaman()
             updateStatusCard()
         }
 
@@ -171,11 +173,10 @@ class PinjamanFragment : Fragment() {
     }
 
     private fun showDuePopupIfAny() {
-        val kodePegawai = "EMP001" // ganti ke PrefManager kalau sudah ada login
+        val kodePegawai = "EMP001"
         val upcoming = DummyUserData.getUpcomingDues(kodePegawai, daysAhead = 3)
         if (upcoming.isEmpty()) return
 
-        // Gabungkan semua due jadi satu popup
         val text = StringBuilder().apply {
             appendLine("Ada cicilan yang akan jatuh tempo dalam 3 hari:")
             appendLine()
@@ -191,7 +192,6 @@ class PinjamanFragment : Fragment() {
             .setPositiveButton("Oke", null)
             .show()
     }
-
 
     private fun refreshAllLists() {
         loadDummyPinjaman()
@@ -212,34 +212,28 @@ class PinjamanFragment : Fragment() {
         }
     }
 
+    // ✅ Sudah diperbarui: menghitung total semua pinjaman (aktif + pending)
     private fun updateStatusCard() {
-        // Ambil semua pinjaman aktif
-        val aktifList = dataAktif
+        val semuaPinjaman = dataAktif + dataPending // 🔹 gabungkan dua list
 
-        if (aktifList.isEmpty()) {
-            txtPinjamanAktif.text = "Belum ada pinjaman aktif"
+        if (semuaPinjaman.isEmpty()) {
+            txtPinjamanAktif.text = "Belum ada pinjaman aktif atau pengajuan."
             return
         }
 
-        // 🔹 Hitung total pinjaman aktif (akumulasi semua)
-        val totalPinjaman = aktifList.sumOf { it.jumlah.toDouble() }
-        val totalTenor = aktifList.sumOf { it.tenor }
+        val totalPinjaman = semuaPinjaman.sumOf { it.jumlah.toDouble() }
+        val totalTenor = semuaPinjaman.sumOf { it.tenor }
+        val contoh = semuaPinjaman.first()
 
-        // 🔹 Ambil info ringkas untuk pinjaman pertama (sebagai contoh tampilan)
-        val pertama = aktifList.first()
-
-        // 🔹 Format tampilan lebih informatif
         txtPinjamanAktif.text = buildString {
-            append("Total Pinjaman Aktif: Rp ${formatRupiah(totalPinjaman)}\n")
-            append("Jumlah Pinjaman Aktif: ${aktifList.size} pinjaman\n")
-            append("Contoh: Rp ${formatRupiah(pertama.jumlah.toDouble())} (${pertama.tenor} bulan)")
+            append("Total Pinjaman Diajukan: Rp ${formatRupiah(totalPinjaman)}\n")
+            append("\n")
+            append("Jumlah Pengajuan: ${semuaPinjaman.size} pinjaman\n")
+            append("\n")
+            append("Disetujui: Rp ${formatRupiah(contoh.jumlah.toDouble())} (${contoh.tenor} bulan)")
         }
     }
 
-
-    // =========================
-    // Dialog detail pinjaman
-    // =========================
     private fun showPinjamanDetailDialog(pinjaman: Pinjaman) {
         val r = DummyUserData.getRincianPinjamanAnuitas(pinjaman.id)
         val bungaPersenTahun = (pinjaman.bunga * 100).toInt()
@@ -270,9 +264,6 @@ class PinjamanFragment : Fragment() {
             .show()
     }
 
-    // =========================
-    // Upload bukti (kamera/galeri)
-    // =========================
     private fun showUploadChooser() {
         val items = arrayOf("Ambil Foto", "Pilih dari Galeri")
         AlertDialog.Builder(requireContext())
@@ -336,9 +327,6 @@ class PinjamanFragment : Fragment() {
         refreshAllLists()
     }
 
-    // =========================
-    // Dialog histori pembayaran
-    // =========================
     private fun showHistoriPembayaran(pinjamanId: Int) {
         val histori = DummyUserData.getHistoriPembayaran(pinjamanId)
         val view = layoutInflater.inflate(R.layout.dialog_histori_pembayaran, null)
@@ -353,9 +341,6 @@ class PinjamanFragment : Fragment() {
             .show()
     }
 
-    // =========================
-    // Util
-    // =========================
     private fun tampilkanLaporanBulanan() {
         val kodePegawai = "EMP001"
         val bulanSekarang = Calendar.getInstance().get(Calendar.MONTH) + 1

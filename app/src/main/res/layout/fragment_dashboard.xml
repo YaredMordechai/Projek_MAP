@@ -43,6 +43,40 @@
             android:textSize="14sp"
             android:layout_marginBottom="24dp" />
 
+        <!-- 🔽 Tambahan: Grafik Perkembangan Simpanan & Pinjaman -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardGrafikKeuangan"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="6dp"
+            app:cardBackgroundColor="@color/white">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Grafik Perkembangan Simpanan &amp; Pinjaman"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/green_900"
+                    android:layout_marginBottom="8dp"/>
+
+                <com.github.mikephil.charting.charts.LineChart
+                    android:id="@+id/chartKeuangan"
+                    android:layout_width="match_parent"
+                    android:layout_height="220dp"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+
         <!-- Grid Menu -->
         <GridLayout
             android:id="@+id/gridMenu"

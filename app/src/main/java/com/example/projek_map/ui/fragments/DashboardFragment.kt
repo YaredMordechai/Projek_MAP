@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
@@ -16,15 +15,21 @@ import androidx.fragment.app.Fragment
 import com.example.projek_map.R
 import com.example.projek_map.data.DummyUserData
 import com.example.projek_map.utils.PrefManager
-import com.example.projek_map.utils.NotificationHelper // 🔔
-import com.example.projek_map.utils.AlarmReceiver // 🔔
-import java.util.Calendar
+import com.example.projek_map.utils.NotificationHelper
+import com.example.projek_map.utils.AlarmReceiver
 import com.google.android.material.button.MaterialButton
-import android.widget.LinearLayout
+import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.components.Description
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.utils.ColorTemplate
+import java.util.Calendar
 
 class DashboardFragment : Fragment() {
 
     private var isAdmin: Boolean = false
+    private lateinit var chartKeuangan: LineChart
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,22 +47,18 @@ class DashboardFragment : Fragment() {
         val tvUserId = view.findViewById<TextView>(R.id.tvUserId)
         val imgProfile = view.findViewById<ImageView>(R.id.imgProfile)
 
-        // ✅ Disesuaikan ke CardView (bukan MaterialButton)
         val cardSimpanan = view.findViewById<CardView>(R.id.cardSimpanan)
         val cardPinjaman = view.findViewById<CardView>(R.id.cardPinjaman)
         val cardLaporan = view.findViewById<CardView>(R.id.cardLaporan)
         val cardProfil = view.findViewById<CardView>(R.id.cardProfil)
-//        val cardLogout = view.findViewById<CardView>(R.id.cardLogout)
+        val btnKirimPengumuman = view.findViewById<MaterialButton>(R.id.btnKirimPengumuman)
+        chartKeuangan = view.findViewById(R.id.chartKeuangan)
 
         val pref = PrefManager(requireContext())
 
         if (isAdmin) {
             tvWelcome.text = "Halo, Admin"
             tvUserId.text = ""
-            cardSimpanan.visibility = View.GONE
-            cardPinjaman.visibility = View.GONE
-            cardLaporan.visibility = View.GONE
-            cardProfil.visibility = View.GONE
         } else {
             val loggedEmail = pref.getEmail() ?: ""
             val loggedKode = pref.getKodePegawai() ?: ""
@@ -77,65 +78,36 @@ class DashboardFragment : Fragment() {
             imgProfile.setImageResource(R.drawable.ic_profil)
         }
 
-        // ✅ Navigasi (tetap sama seperti versi sebelumnya)
+        // === Navigasi tetap sama ===
         cardSimpanan.setOnClickListener {
             parentFragmentManager.beginTransaction()
-                .setCustomAnimations(
-                    R.anim.slide_in_right,
-                    R.anim.slide_out_left,
-                    R.anim.slide_in_left,
-                    R.anim.slide_out_right
-                )
                 .replace(R.id.fragmentContainer, SimpananFragment())
                 .addToBackStack(null)
                 .commit()
         }
-
         cardPinjaman.setOnClickListener {
             parentFragmentManager.beginTransaction()
-                .setCustomAnimations(
-                    R.anim.slide_in_right,
-                    R.anim.slide_out_left,
-                    R.anim.slide_in_left,
-                    R.anim.slide_out_right
-                )
                 .replace(R.id.fragmentContainer, PinjamanFragment())
                 .addToBackStack(null)
                 .commit()
         }
-
         cardLaporan.setOnClickListener {
             parentFragmentManager.beginTransaction()
-                .setCustomAnimations(
-                    R.anim.slide_in_right,
-                    R.anim.slide_out_left,
-                    R.anim.slide_in_left,
-                    R.anim.slide_out_right
-                )
                 .replace(R.id.fragmentContainer, LaporanFragment())
                 .addToBackStack(null)
                 .commit()
         }
-
         cardProfil.setOnClickListener {
             parentFragmentManager.beginTransaction()
-                .setCustomAnimations(
-                    R.anim.slide_in_right,
-                    R.anim.slide_out_left,
-                    R.anim.slide_in_left,
-                    R.anim.slide_out_right
-                )
                 .replace(R.id.fragmentContainer, ProfileFragment())
                 .addToBackStack(null)
                 .commit()
         }
 
-        // 🔔 Schedule example alarm (daily at 09:00) to remind about due installments
+        // 🔔 Jadwal notifikasi jatuh tempo
         scheduleDailyJatuhTempo(requireContext(), 9, 0)
 
-        // 🔔 Add a programmatic button at bottom of grid to "Kirim Pengumuman (Tes)".
-        // This keeps original XML intact; kita hanya menambahkan view programmatically.
-        val btnKirimPengumuman = view.findViewById<MaterialButton>(R.id.btnKirimPengumuman)
+        // 🔔 Kirim pengumuman test (admin)
         if (isAdmin) {
             btnKirimPengumuman.visibility = View.VISIBLE
             btnKirimPengumuman.setOnClickListener {
@@ -148,6 +120,55 @@ class DashboardFragment : Fragment() {
             }
         }
 
+        // === 🟢 Tambahkan: Inisialisasi Grafik Keuangan ===
+        setupChartKeuangan()
+    }
+
+    private fun setupChartKeuangan() {
+        val months = listOf("Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des")
+
+        // Data dummy simpanan & pinjaman (bisa diambil dari DummyUserData nanti)
+        val simpananValues = listOf(1_000_000, 1_300_000, 1_500_000, 2_000_000, 2_200_000, 2_500_000)
+        val pinjamanValues = listOf(500_000, 700_000, 900_000, 1_200_000, 1_300_000, 1_500_000)
+
+        val entriesSimpanan = simpananValues.mapIndexed { i, v -> Entry(i.toFloat(), v.toFloat()) }
+        val entriesPinjaman = pinjamanValues.mapIndexed { i, v -> Entry(i.toFloat(), v.toFloat()) }
+
+        val dataSetSimpanan = LineDataSet(entriesSimpanan, "Simpanan").apply {
+            color = ColorTemplate.MATERIAL_COLORS[0]
+            setCircleColor(ColorTemplate.MATERIAL_COLORS[0])
+            lineWidth = 2f
+            circleRadius = 4f
+            valueTextSize = 10f
+        }
+
+        val dataSetPinjaman = LineDataSet(entriesPinjaman, "Pinjaman").apply {
+            color = ColorTemplate.MATERIAL_COLORS[2]
+            setCircleColor(ColorTemplate.MATERIAL_COLORS[2])
+            lineWidth = 2f
+            circleRadius = 4f
+            valueTextSize = 10f
+        }
+
+        val lineData = LineData(dataSetSimpanan, dataSetPinjaman)
+        chartKeuangan.data = lineData
+
+        chartKeuangan.xAxis.apply {
+            valueFormatter = com.github.mikephil.charting.formatter.IndexAxisValueFormatter(months)
+            granularity = 1f
+            textSize = 10f
+        }
+
+        chartKeuangan.axisLeft.textSize = 10f
+        chartKeuangan.axisRight.isEnabled = false
+
+        chartKeuangan.description = Description().apply {
+            text = "Perkembangan Keuangan"
+            textSize = 10f
+        }
+
+        chartKeuangan.animateX(1000)
+        chartKeuangan.invalidate()
     }
 
     private fun scheduleDailyJatuhTempo(context: Context, hour: Int, minute: Int) {
@@ -160,20 +181,16 @@ class DashboardFragment : Fragment() {
                 context,
                 3001,
                 intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) PendingIntent.FLAG_MUTABLE else 0
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
             val calendar = Calendar.getInstance().apply {
                 set(Calendar.HOUR_OF_DAY, hour)
                 set(Calendar.MINUTE, minute)
                 set(Calendar.SECOND, 0)
-                if (before(Calendar.getInstance())) {
-                    // jika waktu sudah lewat hari ini -> pangkas ke besok
-                    add(Calendar.DATE, 1)
-                }
+                if (before(Calendar.getInstance())) add(Calendar.DATE, 1)
             }
 
-            // setRepeating deprecated di beberapa API; gunakan setInexactRepeating untuk efisiensi
             alarmManager.setInexactRepeating(
                 AlarmManager.RTC_WAKEUP,
                 calendar.timeInMillis,
