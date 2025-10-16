@@ -11,6 +11,11 @@
             android:id="@+id/navigation_kelola_simpanan"
             android:icon="@drawable/ic_simpanan"
             android:title="Kelola Simpanan" />
-    </group>
 
+        <item
+            android:id="@+id/navigation_kelola_pinjaman"
+            android:icon="@drawable/ic_pinjaman"
+            android:title="Kelola Pinjaman" />
+
+    </group>
 </menu>

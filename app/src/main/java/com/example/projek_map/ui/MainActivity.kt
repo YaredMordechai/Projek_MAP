@@ -94,6 +94,10 @@ class MainActivity : AppCompatActivity() {
                         toolbar.title = "Kelola Simpanan"
                         loadFragment(KelolaSimpananFragment())
                     }
+                    R.id.navigation_kelola_pinjaman -> {
+                        toolbar.title = "Kelola Pinjaman"
+                        loadFragment(KelolaPinjamanFragment())
+                    }
                 }
                 drawerLayout.closeDrawer(GravityCompat.START)
                 true

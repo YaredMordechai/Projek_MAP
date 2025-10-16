@@ -1,5 +1,7 @@
 package com.example.projek_map.data
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -31,7 +33,7 @@ data class Pinjaman(
     val kodePegawai: String,
     val jumlah: Int,          // pokok pinjaman
     val tenor: Int,           // bulan
-    val status: String,       // Proses / Disetujui / Ditolak / Lunas
+    var status: String,       // Proses / Disetujui / Ditolak / Lunas
     val bunga: Double = 0.1,  // 10% (dummy)
     val angsuranTerbayar: Int = 0,
 )
@@ -103,6 +105,14 @@ data class Pengumuman(
     val judul: String,
     val isi: String,
     val tanggal: String  // yyyy-MM-dd
+)
+
+data class TransaksiSimpanan(
+    val id: Int,
+    val kodePegawai: String,
+    val jenis: String,      // "Pokok", "Wajib", atau "Sukarela"
+    val jumlah: Double,
+    val tanggal: String
 )
 
 // =====================
@@ -185,6 +195,7 @@ object DummyUserData {
 
     val transaksiSimpananList = mutableListOf<TransaksiSimpanan>()
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun tambahTransaksiSimpanan(kodePegawai: String, jenis: String, jumlah: Double) {
         val simpanan = simpananList.find { it.kodePegawai == kodePegawai }
         if (simpanan != null) {
@@ -355,6 +366,22 @@ object DummyUserData {
     // =====================
     // Pinjaman helpers (dummy)
     // =====================
+
+    fun approvePinjaman(id: Int) {
+        var pinjaman = pinjamanList.find { it.id == id }
+        pinjaman?.let {
+            it.status = "Disetujui"
+            println("Pinjaman ${it.kodePegawai} disetujui oleh admin.")
+        }
+    }
+
+    fun rejectPinjaman(id: Int) {
+        var pinjaman = pinjamanList.find { it.id == id }
+        pinjaman?.let {
+            it.status = "Ditolak"
+            println("Pinjaman ${it.kodePegawai} ditolak oleh admin.")
+        }
+    }
 
     fun getNextPinjamanId(): Int = (pinjamanList.maxOfOrNull { it.id } ?: 0) + 1
 
