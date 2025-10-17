@@ -58,7 +58,6 @@ class MainActivity : AppCompatActivity() {
             scheduleDailyDueCheck()
         }
 
-
         // ✅ Jadwalkan pengecekan harian jatuh tempo & pengumuman (Mode B - AlarmReceiver tanpa extra "type")
         scheduleDailyDueCheck()
 
@@ -73,6 +72,25 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
             return
+        }
+
+        // 🔔 Kirim notifikasi keputusan pinjaman yang tertunda (khusus user non-admin)
+        if (!isAdmin && userKodePegawai.isNotEmpty()) {
+            val pending = com.example.projek_map.data.DummyUserData
+                .drainDecisionNotificationsFor(userKodePegawai)
+
+            pending.forEach { ev ->
+                val title = if (ev.decision == "disetujui") "Pinjaman Disetujui" else "Pinjaman Ditolak"
+                val jumlahFmt = String.format("%,d", ev.jumlah).replace(',', '.')
+                val msg = "Pinjaman #${ev.pinjamanId} sebesar Rp $jumlahFmt telah ${ev.decision}."
+
+                com.example.projek_map.utils.NotificationHelper.showNotification(
+                    this,
+                    3000 + ev.id, // id unik biar tidak ketimpa
+                    title,
+                    msg
+                )
+            }
         }
 
         // 🔹 setup views
@@ -123,6 +141,12 @@ class MainActivity : AppCompatActivity() {
             loadFragment(DashboardFragment())
         }
 
+        // 🔹 UBAH LABEL BOTTOM-NAV UNTUK ADMIN (hanya judul, ikon tetap)
+        if (isAdmin) {
+            bottomNav.menu.findItem(R.id.navigation_simpanan)?.title = "Kelola Simpanan"
+            bottomNav.menu.findItem(R.id.navigation_pinjaman)?.title = "Kelola Pinjaman"
+        }
+
         // 🔹 bottom nav
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
@@ -135,12 +159,22 @@ class MainActivity : AppCompatActivity() {
                     loadFragment(PengumumanFragment())
                 }
                 R.id.navigation_simpanan -> {
-                    toolbar.title = "Simpanan"
-                    loadFragment(SimpananFragment())
+                    if (isAdmin) {
+                        toolbar.title = "Kelola Simpanan"
+                        loadFragment(KelolaSimpananFragment())
+                    } else {
+                        toolbar.title = "Simpanan"
+                        loadFragment(SimpananFragment())
+                    }
                 }
                 R.id.navigation_pinjaman -> {
-                    toolbar.title = "Pinjaman"
-                    loadFragment(PinjamanFragment())
+                    if (isAdmin) {
+                        toolbar.title = "Kelola Pinjaman"
+                        loadFragment(KelolaPinjamanFragment())
+                    } else {
+                        toolbar.title = "Pinjaman"
+                        loadFragment(PinjamanFragment())
+                    }
                 }
                 R.id.navigation_profil -> {
                     toolbar.title = "Profil"
@@ -174,14 +208,6 @@ class MainActivity : AppCompatActivity() {
             .replace(R.id.fragmentContainer, fragment)
             .commit()
     }
-
-//    override fun onBackPressed() {
-//        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-//            drawerLayout.closeDrawer(GravityCompat.START)
-//        } else {
-//            super.onBackPressed()
-//        }
-//    }
 
     // =========================================
     // Alarm harian untuk due & pengumuman (Mode B)
@@ -247,7 +273,6 @@ class MainActivity : AppCompatActivity() {
             am?.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, fallbackTime, pi)
         }
     }
-
 
     // (Opsional) untuk membatalkan alarm saat logout
     @Suppress("unused")

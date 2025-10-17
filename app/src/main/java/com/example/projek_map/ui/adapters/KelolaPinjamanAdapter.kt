@@ -43,4 +43,20 @@ class KelolaPinjamanAdapter(
     }
 
     override fun getItemCount() = pinjamanList.size
+
+    // 🔹 Tambahan: hapus item by id (agar hilang dari list tanpa reload penuh)
+    fun removeItemById(id: Int) {
+        val idx = pinjamanList.indexOfFirst { it.id == id }
+        if (idx >= 0) {
+            pinjamanList.removeAt(idx)
+            notifyItemRemoved(idx)
+        }
+    }
+
+    // 🔹 Tambahan: replace semua data (dipakai saat onResume refresh)
+    fun replaceAll(newData: List<Pinjaman>) {
+        pinjamanList.clear()
+        pinjamanList.addAll(newData)
+        notifyDataSetChanged()
+    }
 }

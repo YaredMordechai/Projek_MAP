@@ -5,7 +5,10 @@ import android.content.Context
 import android.content.Intent
 import com.example.projek_map.data.DummyUserData
 import java.text.SimpleDateFormat
+import java.text.NumberFormat
 import java.util.Locale
+import com.example.projek_map.utils.PrefManager
+import com.example.projek_map.utils.NotificationHelper
 
 // 🔔 AlarmReceiver gabungan: dukung 2 mode sekaligus
 // - Mode A: intent extra "type" = "jatuh_tempo" / "pengumuman"  -> kirim notifikasi sesuai extra
@@ -14,25 +17,32 @@ class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
         val type = intent?.getStringExtra("type")
 
-        if (type != null) {
-            // =========================
-            // Mode A: via intent extras
-            // =========================
-            when (type) {
-                "jatuh_tempo" -> {
-                    NotificationHelper.showNotification(
-                        context = context,
-                        id = 1001,
-                        title = "Pengingat Cicilan",
-                        message = "Ada cicilan yang menjelang jatuh tempo. Cek aplikasi koperasi sekarang."
-                    )
-                }
-                else -> { // "pengumuman" atau tipe lain
-                    val title = intent.getStringExtra("title") ?: "Pengumuman Koperasi"
-                    val msg = intent.getStringExtra("message") ?: "Ada pengumuman baru dari koperasi."
-                    NotificationHelper.showNotification(context, 1002, title, msg)
-                }
+        if (type == "keputusan_pinjaman") {
+            // Hanya tampilkan di device milik pegawai yang jadi target
+            val targetKode = intent.getStringExtra("kodePegawai")
+            val currentKode = PrefManager(context).getKodePegawai()
+            if (targetKode != null && targetKode != currentKode) {
+                return // bukan device pemilik pinjaman → jangan tampilkan notifikasi
             }
+
+            val decision = intent.getStringExtra("decision") ?: "diproses"
+            val pinjamanId = intent.getIntExtra("pinjamanId", -1)
+            val jumlah = intent.getIntExtra("jumlah", 0)
+
+            val title = if (decision == "disetujui") "Pinjaman Disetujui" else "Pinjaman Ditolak"
+            val jumlahFmt = String.format("%,d", jumlah).replace(',', '.')
+            val msg = if (pinjamanId != -1)
+                "Pinjaman #$pinjamanId sebesar Rp $jumlahFmt telah $decision."
+            else
+                "Pengajuan pinjaman kamu telah $decision."
+
+            // ID notifikasi dibedakan per pinjaman agar tidak saling menimpa
+            NotificationHelper.showNotification(
+                context,
+                2000 + (if (pinjamanId >= 0) pinjamanId else 0),
+                title,
+                msg
+            )
             return
         }
 

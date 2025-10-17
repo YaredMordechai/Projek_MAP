@@ -156,7 +156,7 @@ object DummyUserData {
 
     // 🔹 Pinjaman dummy (mutableList biar bisa ditambah dari fragment)
     val pinjamanList = mutableListOf(
-        Pinjaman(1, "EMP001", 2_000_000, 12, "Disetujui"),
+        Pinjaman(1, "EMP001", 2_000_000, 12, "Proses"),
         Pinjaman(2, "EMP002", 1_500_000, 6, "Proses")
     )
 
@@ -668,4 +668,47 @@ object DummyUserData {
         Pengumuman(2, "Update Suku Bunga", "Suku bunga pinjaman bulanan ditetapkan 1.2% flat efektif.", "2025-10-10"),
         Pengumuman(3, "Libur Operasional", "Koperasi libur tanggal 28-29 Okt untuk maintenance sistem.", "2025-10-28")
     )
+
+    // =====================
+    // 🔔 Queue notifikasi keputusan pinjaman (untuk dikirim saat user login)
+    // =====================
+
+    data class DecisionNotification(
+        val id: Int,
+        val kodePegawai: String,
+        val pinjamanId: Int,
+        val decision: String,  // "disetujui" / "ditolak"
+        val jumlah: Int,
+        val tanggal: String
+    )
+
+    private val decisionQueue = mutableListOf<DecisionNotification>()
+
+    fun enqueueDecisionNotification(
+        kodePegawai: String,
+        pinjamanId: Int,
+        decision: String,
+        jumlah: Int
+    ) {
+        val idBaru = (decisionQueue.maxOfOrNull { it.id } ?: 0) + 1
+        val tanggal = dateFmt.format(Date())
+        decisionQueue.add(
+            DecisionNotification(
+                id = idBaru,
+                kodePegawai = kodePegawai,
+                pinjamanId = pinjamanId,
+                decision = decision,
+                jumlah = jumlah,
+                tanggal = tanggal
+            )
+        )
+    }
+
+    fun drainDecisionNotificationsFor(kodePegawai: String): List<DecisionNotification> {
+        val list = decisionQueue.filter { it.kodePegawai == kodePegawai }
+        if (list.isNotEmpty()) {
+            decisionQueue.removeAll(list.toSet())
+        }
+        return list
+    }
 }

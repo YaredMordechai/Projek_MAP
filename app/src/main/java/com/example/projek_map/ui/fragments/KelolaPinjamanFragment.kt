@@ -1,6 +1,7 @@
 package com.example.projek_map.ui.fragments
 
 import android.app.AlertDialog
+import android.content.Intent // ⬅️ TAMBAHAN (tetap boleh)
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -28,8 +29,9 @@ class KelolaPinjamanFragment : Fragment() {
         rvPinjaman = view.findViewById(R.id.rvKelolaPinjaman)
         rvPinjaman.layoutManager = LinearLayoutManager(requireContext())
 
+        // 🔹 Tampilkan HANYA permohonan yang menunggu (Proses/Menunggu)
         adapter = KelolaPinjamanAdapter(
-            DummyUserData.pinjamanList.toMutableList(),
+            pendingOnly().toMutableList(),
             onApprove = { pinjaman -> showApprovalDialog(pinjaman, true) },
             onReject = { pinjaman -> showApprovalDialog(pinjaman, false) }
         )
@@ -45,10 +47,26 @@ class KelolaPinjamanFragment : Fragment() {
             .setTitle("$actionText Pinjaman")
             .setMessage("Apakah kamu yakin ingin $actionText pinjaman dari ${pinjaman.kodePegawai}?")
             .setPositiveButton(actionText) { _, _ ->
-                if (approve) DummyUserData.approvePinjaman(pinjaman.id)
-                else DummyUserData.rejectPinjaman(pinjaman.id)
+                if (approve) {
+                    DummyUserData.approvePinjaman(pinjaman.id)
+                } else {
+                    DummyUserData.rejectPinjaman(pinjaman.id)
+                }
 
-                adapter.notifyDataSetChanged()
+                // 🔔 Simpan event ke queue agar device pegawai menerima saat login
+                DummyUserData.enqueueDecisionNotification(
+                    kodePegawai = pinjaman.kodePegawai,
+                    pinjamanId = pinjaman.id,
+                    decision = if (approve) "disetujui" else "ditolak",
+                    jumlah = pinjaman.jumlah
+                )
+
+                // (opsional) broadcast lokal langsung — boleh tetap ada
+                sendDecisionBroadcast(pinjaman, approve)
+
+                // ⬇️ Hapus dari list UI agar langsung hilang
+                adapter.removeItemById(pinjaman.id)
+
                 Toast.makeText(
                     requireContext(),
                     "Pinjaman ${pinjaman.kodePegawai} telah ${if (approve) "disetujui" else "ditolak"}.",
@@ -61,6 +79,28 @@ class KelolaPinjamanFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        adapter.notifyDataSetChanged()
+        // 🔄 Refresh list pending saat kembali ke layar
+        adapter.replaceAll(pendingOnly())
     }
+
+    // =========================
+    // TAMBAHAN: Broadcast helper
+    // =========================
+    private fun sendDecisionBroadcast(pinjaman: Pinjaman, approve: Boolean) {
+        val intent = Intent(requireContext(), com.example.projek_map.utils.AlarmReceiver::class.java).apply {
+            putExtra("type", "keputusan_pinjaman")
+            putExtra("decision", if (approve) "disetujui" else "ditolak")
+            putExtra("pinjamanId", pinjaman.id)
+            putExtra("jumlah", pinjaman.jumlah)
+            putExtra("kodePegawai", pinjaman.kodePegawai)
+        }
+        requireContext().sendBroadcast(intent)
+    }
+
+    // 🔹 Helper: ambil cuma yang status Proses/Menunggu
+    private fun pendingOnly(): List<Pinjaman> =
+        DummyUserData.pinjamanList.filter {
+            val s = it.status.lowercase()
+            s == "proses" || s == "menunggu"
+        }
 }

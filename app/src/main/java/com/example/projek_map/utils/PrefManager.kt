@@ -15,6 +15,9 @@ class PrefManager(context: Context) {
     // ✅ Tambahan key untuk fitur pengumuman (dipakai AlarmReceiver Mode B)
     private val KEY_LAST_SEEN_ANNOUNCE = "last_seen_announce"
 
+    // ✅ Tambahan key baru untuk flag admin (tidak mengganggu API lama)
+    private val KEY_IS_ADMIN = "is_admin"
+
     private val pref = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
     private val editor = pref.edit()
 
@@ -44,4 +47,11 @@ class PrefManager(context: Context) {
     fun setLastSeenAnnouncementDate(date: String) {
         editor.putString(KEY_LAST_SEEN_ANNOUNCE, date).apply()
     }
+
+    // ====== Tambahan kecil: flag admin (opsional, tidak memecah kompatibilitas) ======
+    fun setIsAdmin(isAdmin: Boolean) {
+        editor.putBoolean(KEY_IS_ADMIN, isAdmin).apply()
+    }
+
+    fun isAdmin(): Boolean = pref.getBoolean(KEY_IS_ADMIN, false)
 }
