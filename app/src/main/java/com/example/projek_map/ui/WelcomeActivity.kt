@@ -15,12 +15,8 @@ class WelcomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_welcome)
 
-        // Referensi TextView
-        val tvAppName = findViewById<TextView>(R.id.tvAppName)
 
-        // Ambil animasi
-        val fadeInZoom = AnimationUtils.loadAnimation(this, R.anim.fade_in_zoom)
-        tvAppName.startAnimation(fadeInZoom)
+
 
         // Setelah animasi selesai, pindah ke LoginActivity
         Handler(Looper.getMainLooper()).postDelayed({
