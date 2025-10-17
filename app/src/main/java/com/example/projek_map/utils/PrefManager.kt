@@ -54,4 +54,8 @@ class PrefManager(context: Context) {
     }
 
     fun isAdmin(): Boolean = pref.getBoolean(KEY_IS_ADMIN, false)
+
+    // ====== ALIAS kompatibilitas (tambahan minimal) ======
+    // Beberapa tempat di kode memanggil getIsAdmin(); supaya tidak error, kita sediakan alias ini.
+    fun getIsAdmin(): Boolean = isAdmin()
 }

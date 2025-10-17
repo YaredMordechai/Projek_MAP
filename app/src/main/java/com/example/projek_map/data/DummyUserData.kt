@@ -711,6 +711,23 @@ object DummyUserData {
         Pengumuman(3, "Libur Operasional", "Koperasi libur tanggal 28-29 Okt untuk maintenance sistem.", "2025-10-28")
     )
 
+    fun addPengumuman(judul: String, isi: String): Pengumuman {
+        val idBaru = (pengumumanList.maxOfOrNull { it.id } ?: 0) + 1
+        val tanggal = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale("id","ID"))
+            .format(java.util.Date())
+
+        val p = Pengumuman(
+            id = idBaru,
+            judul = judul,
+            isi = isi,
+            tanggal = tanggal
+        )
+        // taruh di awal agar langsung tampil paling atas
+        pengumumanList.add(0, p)
+        return p
+    }
+
+
     // =====================
     // 🔔 Queue notifikasi keputusan pinjaman (untuk dikirim saat user login)
     // =====================
