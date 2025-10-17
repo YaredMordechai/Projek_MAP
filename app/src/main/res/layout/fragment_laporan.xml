@@ -210,7 +210,10 @@
             <com.github.mikephil.charting.charts.BarChart
                 android:id="@+id/chartRekapKeuangan"
                 android:layout_width="match_parent"
-                android:layout_height="260dp"/>
+                android:layout_height="300dp"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_card_shadow" />
+
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 

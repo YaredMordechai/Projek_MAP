@@ -157,7 +157,9 @@ object DummyUserData {
     // 🔹 Pinjaman dummy (mutableList biar bisa ditambah dari fragment)
     val pinjamanList = mutableListOf(
         Pinjaman(1, "EMP001", 2_000_000, 12, "Proses"),
-        Pinjaman(2, "EMP002", 1_500_000, 6, "Proses")
+        Pinjaman(2, "EMP002", 1_500_000, 6, "Proses"),
+        Pinjaman(1, "EMP001", 3_000_000, 12, "Disetujui"),
+        Pinjaman(2, "EMP002", 5_500_000, 6, "Disetujui")
     )
 
     // 🔹 Histori pembayaran dummy
@@ -348,12 +350,52 @@ object DummyUserData {
         status: String,
         buktiUri: String
     ) {
-        val idBaru = (historiPembayaranList.maxOfOrNull { it.id } ?: 0) + 1
-        val tanggal = dateFmt.format(Date())
+        val today = getTodayDate()
+        val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val todayDate = format.parse(today)
+
+        // cari pembayaran terakhir utk pinjaman ini
+        val lastPayment = historiPembayaranList
+            .filter { it.pinjamanId == pinjamanId }
+            .maxByOrNull { format.parse(it.tanggal)?.time ?: 0L }
+
+        var finalStatus = status
+        var denda = 0
+
+        if (lastPayment != null) {
+            val lastDue = format.parse(lastPayment.tanggal)
+            if (lastDue != null && lastDue.before(todayDate)) {
+                val diffDays = ((todayDate.time - lastDue.time) / (1000 * 60 * 60 * 24)).toInt()
+                if (diffDays > 0) {
+                    // misal 1% per hari dari jumlah cicilan terakhir
+                    val jumlahDenda = (lastPayment.jumlah * 0.01 * diffDays).toInt()
+                    denda = jumlahDenda
+                    finalStatus = "$status - Terlambat $diffDays hari (Denda: Rp ${String.format("%,d", denda).replace(',', '.')})"
+                }
+            }
+
+        }
+
+
         historiPembayaranList.add(
-            HistoriPembayaran(idBaru, kodePegawai, pinjamanId, tanggal, jumlah, status, buktiUri)
+            HistoriPembayaran(
+                id = historiPembayaranList.size + 1,
+                kodePegawai = kodePegawai,
+                pinjamanId = pinjamanId,
+                tanggal = today,
+                jumlah = jumlah,
+                status = finalStatus,
+                buktiPembayaranUri = buktiUri
+            )
         )
     }
+
+    private fun getTodayDate(): String {
+        val format = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+        return format.format(java.util.Date())
+    }
+
+
 
     fun uploadBuktiSaja(kodePegawai: String, pinjamanId: Int, buktiUri: String) {
         val idBaru = (historiPembayaranList.maxOfOrNull { it.id } ?: 0) + 1
