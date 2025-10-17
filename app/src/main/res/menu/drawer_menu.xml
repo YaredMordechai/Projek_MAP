@@ -1,0 +1,21 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/navigation_kelola_anggota"
+        android:title="Kelola Anggota"
+        android:icon="@drawable/ic_profil"
+        android:iconTint="@color/white"/>
+
+    <item android:id="@+id/navigation_kelola_simpanan"
+        android:title="Kelola Simpanan"
+        android:icon="@drawable/ic_simpanan"
+        android:iconTint="@color/white"/>
+
+    <item android:id="@+id/navigation_kelola_pinjaman"
+        android:title="Kelola Pinjaman"
+        android:icon="@drawable/ic_pinjaman"
+        android:iconTint="@color/white"/>
+
+    <item android:id="@+id/navigation_kelola_pengurus"
+        android:title="Kelola Pengurus"
+        android:icon="@drawable/ic_settings"
+        android:iconTint="@color/white"/>
+</menu>

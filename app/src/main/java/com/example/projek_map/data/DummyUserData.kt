@@ -753,4 +753,55 @@ object DummyUserData {
         }
         return list
     }
+
+    // =====================
+// 🔧 Pengaturan Pengurus Koperasi
+// =====================
+
+    var sukuBungaPinjamanGlobal: Double = 0.1      // default 10%
+    var dendaKeterlambatanHarian: Double = 0.01    // default 1% per hari
+
+    fun setSukuBungaBaru(persen: Double) {
+        sukuBungaPinjamanGlobal = persen / 100.0
+        pinjamanList.forEach { p ->
+            if (p.status.equals("Proses", true) || p.status.equals("Disetujui", true)) {
+                val idx = pinjamanList.indexOf(p)
+                pinjamanList[idx] = p.copy(bunga = sukuBungaPinjamanGlobal)
+            }
+        }
+    }
+
+    fun setDendaKeterlambatanBaru(persenPerHari: Double) {
+        dendaKeterlambatanHarian = persenPerHari / 100.0
+    }
+
+    // 🔹 Fungsi untuk mencatat pembayaran manual (oleh pengurus)
+    fun catatPembayaranAngsuranAdmin(
+        kodePegawai: String,
+        pinjamanId: Int,
+        jumlahBayar: Int,
+        tanggal: String = getTodayDate()
+    ) {
+        historiPembayaranList.add(
+            HistoriPembayaran(
+                id = (historiPembayaranList.maxOfOrNull { it.id } ?: 0) + 1,
+                kodePegawai = kodePegawai,
+                pinjamanId = pinjamanId,
+                tanggal = tanggal,
+                jumlah = jumlahBayar,
+                status = "Dibayar (Admin)"
+            )
+        )
+    }
+
+    // 🔹 Dapatkan daftar pinjaman aktif
+    fun getDaftarPinjamanAktif(): List<Pinjaman> {
+        return pinjamanList.filter { it.status.equals("Disetujui", true) || it.status.equals("Aktif", true) }
+    }
+
+    // 🔹 Dapatkan riwayat pelunasan (status Lunas)
+    fun getDaftarPinjamanLunas(): List<Pinjaman> {
+        return pinjamanList.filter { it.status.equals("Lunas", true) }
+    }
+
 }

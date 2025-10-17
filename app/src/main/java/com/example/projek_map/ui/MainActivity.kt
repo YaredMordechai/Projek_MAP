@@ -125,6 +125,10 @@ class MainActivity : AppCompatActivity() {
                         toolbar.title = "Kelola Simpanan"
                         loadFragment(KelolaSimpananFragment())
                     }
+                    R.id.navigation_kelola_pengurus -> {
+                        toolbar.title = "Kelola Pengurus"
+                        loadFragment(KelolaPengurusFragment())
+                    }
                     R.id.navigation_kelola_pinjaman -> {
                         toolbar.title = "Kelola Pinjaman"
                         loadFragment(KelolaPinjamanFragment())
