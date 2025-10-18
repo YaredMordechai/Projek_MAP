@@ -49,7 +49,6 @@ class SignupActivity : AppCompatActivity() {
                 email = email,
                 password = password,
                 nama = nama,
-                telepon = "-",
                 statusKeanggotaan = "Anggota Baru"
             )
             // This line will now work correctly without the wrong import

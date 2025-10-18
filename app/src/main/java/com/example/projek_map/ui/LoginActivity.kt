@@ -53,7 +53,6 @@ class LoginActivity : AppCompatActivity() {
                     val intent = Intent(this, MainActivity::class.java)
                     intent.putExtra("userName", user.nama)
                     intent.putExtra("userEmail", user.email)
-                    intent.putExtra("userTelepon", user.telepon)
                     intent.putExtra("userStatusKeanggotaan", user.statusKeanggotaan)
                     intent.putExtra("userKodePegawai", user.kodePegawai)
                     intent.putExtra("isAdmin", false)

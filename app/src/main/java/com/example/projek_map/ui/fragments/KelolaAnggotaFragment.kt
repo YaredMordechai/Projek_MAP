@@ -54,7 +54,7 @@ class KelolaAnggotaFragment : Fragment() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_add_user, null)
         val etNama = dialogView.findViewById<EditText>(R.id.etNama)
         val etEmail = dialogView.findViewById<EditText>(R.id.etEmail)
-        val etTelepon = dialogView.findViewById<EditText>(R.id.etTelepon)
+
 
         AlertDialog.Builder(requireContext())
             .setTitle("Tambah Anggota Baru")
@@ -62,9 +62,8 @@ class KelolaAnggotaFragment : Fragment() {
             .setPositiveButton("Tambah") { _, _ ->
                 val nama = etNama.text.toString().trim()
                 val email = etEmail.text.toString().trim()
-                val telepon = etTelepon.text.toString().trim()
 
-                if (nama.isEmpty() || email.isEmpty() || telepon.isEmpty()) {
+                if (nama.isEmpty() || email.isEmpty()) {
                     Toast.makeText(requireContext(), "Isi semua data!", Toast.LENGTH_SHORT).show()
                     return@setPositiveButton
                 }
@@ -74,7 +73,6 @@ class KelolaAnggotaFragment : Fragment() {
                     email = email,
                     password = "1234",
                     nama = nama,
-                    telepon = telepon,
                     statusKeanggotaan = "Anggota Aktif"
                 )
                 DummyUserData.users.add(newUser)
@@ -89,11 +87,9 @@ class KelolaAnggotaFragment : Fragment() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_add_user, null)
         val etNama = dialogView.findViewById<EditText>(R.id.etNama)
         val etEmail = dialogView.findViewById<EditText>(R.id.etEmail)
-        val etTelepon = dialogView.findViewById<EditText>(R.id.etTelepon)
 
         etNama.setText(user.nama)
         etEmail.setText(user.email)
-        etTelepon.setText(user.telepon)
 
         AlertDialog.Builder(requireContext())
             .setTitle("Edit Data Anggota")
@@ -101,7 +97,6 @@ class KelolaAnggotaFragment : Fragment() {
             .setPositiveButton("Simpan") { _, _ ->
                 user.nama = etNama.text.toString()
                 user.email = etEmail.text.toString()
-                user.telepon = etTelepon.text.toString()
                 adapter.notifyDataSetChanged()
                 Toast.makeText(requireContext(), "Data anggota diperbarui!", Toast.LENGTH_SHORT).show()
             }

@@ -16,7 +16,6 @@ data class User(
     var email: String,
     var password: String,
     var nama: String,
-    var telepon: String,
     var statusKeanggotaan: String
 )
 
@@ -135,7 +134,6 @@ object DummyUserData {
             email = "pegawai1@koperasi.com",
             password = "1234",
             nama = "Budi Santoso",
-            telepon = "08123456789",
             statusKeanggotaan = "Anggota Aktif"
         ),
         User(
@@ -143,7 +141,6 @@ object DummyUserData {
             email = "pegawai2@koperasi.com",
             password = "1234",
             nama = "Siti Aminah",
-            telepon = "08234567890",
             statusKeanggotaan = "Anggota Tidak Aktif"
         )
     )
