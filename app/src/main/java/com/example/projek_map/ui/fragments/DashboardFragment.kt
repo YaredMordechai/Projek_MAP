@@ -78,31 +78,83 @@ class DashboardFragment : Fragment() {
             imgProfile.setImageResource(R.drawable.ic_profil)
         }
 
-        // === Navigasi tetap sama ===
+        // === Navigasi: arahkan berbeda untuk admin vs user (tanpa ubah struktur metode) ===
         cardSimpanan.setOnClickListener {
+            val fragment = if (isAdmin) KelolaSimpananFragment() else SimpananFragment()
+            val bundle = fragment.arguments ?: Bundle()
+            bundle.putBoolean("isAdmin", isAdmin)
+            fragment.arguments = bundle
+
             parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, SimpananFragment())
+                .replace(R.id.fragmentContainer, fragment)
                 .addToBackStack(null)
                 .commit()
         }
         cardPinjaman.setOnClickListener {
+            val fragment = if (isAdmin) KelolaPinjamanFragment() else PinjamanFragment()
+            val bundle = fragment.arguments ?: Bundle()
+            bundle.putBoolean("isAdmin", isAdmin)
+            fragment.arguments = bundle
+
             parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, PinjamanFragment())
+                .replace(R.id.fragmentContainer, fragment)
                 .addToBackStack(null)
                 .commit()
         }
         cardLaporan.setOnClickListener {
+            val fragment = LaporanFragment()
+            val bundle = fragment.arguments ?: Bundle()
+            bundle.putBoolean("isAdmin", isAdmin)
+            fragment.arguments = bundle
+
             parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, LaporanFragment())
+                .replace(R.id.fragmentContainer, fragment)
                 .addToBackStack(null)
                 .commit()
         }
-        cardProfil.setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, ProfileFragment())
-                .addToBackStack(null)
-                .commit()
+
+        // ====== UBAH LABEL & ARAH KLIK UNTUK KARTU PROFIL ======
+        // TextView label di dalam cardProfil tidak punya id di XML.
+        // Kita ambil lewat hierarchy: CardView -> LinearLayout -> (0: ImageView, 1: TextView)
+        val profilTitleView: TextView? = try {
+            val containerView = cardProfil.getChildAt(0) as? ViewGroup
+            containerView?.let { it.getChildAt(1) as? TextView }
+        } catch (_: Throwable) { null }
+
+        if (isAdmin) {
+            // Ubah label jadi "Kelola Pengguna"
+            profilTitleView?.text = "Kelola Pengguna"
+
+            // Klik -> KelolaAnggotaFragment
+            cardProfil.setOnClickListener {
+                val fragment = KelolaAnggotaFragment()
+                val bundle = fragment.arguments ?: Bundle()
+                bundle.putBoolean("isAdmin", true)
+                fragment.arguments = bundle
+
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragmentContainer, fragment)
+                    .addToBackStack(null)
+                    .commit()
+            }
+        } else {
+            // Pastikan label tetap "Profil Pengguna"
+            profilTitleView?.text = "Profil Pengguna"
+
+            // Klik -> ProfileFragment (user)
+            cardProfil.setOnClickListener {
+                val fragment = ProfileFragment()
+                val bundle = fragment.arguments ?: Bundle()
+                bundle.putBoolean("isAdmin", false)
+                fragment.arguments = bundle
+
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragmentContainer, fragment)
+                    .addToBackStack(null)
+                    .commit()
+            }
         }
+        // ====== END UBAH LABEL & ARAH KLIK ======
 
         // 🔔 Jadwal notifikasi jatuh tempo
         scheduleDailyJatuhTempo(requireContext(), 9, 0)
