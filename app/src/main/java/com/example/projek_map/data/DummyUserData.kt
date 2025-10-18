@@ -192,7 +192,19 @@ object DummyUserData {
     // ====== BUKTI PEMBAYARAN (tanpa pinjamanId) untuk UI SimpananFragment ======
     private val buktiAnggotaList = mutableListOf<BuktiPembayaranAnggota>()
 
-    val transaksiSimpananList = mutableListOf<TransaksiSimpanan>()
+    val transaksiSimpananList = mutableListOf(
+        // EMP001 — sesuai simpananList (Pokok 500k, Wajib 200k, Sukarela 300k)
+        TransaksiSimpanan(1, "EMP001", "Pokok",    500_000.0, "2025-06-01"),
+        TransaksiSimpanan(2, "EMP001", "Wajib",    200_000.0, "2025-07-01"), // match HistoriSimpanan Setoran Wajib
+        TransaksiSimpanan(3, "EMP001", "Sukarela", 300_000.0, "2025-08-01"), // match HistoriSimpanan Setoran Sukarela
+
+        // EMP002 — sesuai simpananList (Pokok 500k, Wajib 250k, Sukarela 150k)
+        // Catatan: ada HistoriSimpanan penarikan -150k (2025-09-01), jadi deposit awal 300k → sisa 150k (match simpananList)
+        TransaksiSimpanan(4, "EMP002", "Pokok",    500_000.0, "2025-06-02"),
+        TransaksiSimpanan(5, "EMP002", "Wajib",    250_000.0, "2025-08-05"),
+        TransaksiSimpanan(6, "EMP002", "Sukarela", 300_000.0, "2025-08-10")
+    )
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun tambahTransaksiSimpanan(kodePegawai: String, jenis: String, jumlah: Double) {

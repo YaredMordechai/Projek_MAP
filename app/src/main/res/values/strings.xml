@@ -7,4 +7,11 @@
     <string name="open">Open Navigation Drawer</string>
     <string name="close">Close Navigation Drawer</string>
 
+    <string-array name="jenis_simpanan_filter">
+        <item>Semua</item>
+        <item>Pokok</item>
+        <item>Wajib</item>
+        <item>Sukarela</item>
+    </string-array>
+
 </resources>
