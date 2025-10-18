@@ -30,7 +30,6 @@ class ProfileFragment : Fragment() {
         val tvNamaUser = view.findViewById<TextView>(R.id.tvNamaUser)
         val tvIdUser = view.findViewById<TextView>(R.id.tvIdUser)
         val tvEmail = view.findViewById<TextView>(R.id.tvEmail)
-        val tvTelepon = view.findViewById<TextView>(R.id.tvTelepon)
         val tvStatus = view.findViewById<TextView>(R.id.tvStatus)
         val btnLogout = view.findViewById<MaterialButton>(R.id.btnLogout)
         val btnBackDashboard = view.findViewById<MaterialButton>(R.id.btnBackDashboard)
@@ -47,7 +46,6 @@ class ProfileFragment : Fragment() {
             tvNamaUser.text = namaArg
             tvIdUser.text = "Kode Pegawai: ${kodePegawaiArg ?: "-"}"
             tvEmail.text = "Email: ${emailArg ?: "-"}"
-            tvTelepon.text = "Nomor Telepon: ${teleponArg ?: "-"}"
             tvStatus.text = "Status Keanggotaan: ${statusArg ?: "-"}"
         } else {
             val loggedEmail = pref.getEmail() ?: ""
@@ -61,13 +59,11 @@ class ProfileFragment : Fragment() {
                 tvNamaUser.text = currentUser.nama
                 tvIdUser.text = "Kode Pegawai: ${currentUser.kodePegawai}"
                 tvEmail.text = "Email: ${currentUser.email}"
-                tvTelepon.text = "Nomor Telepon: ${currentUser.telepon}"
                 tvStatus.text = "Status Keanggotaan: ${currentUser.statusKeanggotaan}"
             } else {
                 tvNamaUser.text = pref.getUserName() ?: "Pengguna Tidak Dikenal"
                 tvIdUser.text = "Kode Pegawai: ${pref.getKodePegawai() ?: "-"}"
                 tvEmail.text = "Email: ${pref.getEmail() ?: "-"}"
-                tvTelepon.text = "Nomor Telepon: -"
                 tvStatus.text = "Status Keanggotaan: -"
             }
         }
