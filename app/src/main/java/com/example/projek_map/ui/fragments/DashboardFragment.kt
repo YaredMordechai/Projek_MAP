@@ -25,6 +25,8 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.utils.ColorTemplate
 import java.util.Calendar
+import java.util.Locale
+import java.text.NumberFormat
 
 class DashboardFragment : Fragment() {
 
@@ -78,7 +80,16 @@ class DashboardFragment : Fragment() {
             imgProfile.setImageResource(R.drawable.ic_profil)
         }
 
-        // === Navigasi: arahkan berbeda untuk admin vs user (tanpa ubah struktur metode) ===
+        // ====== Ubah label kartu Simpanan & Pinjaman sesuai role ======
+        if (isAdmin) {
+            setCardTitle(cardSimpanan, "Kelola Simpanan")
+            setCardTitle(cardPinjaman, "Kelola Pinjaman")
+        } else {
+            setCardTitle(cardSimpanan, "Simpanan")
+            setCardTitle(cardPinjaman, "Pinjaman")
+        }
+
+        // === Navigasi: arahkan berbeda untuk admin vs user ===
         cardSimpanan.setOnClickListener {
             val fragment = if (isAdmin) KelolaSimpananFragment() else SimpananFragment()
             val bundle = fragment.arguments ?: Bundle()
@@ -113,48 +124,31 @@ class DashboardFragment : Fragment() {
                 .commit()
         }
 
-        // ====== UBAH LABEL & ARAH KLIK UNTUK KARTU PROFIL ======
-        // TextView label di dalam cardProfil tidak punya id di XML.
-        // Kita ambil lewat hierarchy: CardView -> LinearLayout -> (0: ImageView, 1: TextView)
-        val profilTitleView: TextView? = try {
-            val containerView = cardProfil.getChildAt(0) as? ViewGroup
-            containerView?.let { it.getChildAt(1) as? TextView }
-        } catch (_: Throwable) { null }
-
+        // ====== Ubah label & klik card Profil ======
+        val profilTitleView = findFirstTextView(cardProfil)
         if (isAdmin) {
-            // Ubah label jadi "Kelola Pengguna"
             profilTitleView?.text = "Kelola Pengguna"
-
-            // Klik -> KelolaAnggotaFragment
             cardProfil.setOnClickListener {
-                val fragment = KelolaAnggotaFragment()
-                val bundle = fragment.arguments ?: Bundle()
-                bundle.putBoolean("isAdmin", true)
-                fragment.arguments = bundle
-
+                val fragment = KelolaAnggotaFragment().apply {
+                    arguments = (arguments ?: Bundle()).apply { putBoolean("isAdmin", true) }
+                }
                 parentFragmentManager.beginTransaction()
                     .replace(R.id.fragmentContainer, fragment)
                     .addToBackStack(null)
                     .commit()
             }
         } else {
-            // Pastikan label tetap "Profil Pengguna"
             profilTitleView?.text = "Profil Pengguna"
-
-            // Klik -> ProfileFragment (user)
             cardProfil.setOnClickListener {
-                val fragment = ProfileFragment()
-                val bundle = fragment.arguments ?: Bundle()
-                bundle.putBoolean("isAdmin", false)
-                fragment.arguments = bundle
-
+                val fragment = ProfileFragment().apply {
+                    arguments = (arguments ?: Bundle()).apply { putBoolean("isAdmin", false) }
+                }
                 parentFragmentManager.beginTransaction()
                     .replace(R.id.fragmentContainer, fragment)
                     .addToBackStack(null)
                     .commit()
             }
         }
-        // ====== END UBAH LABEL & ARAH KLIK ======
 
         // 🔔 Jadwal notifikasi jatuh tempo
         scheduleDailyJatuhTempo(requireContext(), 9, 0)
@@ -170,16 +164,37 @@ class DashboardFragment : Fragment() {
                     "Halo anggota, ada pengumuman penting dari pengurus. Cek aplikasi."
                 )
             }
+        } else {
+            btnKirimPengumuman.visibility = View.GONE
         }
 
-        // === 🟢 Tambahkan: Inisialisasi Grafik Keuangan ===
+        // === Grafik Keuangan ===
         setupChartKeuangan()
+    }
+
+    /** Cari TextView pertama di dalam CardView lalu ubah judulnya. */
+    private fun setCardTitle(card: CardView, newTitle: String) {
+        findFirstTextView(card)?.text = newTitle
+    }
+
+    /** DFS sederhana: cari TextView pertama dalam hierarchy view. */
+    private fun findFirstTextView(root: View?): TextView? {
+        when (root) {
+            is TextView -> return root
+            is ViewGroup -> {
+                for (i in 0 until root.childCount) {
+                    val found = findFirstTextView(root.getChildAt(i))
+                    if (found != null) return found
+                }
+            }
+        }
+        return null
     }
 
     private fun setupChartKeuangan() {
         val months = listOf("Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des")
 
-        // Data dummy simpanan & pinjaman (bisa diambil dari DummyUserData nanti)
+        // Data dummy
         val simpananValues = listOf(1_000_000, 1_300_000, 1_500_000, 2_000_000, 2_200_000, 2_500_000)
         val pinjamanValues = listOf(500_000, 700_000, 900_000, 1_200_000, 1_300_000, 1_500_000)
 

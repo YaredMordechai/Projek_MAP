@@ -7,11 +7,72 @@
     android:layout_height="match_parent"
     android:background="#F5FFF8">
 
+    <!-- Tombol toggle mode -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnKelolaPembayaranAngsuran"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Kelola Pembayaran Angsuran"
+        android:layout_marginBottom="12dp"
+        app:icon="@drawable/ic_payment"
+        app:iconPadding="8dp"
+        app:iconGravity="textStart" />
+
+    <!-- Daftar pinjaman (persetujuan) -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvKelolaPinjaman"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:clipToPadding="false"
         android:paddingBottom="16dp" />
+
+    <!-- ===================== -->
+    <!-- 🔹 BLOK PEMBAYARAN   -->
+    <!-- ===================== -->
+    <LinearLayout
+        android:id="@+id/layoutPembayaranContainer"
+        android:orientation="vertical"
+        android:paddingTop="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/tvTitlePembayaran"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Kelola Pembayaran Angsuran"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="12dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCatatPembayaran"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Catat Pembayaran Angsuran"
+            android:layout_marginBottom="12dp" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvHistoriPembayaran"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:overScrollMode="ifContentScrolls"
+            android:clipToPadding="false"
+            android:paddingBottom="16dp" />
+
+        <TextView
+            android:id="@+id/tvEmptyPembayaran"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Belum ada pembayaran tercatat."
+            android:textAlignment="center"
+            android:textColor="@android:color/darker_gray"
+            android:visibility="gone"
+            android:layout_marginTop="12dp" />
+    </LinearLayout>
 
 </LinearLayout>
