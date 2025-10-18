@@ -25,8 +25,6 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.utils.ColorTemplate
 import java.util.Calendar
-import java.util.Locale
-import java.text.NumberFormat
 
 class DashboardFragment : Fragment() {
 
@@ -84,9 +82,11 @@ class DashboardFragment : Fragment() {
         if (isAdmin) {
             setCardTitle(cardSimpanan, "Kelola Simpanan")
             setCardTitle(cardPinjaman, "Kelola Pinjaman")
+            setCardTitle(cardLaporan, "Kelola Pengurus") // opsional: lebih jelas buat admin
         } else {
             setCardTitle(cardSimpanan, "Simpanan")
             setCardTitle(cardPinjaman, "Pinjaman")
+            setCardTitle(cardLaporan, "Laporan")
         }
 
         // === Navigasi: arahkan berbeda untuk admin vs user ===
@@ -112,8 +112,16 @@ class DashboardFragment : Fragment() {
                 .addToBackStack(null)
                 .commit()
         }
+
+        // === Opsi A: cardLaporan -> KelolaPengurusFragment khusus ADMIN ===
         cardLaporan.setOnClickListener {
-            val fragment = LaporanFragment()
+            val fragment: Fragment = if (isAdmin) {
+                // hanya admin yang bisa mengakses daftar pinjaman aktif & pelunasan
+                KelolaPengurusFragment()
+            } else {
+                // user biasa tetap ke layar laporan
+                LaporanFragment()
+            }
             val bundle = fragment.arguments ?: Bundle()
             bundle.putBoolean("isAdmin", isAdmin)
             fragment.arguments = bundle

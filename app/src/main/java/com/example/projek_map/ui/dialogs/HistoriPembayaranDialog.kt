@@ -14,7 +14,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
 
-class HistoriPembayaranDialog : DialogFragment() {
+class   HistoriPembayaranDialog : DialogFragment() {
 
     private lateinit var rvHistori: RecyclerView
     private lateinit var btnUpload: Button

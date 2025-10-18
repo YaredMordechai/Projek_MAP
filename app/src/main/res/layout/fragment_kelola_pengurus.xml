@@ -41,15 +41,6 @@
             android:textColor="@color/white"
             android:layout_marginBottom="16dp"/>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnCatatPembayaran"
-            android:text="Catat Pembayaran Angsuran"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:backgroundTint="@color/green_600"
-            android:textColor="@color/white"
-            android:layout_marginBottom="24dp"/>
-
         <TextView
             android:text="Daftar Pinjaman Aktif"
             android:textSize="18sp"

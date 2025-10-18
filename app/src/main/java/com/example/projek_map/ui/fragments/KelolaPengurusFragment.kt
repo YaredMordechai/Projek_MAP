@@ -61,35 +61,7 @@ class KelolaPengurusFragment : Fragment() {
             toast("Suku bunga & denda berhasil diperbarui.")
         }
 
-        btnCatatPembayaran.setOnClickListener {
-            showInputPembayaranDialog()
-        }
-
         return view
-    }
-
-    private fun showInputPembayaranDialog() {
-        val inputLayout = layoutInflater.inflate(R.layout.dialog_catat_pembayaran, null)
-        val edtKodePegawai = inputLayout.findViewById<EditText>(R.id.edtKodePegawai)
-        val edtPinjamanId = inputLayout.findViewById<EditText>(R.id.edtPinjamanId)
-        val edtJumlah = inputLayout.findViewById<EditText>(R.id.edtJumlahBayar)
-
-        AlertDialog.Builder(requireContext())
-            .setTitle("Catat Pembayaran Angsuran")
-            .setView(inputLayout)
-            .setPositiveButton("Simpan") { _, _ ->
-                val kode = edtKodePegawai.text.toString().trim()
-                val id = edtPinjamanId.text.toString().toIntOrNull()
-                val jumlah = edtJumlah.text.toString().toIntOrNull()
-                if (kode.isEmpty() || id == null || jumlah == null) {
-                    toast("Semua data harus diisi.")
-                    return@setPositiveButton
-                }
-                DummyUserData.catatPembayaranAngsuranAdmin(kode, id, jumlah)
-                toast("Pembayaran berhasil dicatat.")
-            }
-            .setNegativeButton("Batal", null)
-            .show()
     }
 
     private fun toast(msg: String) {

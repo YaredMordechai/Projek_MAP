@@ -106,6 +106,8 @@
         app:icon="@drawable/ic_add"
         app:iconPadding="8dp"
         app:iconGravity="textStart"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/green_700"
         android:layout_marginBottom="12dp"/>
 
     <!-- 🔹 RecyclerView daftar transaksi -->
