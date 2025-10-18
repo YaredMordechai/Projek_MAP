@@ -171,6 +171,24 @@
         android:backgroundTint="@color/green_700"
         android:layout_marginBottom="12dp" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnLabaBersih"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Lihat Laba Bersih"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/green_800"
+        android:layout_marginBottom="12dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnLabaRugi"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Lihat Laporan Laba Rugi"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/green_800"
+        android:layout_marginBottom="12dp" />
+
     <!-- List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvKas"

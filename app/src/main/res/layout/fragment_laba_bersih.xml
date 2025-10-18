@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5FFF8"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="💹 Laporan Laba Bersih"
+        android:textStyle="bold"
+        android:textSize="20sp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="24dp" />
+
+    <TextView
+        android:id="@+id/tvTotalMasuk"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Total Pemasukan: Rp 0"
+        android:textSize="16sp"
+        android:layout_marginBottom="12dp" />
+
+    <TextView
+        android:id="@+id/tvTotalKeluar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Total Pengeluaran: Rp 0"
+        android:textSize="16sp"
+        android:layout_marginBottom="12dp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"
+        android:layout_marginVertical="12dp" />
+
+    <TextView
+        android:id="@+id/tvLabaBersih"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Laba Bersih: Rp 0"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:layout_marginTop="12dp" />
+</LinearLayout>

@@ -1,11 +1,13 @@
 package com.example.projek_map.ui.fragments
 
 import android.app.AlertDialog
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -31,6 +33,10 @@ class KelolaKasFragment : Fragment() {
     private lateinit var btnTambahKas: Button
     private lateinit var btnFilterTerapkan: Button
     private lateinit var btnFilterReset: Button
+
+    private lateinit var btnLabaBersih: Button
+
+    private lateinit var btnLabaRugi: Button
 
     // Filter views
     private lateinit var spFilterJenis: Spinner
@@ -61,6 +67,20 @@ class KelolaKasFragment : Fragment() {
         etFilterCari      = v.findViewById(R.id.etFilterCari)
         btnFilterTerapkan = v.findViewById(R.id.btnFilterTerapkan)
         btnFilterReset    = v.findViewById(R.id.btnFilterReset)
+        btnLabaBersih = v.findViewById(R.id.btnLabaBersih)
+        btnLabaBersih.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, LabaBersihFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+        btnLabaRugi = v.findViewById(R.id.btnLabaRugi)
+        btnLabaRugi.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, LabaRugiFragment())
+                .addToBackStack(null)
+                .commit()
+        }
 
         // Recycler
         rvKas.layoutManager = LinearLayoutManager(requireContext())
@@ -213,6 +233,7 @@ class KelolaKasFragment : Fragment() {
             .show()
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun showAddDialog() {
         val dv = layoutInflater.inflate(R.layout.dialog_add_kas, null)
         val etTanggal = dv.findViewById<EditText>(R.id.etTanggalKas)
