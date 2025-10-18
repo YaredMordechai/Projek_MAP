@@ -26,6 +26,7 @@ import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.utils.ColorTemplate
 import java.util.Calendar
 
+
 class DashboardFragment : Fragment() {
 
     private var isAdmin: Boolean = false
@@ -51,8 +52,9 @@ class DashboardFragment : Fragment() {
         val cardPinjaman = view.findViewById<CardView>(R.id.cardPinjaman)
         val cardLaporan = view.findViewById<CardView>(R.id.cardLaporan)
         val cardProfil = view.findViewById<CardView>(R.id.cardProfil)
-        val btnKirimPengumuman = view.findViewById<MaterialButton>(R.id.btnKirimPengumuman)
         chartKeuangan = view.findViewById(R.id.chartKeuangan)
+        val cardKas = view.findViewById<CardView>(R.id.cardKas)
+
 
         val pref = PrefManager(requireContext())
 
@@ -158,23 +160,27 @@ class DashboardFragment : Fragment() {
             }
         }
 
-        // 🔔 Jadwal notifikasi jatuh tempo
-        scheduleDailyJatuhTempo(requireContext(), 9, 0)
-
-        // 🔔 Kirim pengumuman test (admin)
+        // ====== Card "Kelola Kas" khusus ADMIN ======
         if (isAdmin) {
-            btnKirimPengumuman.visibility = View.VISIBLE
-            btnKirimPengumuman.setOnClickListener {
-                NotificationHelper.showNotification(
-                    requireContext(),
-                    2001,
-                    "Pengumuman Koperasi",
-                    "Halo anggota, ada pengumuman penting dari pengurus. Cek aplikasi."
-                )
+            // tampilkan & set judul
+            cardKas.visibility = View.VISIBLE
+            setCardTitle(cardKas, "Kelola Kas")
+
+            // klik -> buka KelolaKasFragment
+            cardKas.setOnClickListener {
+                val fragment = KelolaKasFragment()
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragmentContainer, fragment)
+                    .addToBackStack(null)
+                    .commit()
             }
         } else {
-            btnKirimPengumuman.visibility = View.GONE
+            // sembunyikan untuk user biasa
+            cardKas.visibility = View.GONE
         }
+
+        // 🔔 Jadwal notifikasi jatuh tempo
+        scheduleDailyJatuhTempo(requireContext(), 9, 0)
 
         // === Grafik Keuangan ===
         setupChartKeuangan()

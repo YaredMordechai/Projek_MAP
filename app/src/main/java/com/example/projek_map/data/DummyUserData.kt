@@ -114,6 +114,14 @@ data class TransaksiSimpanan(
     val tanggal: String
 )
 
+data class KasTransaksi(
+    val id: Int,
+    val tanggal: String,   // yyyy-MM-dd
+    val jenis: String,     // "Masuk" atau "Keluar"
+    val kategori: String,  // Contoh: Iuran, Operasional, dll
+    val deskripsi: String,
+    val jumlah: Double     // nominal positif (logika + / - ditentukan oleh jenis)
+)
 // =====================
 // Dummy store & helpers
 // =====================
@@ -646,6 +654,41 @@ object DummyUserData {
             sisaPokok = sisaPokok,
             angsuranDibayar = angsuranDibayar
         )
+    }
+
+    // =====================
+// Kas Koperasi
+// =====================
+
+    val kasTransaksiList = mutableListOf(
+        KasTransaksi(1, "2025-10-01", "Masuk",  "Iuran Anggota", "Setoran wajib Oktober", 500_000.0),
+        KasTransaksi(2, "2025-10-03", "Keluar", "Operasional",   "Beli ATK kantor",        120_000.0),
+        KasTransaksi(3, "2025-10-07", "Masuk",  "Bunga Pinjaman","Bunga angsuran minggu 1",300_000.0)
+    )
+
+    fun tambahKasTransaksi(tanggal: String, jenis: String, kategori: String, deskripsi: String, jumlah: Double): KasTransaksi {
+        val newId = (kasTransaksiList.maxOfOrNull { it.id } ?: 0) + 1
+        val t = KasTransaksi(newId, tanggal, jenis, kategori, deskripsi, jumlah)
+        kasTransaksiList.add(0, t) // taruh paling atas biar keliatan duluan
+        return t
+    }
+
+    fun updateKasTransaksi(id: Int, tanggal: String, jenis: String, kategori: String, deskripsi: String, jumlah: Double) {
+        val idx = kasTransaksiList.indexOfFirst { it.id == id }
+        if (idx >= 0) {
+            kasTransaksiList[idx] = kasTransaksiList[idx].copy(
+                tanggal = tanggal, jenis = jenis, kategori = kategori, deskripsi = deskripsi, jumlah = jumlah
+            )
+        }
+    }
+
+    fun hapusKasTransaksi(id: Int) {
+        kasTransaksiList.removeAll { it.id == id }
+    }
+
+    fun getSaldoKas(): Double {
+        // Masuk = +, Keluar = -
+        return kasTransaksiList.sumOf { if (it.jenis.equals("Masuk", true)) it.jumlah else -it.jumlah }
     }
 
     // =====================

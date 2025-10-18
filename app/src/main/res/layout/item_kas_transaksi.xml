@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:background="@drawable/bg_card_shadow"
+    android:padding="12dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp">
+
+    <TextView
+        android:id="@+id/tvTanggalKas"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="2025-10-10"
+        android:textStyle="bold"
+        android:textSize="14sp"/>
+
+    <TextView
+        android:id="@+id/tvJenisKas"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Masuk"
+        android:layout_marginTop="2dp"/>
+
+    <TextView
+        android:id="@+id/tvKategoriKas"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Iuran"
+        android:layout_marginTop="2dp"/>
+
+    <TextView
+        android:id="@+id/tvDeskripsiKas"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Keterangan..."
+        android:layout_marginTop="2dp"/>
+
+    <TextView
+        android:id="@+id/tvJumlahKas"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Rp 0"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_marginTop="4dp"/>
+</LinearLayout>
