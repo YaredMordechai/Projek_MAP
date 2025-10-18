@@ -263,6 +263,42 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
+            <!-- Item 6 -->
+            <!-- Card: Laporan Koperasi (khusus Admin) -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardLaporanAdmin"
+                android:layout_width="0dp"
+                android:layout_height="140dp"
+                android:layout_margin="8dp"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="6dp"
+                app:cardBackgroundColor="@color/green_100">
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <ImageView
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:src="@drawable/ic_laporan"
+                        app:tint="@color/green_800" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Laporan Koperasi"
+                        android:textColor="@color/green_900"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="8dp" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
 
         </GridLayout>
 

@@ -26,7 +26,6 @@ import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.utils.ColorTemplate
 import java.util.Calendar
 
-
 class DashboardFragment : Fragment() {
 
     private var isAdmin: Boolean = false
@@ -54,7 +53,7 @@ class DashboardFragment : Fragment() {
         val cardProfil = view.findViewById<CardView>(R.id.cardProfil)
         chartKeuangan = view.findViewById(R.id.chartKeuangan)
         val cardKas = view.findViewById<CardView>(R.id.cardKas)
-
+        val cardLaporanAdmin = view.findViewById<CardView>(R.id.cardLaporanAdmin)
 
         val pref = PrefManager(requireContext())
 
@@ -84,12 +83,17 @@ class DashboardFragment : Fragment() {
         if (isAdmin) {
             setCardTitle(cardSimpanan, "Kelola Simpanan")
             setCardTitle(cardPinjaman, "Kelola Pinjaman")
-            setCardTitle(cardLaporan, "Kelola Pengurus") // opsional: lebih jelas buat admin
+            setCardTitle(cardLaporan, "Pengaturan Koperasi") // opsional: lebih jelas buat admin
         } else {
             setCardTitle(cardSimpanan, "Simpanan")
             setCardTitle(cardPinjaman, "Pinjaman")
             setCardTitle(cardLaporan, "Laporan")
         }
+
+        // 🔁 Ganti ikon card #1 (cardLaporan) khusus admin -> ic_setting, user tetap ic_laporan dari XML
+        findFirstImageView(cardLaporan)?.setImageResource(
+            if (isAdmin) R.drawable.ic_setting else R.drawable.ic_laporan
+        )
 
         // === Navigasi: arahkan berbeda untuk admin vs user ===
         cardSimpanan.setOnClickListener {
@@ -174,9 +178,22 @@ class DashboardFragment : Fragment() {
                     .addToBackStack(null)
                     .commit()
             }
+
+            // ⬇️ tambahan untuk kartu laporan admin
+            cardLaporanAdmin.visibility = View.VISIBLE
+            setCardTitle(cardLaporanAdmin, "Laporan Koperasi")
+            cardLaporanAdmin.setOnClickListener {
+                val fragment = LaporanAdminFragment()
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragmentContainer, fragment)
+                    .addToBackStack(null)
+                    .commit()
+            }
         } else {
             // sembunyikan untuk user biasa
             cardKas.visibility = View.GONE
+            // ⬇️ pastikan disembunyikan juga
+            cardLaporanAdmin.visibility = View.GONE
         }
 
         // 🔔 Jadwal notifikasi jatuh tempo
@@ -198,6 +215,20 @@ class DashboardFragment : Fragment() {
             is ViewGroup -> {
                 for (i in 0 until root.childCount) {
                     val found = findFirstTextView(root.getChildAt(i))
+                    if (found != null) return found
+                }
+            }
+        }
+        return null
+    }
+
+    /** DFS sederhana: cari ImageView pertama dalam hierarchy view. */
+    private fun findFirstImageView(root: View?): ImageView? {
+        when (root) {
+            is ImageView -> return root
+            is ViewGroup -> {
+                for (i in 0 until root.childCount) {
+                    val found = findFirstImageView(root.getChildAt(i))
                     if (found != null) return found
                 }
             }
