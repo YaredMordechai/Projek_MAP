@@ -86,12 +86,13 @@ class MainActivity : AppCompatActivity() {
 
                 com.example.projek_map.utils.NotificationHelper.showNotification(
                     this,
-                    3000 + ev.id, // id unik biar tidak ketimpa
+                    3000 + ev.id,
                     title,
                     msg
                 )
             }
         }
+
 
         // 🔹 setup views
         drawerLayout = findViewById(R.id.drawerLayout)

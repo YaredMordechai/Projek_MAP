@@ -12,16 +12,22 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.example.projek_map.R
-import com.example.projek_map.data.DummyUserData
-import com.example.projek_map.utils.PrefManager
+import com.example.projek_map.data.HistoriSimpanan
+import com.example.projek_map.data.KoperasiDatabase
+import com.example.projek_map.data.Pinjaman
 import com.example.projek_map.utils.AlarmReceiver
+import com.example.projek_map.utils.PrefManager
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.Description
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.utils.ColorTemplate
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Calendar
 
 class DashboardFragment : Fragment() {
@@ -54,30 +60,41 @@ class DashboardFragment : Fragment() {
         val cardLaporanAdmin = view.findViewById<CardView>(R.id.cardLaporanAdmin)
 
         val pref = PrefManager(requireContext())
+        val appContext = requireContext().applicationContext
 
+        // ====== Sapaan User/Admin (data dari DB) ======
         if (isAdmin) {
             tvWelcome.text = "Halo, Admin"
             tvUserId.text = ""
+            imgProfile.setImageResource(R.drawable.ic_profil)
         } else {
             val loggedEmail = pref.getEmail() ?: ""
             val loggedKode = pref.getKodePegawai() ?: ""
 
-            val currentUser = DummyUserData.users.find {
-                it.email.equals(loggedEmail, ignoreCase = true) || it.kodePegawai == loggedKode
-            }
+            viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                val db = KoperasiDatabase.getInstance(appContext)
+                val userDao = db.userDao()
 
-            if (currentUser != null) {
-                tvWelcome.text = "Halo, ${currentUser.nama}"
-                tvUserId.text = "Kode Pegawai: ${currentUser.kodePegawai}"
-            } else {
-                tvWelcome.text = "Halo, Pengguna"
-                tvUserId.text = "Kode Pegawai: -"
-            }
+                val currentUser = when {
+                    loggedKode.isNotEmpty() -> userDao.getUserByKode(loggedKode)
+                    loggedEmail.isNotEmpty() -> userDao.getUserByEmail(loggedEmail)
+                    else -> null
+                }
 
-            imgProfile.setImageResource(R.drawable.ic_profil)
+                withContext(Dispatchers.Main) {
+                    if (currentUser != null) {
+                        tvWelcome.text = "Halo, ${currentUser.nama}"
+                        tvUserId.text = "Kode Pegawai: ${currentUser.kodePegawai}"
+                    } else {
+                        tvWelcome.text = "Halo, Pengguna"
+                        tvUserId.text = "Kode Pegawai: -"
+                    }
+                    imgProfile.setImageResource(R.drawable.ic_profil)
+                }
+            }
         }
 
-        // ====== Ubah label kartu Simpanan & Pinjaman sesuai role ======
+        // ====== Label kartu sesuai role ======
         if (isAdmin) {
             setCardTitle(cardSimpanan, "Kelola Simpanan")
             setCardTitle(cardPinjaman, "Kelola Pinjaman")
@@ -88,12 +105,12 @@ class DashboardFragment : Fragment() {
             setCardTitle(cardLaporan, "Laporan")
         }
 
-        // 🔁 Ganti ikon card laporan sesuai role
+        // Ganti ikon card laporan sesuai role
         findFirstImageView(cardLaporan)?.setImageResource(
             if (isAdmin) R.drawable.ic_setting else R.drawable.ic_laporan
         )
 
-        // === Navigasi ===
+        // ===== Navigasi =====
         cardSimpanan.setOnClickListener {
             val fragment = if (isAdmin) KelolaSimpananFragment() else SimpananFragment()
             fragment.arguments = (fragment.arguments ?: Bundle()).apply {
@@ -178,123 +195,180 @@ class DashboardFragment : Fragment() {
             cardLaporanAdmin.visibility = View.GONE
         }
 
-        // 🔔 Jadwal notifikasi jatuh tempo
+        // 🔔 Jadwal notifikasi jatuh tempo (harian jam 09.00)
         scheduleDailyJatuhTempo(requireContext(), 9, 0)
 
-        // === Grafik Keuangan ===
+        // ===== Grafik Keuangan =====
         val kodePegawai = pref.getKodePegawai() ?: ""
-        if (isAdmin) setupChartKeuanganAdmin() else setupChartKeuanganUser(kodePegawai)
+        if (isAdmin) {
+            setupChartKeuanganAdmin(appContext)
+        } else {
+            setupChartKeuanganUser(appContext, kodePegawai)
+        }
     }
 
-    // ===============================================
-    // ======== CHART UNTUK ADMIN DAN USER ============
-    // ===============================================
+    // =====================================================
+    // ================== CHART UNTUK USER =================
+    // =====================================================
 
-    private fun setupChartKeuanganAdmin() {
-        val months = listOf("Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des")
+    private fun setupChartKeuanganUser(appContext: Context, kodePegawai: String) {
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+            val db = KoperasiDatabase.getInstance(appContext)
+            val historiDao = db.historiSimpananDao()
+            val pinjamanDao = db.pinjamanDao()
 
-        val totalSimpananPerBulan = MutableList(12) { 0.0 }
-        val totalPinjamanPerBulan = MutableList(12) { 0.0 }
-
-        // Total simpanan seluruh anggota per bulan
-        DummyUserData.historiSimpananList.forEach { s ->
-            val bulan = try { s.tanggal.substring(5, 7).toInt() - 1 } catch (e: Exception) { 0 }
-            if (bulan in 0..11) totalSimpananPerBulan[bulan] += s.jumlah
-        }
-
-        // Total pinjaman seluruh anggota (Disetujui/Aktif)
-        DummyUserData.pinjamanList
-            .filter { it.status.equals("Disetujui", true) || it.status.equals("Aktif", true) }
-            .forEach { p ->
-                val bulanDisetujui = 9 // Oktober (dummy)
-                totalPinjamanPerBulan[bulanDisetujui] += p.jumlah
+            val historiList: List<HistoriSimpanan> = historiDao.getHistoriForUser(kodePegawai)
+            val pinjamanUserAll: List<Pinjaman> = pinjamanDao.getPinjamanForUser(kodePegawai)
+            val pinjamanUserAktif = pinjamanUserAll.filter {
+                it.status.equals("Disetujui", true) || it.status.equals("Aktif", true)
             }
 
-        val dataSetSimpanan = LineDataSet(
-            totalSimpananPerBulan.mapIndexed { i, v -> Entry(i.toFloat(), v.toFloat()) },
-            "Total Simpanan"
-        ).apply {
-            color = ColorTemplate.MATERIAL_COLORS[0]
-            setCircleColor(ColorTemplate.MATERIAL_COLORS[0])
-            lineWidth = 2f
-            circleRadius = 4f
-        }
+            val months = listOf(
+                "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
+                "Jul", "Agu", "Sep", "Okt", "Nov", "Des"
+            )
 
-        val dataSetPinjaman = LineDataSet(
-            totalPinjamanPerBulan.mapIndexed { i, v -> Entry(i.toFloat(), v.toFloat()) },
-            "Total Pinjaman"
-        ).apply {
-            color = ColorTemplate.MATERIAL_COLORS[1]
-            setCircleColor(ColorTemplate.MATERIAL_COLORS[1])
-            lineWidth = 2f
-            circleRadius = 4f
-        }
+            val simpananPerBulan = DoubleArray(12) { 0.0 }
+            val pinjamanPerBulan = DoubleArray(12) { 0.0 }
 
-        chartKeuangan.data = LineData(dataSetSimpanan, dataSetPinjaman)
-        chartKeuangan.xAxis.valueFormatter = com.github.mikephil.charting.formatter.IndexAxisValueFormatter(months)
-        chartKeuangan.description = Description().apply {
-            text = "Rekap Seluruh Anggota"
-            textSize = 10f
+            // Simpanan milik user
+            historiList.forEach { s ->
+                val bulan = try {
+                    s.tanggal.substring(5, 7).toInt() - 1
+                } catch (e: Exception) {
+                    0
+                }
+                if (bulan in 0..11) {
+                    simpananPerBulan[bulan] = simpananPerBulan[bulan] + s.jumlah
+                }
+            }
+
+            // Pinjaman milik user (disetujui/aktif) – sementara di-plot di bulan Oktober (dummy)
+            val bulanDisetujui = 9
+            pinjamanUserAktif.forEach { p ->
+                if (bulanDisetujui in 0..11) {
+                    pinjamanPerBulan[bulanDisetujui] =
+                        pinjamanPerBulan[bulanDisetujui] + p.jumlah
+                }
+            }
+
+            withContext(Dispatchers.Main) {
+                val dataSetSimpanan = LineDataSet(
+                    simpananPerBulan.mapIndexed { i, v -> Entry(i.toFloat(), v.toFloat()) },
+                    "Simpanan Saya"
+                ).apply {
+                    color = ColorTemplate.MATERIAL_COLORS[2]
+                    setCircleColor(ColorTemplate.MATERIAL_COLORS[2])
+                    lineWidth = 2f
+                    circleRadius = 4f
+                }
+
+                val dataSetPinjaman = LineDataSet(
+                    pinjamanPerBulan.mapIndexed { i, v -> Entry(i.toFloat(), v.toFloat()) },
+                    "Pinjaman Saya"
+                ).apply {
+                    color = ColorTemplate.MATERIAL_COLORS[3]
+                    setCircleColor(ColorTemplate.MATERIAL_COLORS[3])
+                    lineWidth = 2f
+                    circleRadius = 4f
+                }
+
+                chartKeuangan.data = LineData(dataSetSimpanan, dataSetPinjaman)
+                chartKeuangan.xAxis.valueFormatter =
+                    com.github.mikephil.charting.formatter.IndexAxisValueFormatter(months)
+                chartKeuangan.description = Description().apply {
+                    text = "Aktivitas Keuangan Pribadi"
+                    textSize = 10f
+                }
+                chartKeuangan.animateX(1000)
+                chartKeuangan.invalidate()
+            }
         }
-        chartKeuangan.animateX(1000)
-        chartKeuangan.invalidate()
     }
 
-    private fun setupChartKeuanganUser(kodePegawai: String) {
-        val months = listOf("Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des")
+    // =====================================================
+    // ================== CHART UNTUK ADMIN ================
+    // =====================================================
 
-        val simpananPerBulan = MutableList(12) { 0.0 }
-        val pinjamanPerBulan = MutableList(12) { 0.0 }
+    private fun setupChartKeuanganAdmin(appContext: Context) {
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+            val db = KoperasiDatabase.getInstance(appContext)
+            val historiDao = db.historiSimpananDao()
+            val pinjamanDao = db.pinjamanDao()
 
-        // Simpanan milik user
-        DummyUserData.historiSimpananList
-            .filter { it.kodePegawai == kodePegawai }
-            .forEach { s ->
-                val bulan = try { s.tanggal.substring(5, 7).toInt() - 1 } catch (e: Exception) { 0 }
-                if (bulan in 0..11) simpananPerBulan[bulan] += s.jumlah
+            val historiList: List<HistoriSimpanan> = historiDao.getAllHistori()
+            val pinjamanAll: List<Pinjaman> = pinjamanDao.getAllPinjaman()
+            val pinjamanAktif = pinjamanAll.filter {
+                it.status.equals("Disetujui", true) || it.status.equals("Aktif", true)
             }
 
-        // Pinjaman milik user (disetujui/aktif)
-        DummyUserData.pinjamanList
-            .filter { it.kodePegawai == kodePegawai && (it.status.equals("Disetujui", true) || it.status.equals("Aktif", true)) }
-            .forEach { p ->
-                val bulanDisetujui = 9 // Oktober
-                pinjamanPerBulan[bulanDisetujui] += p.jumlah
+            val months = listOf(
+                "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
+                "Jul", "Agu", "Sep", "Okt", "Nov", "Des"
+            )
+
+            val totalSimpananPerBulan = DoubleArray(12) { 0.0 }
+            val totalPinjamanPerBulan = DoubleArray(12) { 0.0 }
+
+            // Total simpanan seluruh anggota per bulan
+            historiList.forEach { s ->
+                val bulan = try {
+                    s.tanggal.substring(5, 7).toInt() - 1
+                } catch (e: Exception) {
+                    0
+                }
+                if (bulan in 0..11) {
+                    totalSimpananPerBulan[bulan] =
+                        totalSimpananPerBulan[bulan] + s.jumlah
+                }
             }
 
-        val dataSetSimpanan = LineDataSet(
-            simpananPerBulan.mapIndexed { i, v -> Entry(i.toFloat(), v.toFloat()) },
-            "Simpanan Saya"
-        ).apply {
-            color = ColorTemplate.MATERIAL_COLORS[2]
-            setCircleColor(ColorTemplate.MATERIAL_COLORS[2])
-            lineWidth = 2f
-            circleRadius = 4f
-        }
+            // Total pinjaman seluruh anggota (Disetujui/Aktif)
+            val bulanDisetujui = 9
+            pinjamanAktif.forEach { p ->
+                if (bulanDisetujui in 0..11) {
+                    totalPinjamanPerBulan[bulanDisetujui] =
+                        totalPinjamanPerBulan[bulanDisetujui] + p.jumlah
+                }
+            }
 
-        val dataSetPinjaman = LineDataSet(
-            pinjamanPerBulan.mapIndexed { i, v -> Entry(i.toFloat(), v.toFloat()) },
-            "Pinjaman Saya"
-        ).apply {
-            color = ColorTemplate.MATERIAL_COLORS[3]
-            setCircleColor(ColorTemplate.MATERIAL_COLORS[3])
-            lineWidth = 2f
-            circleRadius = 4f
-        }
+            withContext(Dispatchers.Main) {
+                val dataSetSimpanan = LineDataSet(
+                    totalSimpananPerBulan.mapIndexed { i, v -> Entry(i.toFloat(), v.toFloat()) },
+                    "Total Simpanan"
+                ).apply {
+                    color = ColorTemplate.MATERIAL_COLORS[0]
+                    setCircleColor(ColorTemplate.MATERIAL_COLORS[0])
+                    lineWidth = 2f
+                    circleRadius = 4f
+                }
 
-        chartKeuangan.data = LineData(dataSetSimpanan, dataSetPinjaman)
-        chartKeuangan.xAxis.valueFormatter = com.github.mikephil.charting.formatter.IndexAxisValueFormatter(months)
-        chartKeuangan.description = Description().apply {
-            text = "Aktivitas Keuangan Pribadi"
-            textSize = 10f
+                val dataSetPinjaman = LineDataSet(
+                    totalPinjamanPerBulan.mapIndexed { i, v -> Entry(i.toFloat(), v.toFloat()) },
+                    "Total Pinjaman"
+                ).apply {
+                    color = ColorTemplate.MATERIAL_COLORS[1]
+                    setCircleColor(ColorTemplate.MATERIAL_COLORS[1])
+                    lineWidth = 2f
+                    circleRadius = 4f
+                }
+
+                chartKeuangan.data = LineData(dataSetSimpanan, dataSetPinjaman)
+                chartKeuangan.xAxis.valueFormatter =
+                    com.github.mikephil.charting.formatter.IndexAxisValueFormatter(months)
+                chartKeuangan.description = Description().apply {
+                    text = "Rekap Seluruh Anggota"
+                    textSize = 10f
+                }
+                chartKeuangan.animateX(1000)
+                chartKeuangan.invalidate()
+            }
         }
-        chartKeuangan.animateX(1000)
-        chartKeuangan.invalidate()
     }
 
-    // ===============================================
+    // =====================================================
     // Helper & Scheduler
-    // ===============================================
+    // =====================================================
 
     private fun setCardTitle(card: CardView, newTitle: String) {
         findFirstTextView(card)?.text = newTitle
@@ -333,15 +407,19 @@ class DashboardFragment : Fragment() {
                 putExtra("type", "jatuh_tempo")
             }
             val pendingIntent = PendingIntent.getBroadcast(
-                context, 3001, intent,
+                context,
+                3001,
+                intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
+
             val calendar = Calendar.getInstance().apply {
                 set(Calendar.HOUR_OF_DAY, hour)
                 set(Calendar.MINUTE, minute)
                 set(Calendar.SECOND, 0)
                 if (before(Calendar.getInstance())) add(Calendar.DATE, 1)
             }
+
             alarmManager.setInexactRepeating(
                 AlarmManager.RTC_WAKEUP,
                 calendar.timeInMillis,

@@ -65,11 +65,15 @@ class PinjamanFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_pinjaman, container, false)
 
         // --- Launchers ---
-        pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        pickImageLauncher = registerForActivityResult(
+            ActivityResultContracts.GetContent()
+        ) { uri: Uri? ->
             if (uri != null) onBuktiSelected(uri) else toast("Tidak ada gambar terpilih.")
         }
 
-        takePictureLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        takePictureLauncher = registerForActivityResult(
+            ActivityResultContracts.TakePicture()
+        ) { success ->
             val uri = pendingCameraUri
             if (success && uri != null) {
                 onBuktiSelected(uri)
@@ -79,7 +83,9 @@ class PinjamanFragment : Fragment() {
             pendingCameraUri = null
         }
 
-        requestCameraPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        requestCameraPermission = registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { granted ->
             if (granted) {
                 launchCamera()
             } else {
@@ -181,8 +187,8 @@ class PinjamanFragment : Fragment() {
             appendLine("Ada cicilan yang akan jatuh tempo dalam 3 hari:")
             appendLine()
             upcoming.forEach { r ->
-                appendLine("• Pinjaman #${r.pinjamanId} | Jatuh tempo: ${r.dueDate}")
-                appendLine("  Angsuran: Rp ${formatRupiah(r.nominalCicilan.toDouble())}")
+                appendLine("• Pinjaman #${r.pinjamanId} | Jatuh tempo: ${r.tanggalJatuhTempo}")
+                appendLine("  Angsuran: Rp ${formatRupiah(r.jumlahCicilan.toDouble())}")
             }
         }.toString()
 
@@ -212,9 +218,9 @@ class PinjamanFragment : Fragment() {
         }
     }
 
-    // ✅ Sudah diperbarui: menghitung total semua pinjaman (aktif + pending)
+    // ✅ Menghitung total semua pinjaman (aktif + pending)
     private fun updateStatusCard() {
-        val semuaPinjaman = dataAktif + dataPending // 🔹 gabungkan dua list
+        val semuaPinjaman = dataAktif + dataPending // gabungkan dua list
 
         if (semuaPinjaman.isEmpty()) {
             txtPinjamanAktif.text = "Belum ada pinjaman aktif atau pengajuan."
@@ -222,7 +228,6 @@ class PinjamanFragment : Fragment() {
         }
 
         val totalPinjaman = semuaPinjaman.sumOf { it.jumlah.toDouble() }
-        val totalTenor = semuaPinjaman.sumOf { it.tenor }
         val contoh = semuaPinjaman.first()
 
         txtPinjamanAktif.text = buildString {
@@ -230,7 +235,7 @@ class PinjamanFragment : Fragment() {
             append("\n")
             append("Jumlah Pengajuan: ${semuaPinjaman.size} pinjaman\n")
             append("\n")
-            append("Disetujui: Rp ${formatRupiah(contoh.jumlah.toDouble())} (${contoh.tenor} bulan)")
+            append("Contoh Pengajuan Terbaru: Rp ${formatRupiah(contoh.jumlah.toDouble())} (${contoh.tenor} bulan)")
         }
     }
 

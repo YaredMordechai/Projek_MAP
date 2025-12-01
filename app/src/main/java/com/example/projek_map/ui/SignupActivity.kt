@@ -3,24 +3,52 @@ package com.example.projek_map.ui
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.example.projek_map.data.DummyUserData
-import com.example.projek_map.data.User
 import com.example.projek_map.databinding.ActivitySignupBinding
 import com.example.projek_map.utils.PrefManager
-import com.example.projek_map.ui.MainActivity
-import com.google.android.material.button.MaterialButton
+import com.example.projek_map.viewmodel.KoperasiViewModel
 
 class SignupActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySignupBinding
+    private lateinit var pref: PrefManager
+
+    private val viewModel: KoperasiViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySignupBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val pref = PrefManager(this)
+        pref = PrefManager(this)
+
+        // observe hasil register
+        viewModel.registerResult.observe(this) { user ->
+            if (user != null) {
+                // simpan login
+                pref.saveLogin(user.nama, user.email, user.kodePegawai)
+
+                Toast.makeText(this, "Pendaftaran berhasil!", Toast.LENGTH_SHORT).show()
+
+                // langsung masuk MainActivity dengan extras lengkap
+                val intent = Intent(this, MainActivity::class.java).apply {
+                    putExtra("userName", user.nama)
+                    putExtra("userEmail", user.email)
+                    putExtra("userStatusKeanggotaan", user.statusKeanggotaan)
+                    putExtra("userKodePegawai", user.kodePegawai)
+                    putExtra("isAdmin", false)
+                }
+                startActivity(intent)
+                finish()
+            }
+        }
+
+        viewModel.registerError.observe(this) { msg ->
+            if (!msg.isNullOrEmpty()) {
+                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+            }
+        }
 
         binding.btnSignup.setOnClickListener {
             val kodePegawai = binding.etKodePegawai.text.toString().trim()
@@ -33,36 +61,7 @@ class SignupActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Cek apakah user sudah terdaftar
-            val existingUser = DummyUserData.users.find {
-                it.email.equals(email, true) || it.kodePegawai.equals(kodePegawai, true)
-            }
-
-            if (existingUser != null) {
-                Toast.makeText(this, "User sudah terdaftar!", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            // Tambah user baru ke dummy list
-            val newUser = User(
-                kodePegawai = kodePegawai,
-                email = email,
-                password = password,
-                nama = nama,
-                statusKeanggotaan = "Anggota Baru"
-            )
-            // This line will now work correctly without the wrong import
-            DummyUserData.users.add(newUser)
-
-            // Simpan data login ke PrefManager
-            pref.saveLogin(nama, email, kodePegawai)
-
-            Toast.makeText(this, "Pendaftaran berhasil!", Toast.LENGTH_SHORT).show()
-
-            // Pindah ke MainActivity
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-            finish()
+            viewModel.register(kodePegawai, email, password, nama)
         }
     }
 }

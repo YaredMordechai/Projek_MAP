@@ -8,12 +8,13 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
-import com.example.projek_map.data.DummyUserData
 import com.example.projek_map.data.User
 import com.example.projek_map.ui.adapters.AnggotaAdapter
+import com.example.projek_map.viewmodel.KoperasiViewModel
 import com.google.android.material.button.MaterialButton
 
 class KelolaAnggotaFragment : Fragment() {
@@ -21,6 +22,9 @@ class KelolaAnggotaFragment : Fragment() {
     private lateinit var rvAnggota: RecyclerView
     private lateinit var btnTambahAnggota: MaterialButton
     private lateinit var adapter: AnggotaAdapter
+
+    // shared ViewModel (dipakai oleh activity yang sama)
+    private val viewModel: KoperasiViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -32,14 +36,19 @@ class KelolaAnggotaFragment : Fragment() {
 
         rvAnggota.layoutManager = LinearLayoutManager(requireContext())
 
+        // Awalnya list kosong, nanti diisi dari LiveData ViewModel
         adapter = AnggotaAdapter(
-            DummyUserData.users.toMutableList(),
+            mutableListOf(),
             onEdit = { user -> showEditDialog(user) },
             onDeactivate = { user -> deactivateUser(user) },
-            onDelete = { user, position -> showDeleteOptions(user, position) }
+            onDelete = { user, _ -> showDeleteOptions(user) }
         )
-
         rvAnggota.adapter = adapter
+
+        // Observasi data user dari ViewModel
+        viewModel.users.observe(viewLifecycleOwner) { list ->
+            adapter.refreshData(list)
+        }
 
         btnTambahAnggota.setOnClickListener { showAddDialog() }
 
@@ -48,13 +57,14 @@ class KelolaAnggotaFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        adapter.refreshData(DummyUserData.users)
+        // reload dari DB (jaga-jaga kalau ada perubahan dari layar lain)
+        viewModel.loadUsers()
     }
+
     private fun showAddDialog() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_add_user, null)
         val etNama = dialogView.findViewById<EditText>(R.id.etNama)
         val etEmail = dialogView.findViewById<EditText>(R.id.etEmail)
-
 
         AlertDialog.Builder(requireContext())
             .setTitle("Tambah Anggota Baru")
@@ -68,15 +78,8 @@ class KelolaAnggotaFragment : Fragment() {
                     return@setPositiveButton
                 }
 
-                val newUser = User(
-                    kodePegawai = "EMP" + (DummyUserData.users.size + 1).toString().padStart(3, '0'),
-                    email = email,
-                    password = "1234",
-                    nama = nama,
-                    statusKeanggotaan = "Anggota Aktif"
-                )
-                DummyUserData.users.add(newUser)
-                adapter.notifyItemInserted(DummyUserData.users.size - 1)
+                // Simpan lewat ViewModel -> Repository -> Room
+                viewModel.tambahAnggota(nama, email)
                 Toast.makeText(requireContext(), "Anggota baru ditambahkan!", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("Batal", null)
@@ -95,30 +98,35 @@ class KelolaAnggotaFragment : Fragment() {
             .setTitle("Edit Data Anggota")
             .setView(dialogView)
             .setPositiveButton("Simpan") { _, _ ->
-                user.nama = etNama.text.toString()
-                user.email = etEmail.text.toString()
-                adapter.notifyDataSetChanged()
+                val namaBaru = etNama.text.toString().trim()
+                val emailBaru = etEmail.text.toString().trim()
+
+                if (namaBaru.isEmpty() || emailBaru.isEmpty()) {
+                    Toast.makeText(requireContext(), "Isi semua data!", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+
+                // Update lewat ViewModel, bukan edit objek di memori saja
+                viewModel.updateAnggota(user.kodePegawai, namaBaru, emailBaru)
                 Toast.makeText(requireContext(), "Data anggota diperbarui!", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("Batal", null)
             .show()
     }
 
-    private fun showDeleteOptions(user: User, position: Int) {
+    private fun showDeleteOptions(user: User) {
         val options = arrayOf("Nonaktifkan", "Hapus Permanen")
 
-        android.app.AlertDialog.Builder(requireContext())
+        AlertDialog.Builder(requireContext())
             .setTitle("Kelola Anggota: ${user.nama}")
             .setItems(options) { _, which ->
                 when (which) {
                     0 -> { // Nonaktifkan
-                        user.statusKeanggotaan = "Nonaktif"
-                        adapter.refreshData(DummyUserData.users)
+                        viewModel.nonaktifkanAnggota(user)
                         Toast.makeText(requireContext(), "${user.nama} dinonaktifkan", Toast.LENGTH_SHORT).show()
                     }
                     1 -> { // Hapus Permanen
-                        DummyUserData.users.removeAll { it.kodePegawai == user.kodePegawai }
-                        adapter.refreshData(DummyUserData.users)
+                        viewModel.hapusAnggota(user)
                         Toast.makeText(requireContext(), "${user.nama} dihapus permanen", Toast.LENGTH_SHORT).show()
                     }
                 }
@@ -128,8 +136,7 @@ class KelolaAnggotaFragment : Fragment() {
     }
 
     private fun deactivateUser(user: User) {
-        user.statusKeanggotaan = "Nonaktif"
-        adapter.notifyDataSetChanged()
+        viewModel.nonaktifkanAnggota(user)
         Toast.makeText(requireContext(), "${user.nama} dinonaktifkan", Toast.LENGTH_SHORT).show()
     }
 }

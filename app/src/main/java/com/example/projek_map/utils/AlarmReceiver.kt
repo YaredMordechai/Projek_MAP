@@ -95,7 +95,7 @@ class AlarmReceiver : BroadcastReceiver() {
         val upcoming = DummyUserData.getUpcomingDues(kodePegawai, daysAhead = 3)
         if (upcoming.isNotEmpty()) {
             val lines = upcoming.joinToString(separator = "\n") { r ->
-                "Pinj #${r.pinjamanId} • ${r.dueDate}"
+                "Pinj #${r.pinjamanId} • ${r.tanggalJatuhTempo}"
             }
             NotificationHelper.showDueNotification(
                 context = context,

@@ -6,47 +6,54 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlin.math.max
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
 
 // =====================
-// Data classes
+// Data classes (sekaligus Entity Room)
 // =====================
 
+@Entity(tableName = "users")
 data class User(
-    val kodePegawai: String,
+    @PrimaryKey val kodePegawai: String,
     var email: String,
     var password: String,
     var nama: String,
     var statusKeanggotaan: String
 )
 
+@Entity(tableName = "admins")
 data class Admin(
-    val kodePegawai: String,
+    @PrimaryKey val kodePegawai: String,
     val email: String,
     val password: String,
     val nama: String,
     val role: String = "Admin"
 )
 
+@Entity(tableName = "pinjaman")
 data class Pinjaman(
-    val id: Int,
+    @PrimaryKey val id: Int,
     val kodePegawai: String,
-    val jumlah: Int,          // pokok pinjaman
-    val tenor: Int,           // bulan
+    val jumlah: Int,
+    val tenor: Int,
     var status: String,       // Proses / Disetujui / Ditolak / Lunas
     val bunga: Double = 0.1,  // 10% (dummy)
     val angsuranTerbayar: Int = 0,
 )
 
+@Entity(tableName = "simpanan")
 data class Simpanan(
-    val kodePegawai: String,
+    @PrimaryKey val kodePegawai: String,
     var simpananPokok: Double,
     var simpananWajib: Double,
     var simpananSukarela: Double
 )
 
-// 🔹 histori ANGsuran pinjaman
+@Entity(tableName = "histori_pembayaran")
 data class HistoriPembayaran(
-    val id: Int,
+    @PrimaryKey val id: Int,
     val kodePegawai: String,
     val pinjamanId: Int,
     val tanggal: String,
@@ -55,9 +62,9 @@ data class HistoriPembayaran(
     val buktiPembayaranUri: String? = null
 )
 
-// 🔹 histori SIMPANAN
+@Entity(tableName = "histori_simpanan")
 data class HistoriSimpanan(
-    val id: Int,
+    @PrimaryKey val id: Int,
     val kodePegawai: String,
     val tanggal: String,
     val jenis: String,   // Contoh: "Setoran Wajib", "Penarikan Sukarela"
@@ -65,20 +72,20 @@ data class HistoriSimpanan(
     val keterangan: String
 )
 
-// ✅ Bukti pembayaran per-anggota (tanpa pinjamanId) — dipakai SimpananFragment
+@Entity(tableName = "bukti_pembayaran_anggota")
 data class BuktiPembayaranAnggota(
-    val id: Int,
+    @PrimaryKey val id: Int,
     val kodePegawai: String,
     val uri: String,
     val tanggal: String
 )
 
 data class AngsuranItem(
-    val periode: Int,          // 1..tenor
-    val pokok: Int,            // porsi pokok bulan ini
-    val bunga: Int,            // porsi bunga bulan ini
-    val total: Int,            // cicilan bulan ini
-    val sisaPokok: Int         // sisa pokok setelah bayar bulan ini
+    val periode: Int,
+    val pokok: Int,
+    val bunga: Int,
+    val total: Int,
+    val sisaPokok: Int
 )
 
 data class RincianPinjaman(
@@ -89,39 +96,44 @@ data class RincianPinjaman(
     val terbayar: Int,
     val sisaBayar: Int,
     val sisaPokok: Int,
-    val angsuranDibayar: Int   // sudah berapa kali angsuran (pembulatan ke bawah)
+    val angsuranDibayar: Int
 )
 
 data class DueReminder(
     val pinjamanId: Int,
     val kodePegawai: String,
-    val dueDate: String,  // yyyy-MM-dd
-    val nominalCicilan: Int
+    val nama: String,
+    val tanggalJatuhTempo: String,
+    val jumlahCicilan: Int
 )
 
+@Entity(tableName = "pengumuman")
 data class Pengumuman(
-    val id: Int,
+    @PrimaryKey val id: Int,
     val judul: String,
     val isi: String,
     val tanggal: String  // yyyy-MM-dd
 )
 
+@Entity(tableName = "transaksi_simpanan")
 data class TransaksiSimpanan(
-    val id: Int,
+    @PrimaryKey val id: Int,
     val kodePegawai: String,
-    val jenis: String,      // "Pokok", "Wajib", atau "Sukarela"
+    val jenis: String,     // Pokok / Wajib / Sukarela
     val jumlah: Double,
-    val tanggal: String
+    val tanggal: String    // yyyy-MM-dd
 )
 
+@Entity(tableName = "kas_transaksi")
 data class KasTransaksi(
-    val id: Int,
+    @PrimaryKey val id: Int,
     val tanggal: String,   // yyyy-MM-dd
     val jenis: String,     // "Masuk" atau "Keluar"
-    val kategori: String,  // Contoh: Iuran, Operasional, dll
+    val kategori: String,
     val deskripsi: String,
-    val jumlah: Double     // nominal positif (logika + / - ditentukan oleh jenis)
+    val jumlah: Double
 )
+
 // =====================
 // Dummy store & helpers
 // =====================
@@ -718,12 +730,13 @@ object DummyUserData {
         val list = mutableListOf<DueReminder>()
 
         pinjamanList
-            .filter { it.kodePegawai == kodePegawai && it.status.equals("Disetujui", true) || it.status.equals("Aktif", true) }
+            .filter {
+                it.kodePegawai == kodePegawai &&
+                        (it.status.equals("Disetujui", true) || it.status.equals("Aktif", true))
+            }
             .forEach { p ->
-                // hitung cicilan per bulan (pakai helper yang sudah ada; kalau kamu punya anuitas gunakan yg itu)
                 val cicilan = hitungCicilanPerBulan(p.id).coerceAtLeast(0)
 
-                // due di bulan ini:
                 val dueCal = java.util.Calendar.getInstance().apply {
                     set(java.util.Calendar.YEAR, y)
                     set(java.util.Calendar.MONTH, m)
@@ -734,24 +747,37 @@ object DummyUserData {
                     set(java.util.Calendar.MILLISECOND, 0)
                 }
 
-                // jika sudah lewat tanggal 10 bulan ini, geser ke bulan depan
                 if (d > DUE_DAY) {
                     dueCal.add(java.util.Calendar.MONTH, 1)
                 }
 
-                // selisih hari
                 val diffMs = dueCal.timeInMillis - todayCal.timeInMillis
                 val diffDays = kotlin.math.ceil(diffMs / (1000.0 * 60 * 60 * 24)).toInt()
 
                 if (diffDays in 0..daysAhead) {
-                    val dueStr = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale("id","ID"))
-                        .format(dueCal.time)
-                    list.add(DueReminder(p.id, p.kodePegawai, dueStr, cicilan))
+                    val dueStr = java.text.SimpleDateFormat(
+                        "yyyy-MM-dd",
+                        java.util.Locale("id", "ID")
+                    ).format(dueCal.time)
+
+                    // ambil nama dari list user
+                    val nama = findUser(p.kodePegawai)?.nama ?: "Anggota ${p.kodePegawai}"
+
+                    list.add(
+                        DueReminder(
+                            pinjamanId = p.id,
+                            kodePegawai = p.kodePegawai,
+                            nama = nama,
+                            tanggalJatuhTempo = dueStr,
+                            jumlahCicilan = cicilan
+                        )
+                    )
                 }
             }
 
         return list
     }
+
 
     // =====================
     // Pengumuman Koperasi
