@@ -11,14 +11,20 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
-import com.example.projek_map.data.DummyUserData
 import com.example.projek_map.data.Pengumuman
+import com.example.projek_map.network.ApiClient
+import com.example.projek_map.utils.AlarmReceiver
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import androidx.appcompat.widget.LinearLayoutCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class PengumumanFragment : Fragment() {
 
@@ -27,6 +33,7 @@ class PengumumanFragment : Fragment() {
     private var emptyState: TextView? = null
     private var fab: FloatingActionButton? = null
     private lateinit var adapter: PengumumanAdapter
+    private val items = mutableListOf<Pengumuman>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -41,19 +48,48 @@ class PengumumanFragment : Fragment() {
         fab = v.findViewById(R.id.fabAddAnnouncement)
 
         rv?.layoutManager = LinearLayoutManager(requireContext())
-        adapter = PengumumanAdapter(DummyUserData.pengumumanList)
+        adapter = PengumumanAdapter(items)
         rv?.adapter = adapter
-
-        updateEmptyState()
 
         fab?.visibility = if (isAdmin) VISIBLE else GONE
         fab?.setOnClickListener { showAddAnnouncementDialog() }
 
+        loadPengumuman()
         return v
     }
 
+    private fun loadPengumuman() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val res = ApiClient.instance.getPengumuman()
+                withContext(Dispatchers.Main) {
+                    if (res.isSuccessful && res.body()?.success == true) {
+                        items.clear()
+                        items.addAll(res.body()?.pengumuman ?: emptyList())
+                        adapter.notifyDataSetChanged()
+                        updateEmptyState()
+                    } else {
+                        Toast.makeText(
+                            requireContext(),
+                            res.body()?.message ?: "Gagal memuat pengumuman",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        requireContext(),
+                        "Error koneksi: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+    }
+
     private fun updateEmptyState() {
-        if (DummyUserData.pengumumanList.isEmpty()) {
+        if (items.isEmpty()) {
             emptyState?.visibility = VISIBLE
             rv?.visibility = GONE
         } else {
@@ -63,7 +99,6 @@ class PengumumanFragment : Fragment() {
     }
 
     private fun showAddAnnouncementDialog() {
-        // Dialog sederhana tanpa layout terpisah (agar minim resiko crash)
         val konteks = requireContext()
         val inputJudul = EditText(konteks).apply {
             hint = "Judul pengumuman"
@@ -90,23 +125,56 @@ class PengumumanFragment : Fragment() {
                 val isi = inputIsi.text.toString().trim()
                 if (judul.isEmpty() || isi.isEmpty()) return@setPositiveButton
 
-                val baru = DummyUserData.addPengumuman(judul, isi)
-                adapter.notifyItemInserted(0)
-                rv?.scrollToPosition(0)
-                updateEmptyState()
-
-                // Broadcast notifikasi untuk semua device (mode sederhana)
-                try {
-                    val intent = Intent(konteks, com.example.projek_map.utils.AlarmReceiver::class.java).apply {
-                        putExtra("type", "pengumuman_baru")
-                        putExtra("title", "Pengumuman Baru")
-                        putExtra("message", "${baru.judul} (${baru.tanggal})")
-                    }
-                    konteks.sendBroadcast(intent)
-                } catch (_: Throwable) { /* no-op */ }
+                tambahPengumuman(judul, isi)
             }
             .setNegativeButton("Batal", null)
             .show()
+    }
+
+    private fun tambahPengumuman(judul: String, isi: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val res = ApiClient.instance.addPengumuman(judul, isi)
+                withContext(Dispatchers.Main) {
+                    if (res.isSuccessful && res.body()?.success == true) {
+                        val baru = res.body()?.pengumuman
+                        if (baru != null) {
+                            items.add(0, baru)
+                            adapter.notifyItemInserted(0)
+                            rv?.scrollToPosition(0)
+                            updateEmptyState()
+
+                            // Broadcast notifikasi (pengumuman baru)
+                            try {
+                                val intent = Intent(
+                                    requireContext(),
+                                    AlarmReceiver::class.java
+                                ).apply {
+                                    putExtra("type", "pengumuman_baru")
+                                    putExtra("title", "Pengumuman Baru")
+                                    putExtra("message", "${baru.judul} (${baru.tanggal})")
+                                }
+                                requireContext().sendBroadcast(intent)
+                            } catch (_: Throwable) { }
+                        }
+                    } else {
+                        Toast.makeText(
+                            requireContext(),
+                            res.body()?.message ?: "Gagal menambah pengumuman",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        requireContext(),
+                        "Error koneksi: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
     }
 
     private class PengumumanAdapter(
@@ -120,7 +188,8 @@ class PengumumanFragment : Fragment() {
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-            val v = LayoutInflater.from(parent.context).inflate(R.layout.item_pengumuman, parent, false)
+            val v = LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_pengumuman, parent, false)
             return VH(v)
         }
 
@@ -134,5 +203,3 @@ class PengumumanFragment : Fragment() {
         override fun getItemCount(): Int = items.size
     }
 }
-
-// Tambahkan import ini di atas file (di bawah package):

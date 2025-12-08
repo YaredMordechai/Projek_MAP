@@ -1,61 +1,54 @@
 package com.example.projek_map.utils
 
 import android.content.Context
+import android.content.SharedPreferences
 
 class PrefManager(context: Context) {
 
-    // ✅ Pertahankan struktur & key lama
-    private val PREF_NAME = "koperasi_pref"
+    private val pref: SharedPreferences =
+        context.getSharedPreferences("koperasi_prefs", Context.MODE_PRIVATE)
 
-    private val KEY_IS_LOGGED_IN = "is_logged_in"
-    private val KEY_USER_NAME = "user_name"
-    private val KEY_EMAIL = "user_email"
-    private val KEY_KODE_PEGAWAI = "kode_pegawai"
+    companion object {
+        private const val KEY_IS_LOGGED_IN = "is_logged_in"
+        private const val KEY_IS_ADMIN = "is_admin"
+        private const val KEY_KODE_PEGAWAI = "kode_pegawai"
+        private const val KEY_EMAIL = "email"
+        private const val KEY_NAMA = "nama"
+        private const val KEY_LAST_LOGIN = "last_login"
+    }
 
-    // ✅ Tambahan key untuk fitur pengumuman (dipakai AlarmReceiver Mode B)
-    private val KEY_LAST_SEEN_ANNOUNCE = "last_seen_announce"
-
-    // ✅ Tambahan key baru untuk flag admin (tidak mengganggu API lama)
-    private val KEY_IS_ADMIN = "is_admin"
-
-    private val pref = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-    private val editor = pref.edit()
-
-    // ====== API lama (tetap ada) ======
-    fun saveLogin(userName: String, email: String, kodePegawai: String) {
-        editor.putBoolean(KEY_IS_LOGGED_IN, true)
-        editor.putString(KEY_USER_NAME, userName)
-        editor.putString(KEY_EMAIL, email)
-        editor.putString(KEY_KODE_PEGAWAI, kodePegawai)
-        editor.apply()
+    fun saveLogin(
+        kodePegawai: String,
+        email: String,
+        nama: String,
+        isAdmin: Boolean
+    ) {
+        pref.edit()
+            .putBoolean(KEY_IS_LOGGED_IN, true)
+            .putBoolean(KEY_IS_ADMIN, isAdmin)
+            .putString(KEY_KODE_PEGAWAI, kodePegawai)
+            .putString(KEY_EMAIL, email)
+            .putString(KEY_NAMA, nama)
+            .apply()
     }
 
     fun isLoggedIn(): Boolean = pref.getBoolean(KEY_IS_LOGGED_IN, false)
-    fun getUserName(): String? = pref.getString(KEY_USER_NAME, "")
-    fun getEmail(): String? = pref.getString(KEY_EMAIL, "")
-    fun getKodePegawai(): String? = pref.getString(KEY_KODE_PEGAWAI, "")
-
-    fun logout() {
-        editor.clear()
-        editor.apply()
-    }
-
-    // ====== API baru (dipakai AlarmReceiver Mode B) ======
-    fun getLastSeenAnnouncementDate(): String? =
-        pref.getString(KEY_LAST_SEEN_ANNOUNCE, null)
-
-    fun setLastSeenAnnouncementDate(date: String) {
-        editor.putString(KEY_LAST_SEEN_ANNOUNCE, date).apply()
-    }
-
-    // ====== Tambahan kecil: flag admin (opsional, tidak memecah kompatibilitas) ======
-    fun setIsAdmin(isAdmin: Boolean) {
-        editor.putBoolean(KEY_IS_ADMIN, isAdmin).apply()
-    }
 
     fun isAdmin(): Boolean = pref.getBoolean(KEY_IS_ADMIN, false)
 
-    // ====== ALIAS kompatibilitas (tambahan minimal) ======
-    // Beberapa tempat di kode memanggil getIsAdmin(); supaya tidak error, kita sediakan alias ini.
-    fun getIsAdmin(): Boolean = isAdmin()
+    fun getKodePegawai(): String? = pref.getString(KEY_KODE_PEGAWAI, null)
+
+    fun getEmail(): String? = pref.getString(KEY_EMAIL, null)
+
+    fun getUserName(): String? = pref.getString(KEY_NAMA, null)
+
+    fun saveLastLogin(time: String) {
+        pref.edit().putString(KEY_LAST_LOGIN, time).apply()
+    }
+
+    fun getLastLogin(): String? = pref.getString(KEY_LAST_LOGIN, "-")
+
+    fun logout() {
+        pref.edit().clear().apply()
+    }
 }

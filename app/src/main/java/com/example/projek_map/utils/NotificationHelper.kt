@@ -24,7 +24,9 @@ object NotificationHelper {
                 CHANNEL_NAME,
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply { description = CHANNEL_DESC }
-            val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+            val manager =
+                context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager.createNotificationChannel(channel)
         }
     }
@@ -60,7 +62,7 @@ object NotificationHelper {
         dest: String?
     ): NotificationCompat.Builder {
         val intent = Intent(context, MainActivity::class.java).apply {
-            // biar MainActivity bisa langsung buka tab tertentu
+            // Biar MainActivity bisa langsung buka tab tertentu
             dest?.let { putExtra("dest", it) }
             addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         }
@@ -70,13 +72,13 @@ object NotificationHelper {
 
         val pendingIntent = PendingIntent.getActivity(
             context,
-            /*requestCode*/ dest.hashCode(), // beda dest → beda PI
+            /*requestCode*/ dest.hashCode(), // beda dest → beda PendingIntent
             intent,
             flags
         )
 
         return NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_notification) // pastikan ada
+            .setSmallIcon(R.drawable.ic_notification) // pastikan icon ada
             .setContentTitle(title)
             .setContentText(message)
             .setStyle(NotificationCompat.BigTextStyle().bigText(message))

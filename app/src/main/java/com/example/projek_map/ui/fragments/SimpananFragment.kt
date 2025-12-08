@@ -1,237 +1,248 @@
 package com.example.projek_map.ui.fragments
 
-import android.Manifest
-import android.content.pm.PackageManager
+import android.app.AlertDialog
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
-import android.widget.ArrayAdapter
-import android.widget.ImageView
-import android.widget.TextView
-import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
-import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
+import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
-import com.example.projek_map.data.DummyUserData
+import com.example.projek_map.data.HistoriSimpanan
+import com.example.projek_map.data.Simpanan
+import com.example.projek_map.data.TransaksiSimpanan
+import com.example.projek_map.network.ApiClient
 import com.example.projek_map.ui.adapters.HistoriSimpananAdapter
+import com.example.projek_map.ui.adapters.TransaksiSimpananAdapter
 import com.example.projek_map.utils.PrefManager
 import com.google.android.material.button.MaterialButton
-import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.textfield.MaterialAutoCompleteTextView
-import com.google.android.material.textfield.TextInputEditText
-import java.io.File
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.text.NumberFormat
+import java.util.*
 
 class SimpananFragment : Fragment() {
 
+    private lateinit var tvSaldoPokok: TextView
+    private lateinit var tvSaldoWajib: TextView
+    private lateinit var tvSaldoSukarela: TextView
     private lateinit var tvTotalSaldo: TextView
+    private lateinit var btnSetorPokok: MaterialButton
+    private lateinit var btnSetorWajib: MaterialButton
+    private lateinit var btnSetorSukarela: MaterialButton
+    private lateinit var btnTarikSukarela: MaterialButton
     private lateinit var rvHistori: RecyclerView
-    private lateinit var btnSetor: MaterialButton
-    private lateinit var btnTarik: MaterialButton
-    private lateinit var btnUploadBukti: MaterialButton
-    private lateinit var btnAmbilFoto: MaterialButton
-    private lateinit var ivBuktiPreview: ImageView
+    private lateinit var rvTransaksi: RecyclerView
+    private lateinit var tvEmptyHistori: TextView
+    private lateinit var tvEmptyTransaksi: TextView
 
-    private lateinit var inputJumlah: TextInputEditText
-    private lateinit var dropdownJenis: MaterialAutoCompleteTextView
+    private val dataHistori = mutableListOf<HistoriSimpanan>()
+    private val dataTransaksi = mutableListOf<TransaksiSimpanan>()
+    private var dataSimpanan: Simpanan? = null
 
-    private lateinit var prefManager: PrefManager
     private lateinit var adapterHistori: HistoriSimpananAdapter
-    private val dataHistori = mutableListOf<com.example.projek_map.data.HistoriSimpanan>()
+    private lateinit var adapterTransaksi: TransaksiSimpananAdapter
 
-    private val jenisList = listOf("Simpanan Pokok", "Simpanan Wajib", "Simpanan Sukarela")
-    private val nilaiPokok = DummyUserData.DEFAULT_POKOK
-    private val nilaiWajib = DummyUserData.DEFAULT_WAJIB
-
-    private var buktiUri: Uri? = null
-    private var tempPhotoUri: Uri? = null
-
-    // Galeri
-    private val pickImage = registerForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        if (uri != null) onBuktiSelected(uri, "Galeri")
-    }
-
-    // Kamera
-    private val takePicture = registerForActivityResult(
-        ActivityResultContracts.TakePicture()
-    ) { success: Boolean ->
-        if (success && tempPhotoUri != null) onBuktiSelected(tempPhotoUri!!, "Kamera")
-        else Toast.makeText(requireContext(), "Gagal mengambil foto", Toast.LENGTH_SHORT).show()
-    }
-
-    // Izin kamera
-    private val requestCameraPermission = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        if (granted) launchCamera()
-        else Toast.makeText(requireContext(), "Izin kamera ditolak", Toast.LENGTH_SHORT).show()
-    }
+    private val rupiah: NumberFormat = NumberFormat.getCurrencyInstance(Locale("in", "ID"))
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
-        val view = inflater.inflate(R.layout.fragment_simpanan, container, false)
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val v = inflater.inflate(R.layout.fragment_simpanan, container, false)
 
-        prefManager = PrefManager(requireContext())
+        tvSaldoPokok = v.findViewById(R.id.tvSaldoPokok)
+        tvSaldoWajib = v.findViewById(R.id.tvSaldoWajib)
+        tvSaldoSukarela = v.findViewById(R.id.tvSaldoSukarela)
+        tvTotalSaldo = v.findViewById(R.id.tvTotalSaldo)
 
-        tvTotalSaldo = view.findViewById(R.id.tvTotalSaldoSimpanan)
-        rvHistori = view.findViewById(R.id.rvHistoriSimpanan)
-        btnSetor = view.findViewById(R.id.btnSetor)
-        btnTarik = view.findViewById(R.id.btnTarik)
-        btnUploadBukti = view.findViewById(R.id.btnUploadBukti)
-        btnAmbilFoto = view.findViewById(R.id.btnAmbilFoto)
-        ivBuktiPreview = view.findViewById(R.id.ivBuktiPreview)
+        btnSetorPokok = v.findViewById(R.id.btnSetorPokok)
+        btnSetorWajib = v.findViewById(R.id.btnSetorWajib)
+        btnSetorSukarela = v.findViewById(R.id.btnSetorSukarela)
+        btnTarikSukarela = v.findViewById(R.id.btnTarikSukarela)
 
-        inputJumlah = view.findViewById(R.id.inputJumlahSimpanan)
-        dropdownJenis = view.findViewById(R.id.dropdownJenisSimpanan)
+        rvHistori = v.findViewById(R.id.rvHistoriSimpanan)
+        rvTransaksi = v.findViewById(R.id.rvTransaksiSimpanan)
+        tvEmptyHistori = v.findViewById(R.id.tvEmptyHistori)
+        tvEmptyTransaksi = v.findViewById(R.id.tvEmptyTransaksi)
 
         rvHistori.layoutManager = LinearLayoutManager(requireContext())
+        rvTransaksi.layoutManager = LinearLayoutManager(requireContext())
+
         adapterHistori = HistoriSimpananAdapter(dataHistori)
+        adapterTransaksi = TransaksiSimpananAdapter(
+            dataTransaksi,
+            onEdit = { _, _ ->
+                Toast.makeText(requireContext(), "Edit transaksi belum di-API-kan", Toast.LENGTH_SHORT).show()
+            },
+            onDelete = { _, _ ->
+                Toast.makeText(requireContext(), "Hapus transaksi belum di-API-kan", Toast.LENGTH_SHORT).show()
+            }
+        )
+
         rvHistori.adapter = adapterHistori
+        rvTransaksi.adapter = adapterTransaksi
 
-        val adapterJenis = ArrayAdapter(requireContext(),
-            android.R.layout.simple_dropdown_item_1line, jenisList)
-        dropdownJenis.setAdapter(adapterJenis)
-        dropdownJenis.setOnItemClickListener { _, _, position, _ ->
-            when (jenisList[position]) {
-                "Simpanan Pokok" -> {
-                    inputJumlah.setText(nilaiPokok.toInt().toString())
-                    inputJumlah.isEnabled = false
+        val pref = PrefManager(requireContext())
+        val kodePegawai = pref.getKodePegawai()
+
+        if (kodePegawai != null) {
+            loadDataSimpanan(kodePegawai)
+        } else {
+            Toast.makeText(requireContext(), "Kode pegawai tidak ditemukan", Toast.LENGTH_SHORT).show()
+        }
+
+        btnSetorPokok.setOnClickListener {
+            if (kodePegawai != null) showDialogTransaksi(kodePegawai, "pokok")
+        }
+        btnSetorWajib.setOnClickListener {
+            if (kodePegawai != null) showDialogTransaksi(kodePegawai, "wajib")
+        }
+        btnSetorSukarela.setOnClickListener {
+            if (kodePegawai != null) showDialogTransaksi(kodePegawai, "sukarela")
+        }
+        btnTarikSukarela.setOnClickListener {
+            if (kodePegawai != null) showDialogTransaksi(kodePegawai, "penarikan")
+        }
+
+        return v
+    }
+
+    private fun loadDataSimpanan(kodePegawai: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val res = ApiClient.instance.getSimpanan(kodePegawai)
+                withContext(Dispatchers.Main) {
+                    if (res.isSuccessful && res.body()?.success == true) {
+                        val body = res.body()!!
+                        dataSimpanan = body.simpanan
+                        dataHistori.clear()
+                        dataHistori.addAll(body.histori ?: emptyList())
+                        dataTransaksi.clear()
+                        dataTransaksi.addAll(body.transaksi ?: emptyList())
+
+                        adapterHistori.notifyDataSetChanged()
+                        adapterTransaksi.notifyDataSetChanged()
+
+                        updateSaldo()
+                        updateEmptyState()
+                    } else {
+                        Toast.makeText(
+                            requireContext(),
+                            res.body()?.message ?: "Gagal memuat simpanan",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
-                "Simpanan Wajib" -> {
-                    inputJumlah.setText(nilaiWajib.toInt().toString())
-                    inputJumlah.isEnabled = false
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        requireContext(),
+                        "Error koneksi: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
-                else -> {
-                    inputJumlah.setText("")
-                    inputJumlah.isEnabled = true
-                }
             }
-        }
-
-        loadHistoriSimpanan()
-
-        btnSetor.setOnClickListener {
-            val jenis = dropdownJenis.text.toString().trim()
-            val jumlah = inputJumlah.text?.toString()?.toDoubleOrNull()
-            val kodePegawai = prefManager.getKodePegawai() ?: "EMP001"
-
-            if (jenis.isEmpty()) {
-                Toast.makeText(requireContext(), "Pilih jenis simpanan", Toast.LENGTH_SHORT).show(); return@setOnClickListener
-            }
-            if (jumlah == null || jumlah <= 0) {
-                Toast.makeText(requireContext(), "Masukkan jumlah valid", Toast.LENGTH_SHORT).show(); return@setOnClickListener
-            }
-
-            DummyUserData.tambahSimpanan(kodePegawai, jenis, jumlah, "-")
-            loadHistoriSimpanan()
-            resetForm()
-
-            // Pop-up dialog konfirmasi
-            showPopup("Setoran Berhasil",
-                "Setoran $jenis sebesar Rp ${String.format("%,.0f", jumlah).replace(',', '.')} tercatat.")
-        }
-
-        btnTarik.setOnClickListener {
-            val jenis = dropdownJenis.text.toString().trim()
-            val jumlah = inputJumlah.text?.toString()?.toDoubleOrNull()
-            val kodePegawai = prefManager.getKodePegawai() ?: "EMP001"
-
-            if (jenis.isEmpty()) {
-                Toast.makeText(requireContext(), "Pilih jenis simpanan", Toast.LENGTH_SHORT).show(); return@setOnClickListener
-            }
-            if (jumlah == null || jumlah <= 0) {
-                Toast.makeText(requireContext(), "Masukkan jumlah valid", Toast.LENGTH_SHORT).show(); return@setOnClickListener
-            }
-
-            DummyUserData.tambahSimpanan(kodePegawai, jenis, -jumlah, "-")
-            loadHistoriSimpanan()
-            resetForm()
-
-            // Pop-up dialog konfirmasi
-            showPopup("Penarikan Berhasil",
-                "Penarikan $jenis sebesar Rp ${String.format("%,.0f", jumlah).replace(',', '.')} tercatat.")
-        }
-
-        btnUploadBukti.setOnClickListener { pickImage.launch("image/*") }
-
-        btnAmbilFoto.setOnClickListener {
-            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
-                != PackageManager.PERMISSION_GRANTED
-            ) {
-                requestCameraPermission.launch(Manifest.permission.CAMERA)
-            } else launchCamera()
-        }
-
-        return view
-    }
-
-    private fun launchCamera() {
-        val imgFile = File.createTempFile(
-            "bukti_", ".jpg",
-            requireContext().cacheDir.resolve("images").apply { mkdirs() }
-        )
-        tempPhotoUri = FileProvider.getUriForFile(
-            requireContext(),
-            "${requireContext().packageName}.fileprovider",
-            imgFile
-        )
-        takePicture.launch(tempPhotoUri)
-    }
-
-    private fun onBuktiSelected(uri: Uri, source: String) {
-        buktiUri = uri
-        ivBuktiPreview.visibility = View.VISIBLE
-        ivBuktiPreview.setImageURI(uri)
-
-        val kodePegawai = prefManager.getKodePegawai() ?: "EMP001"
-        DummyUserData.simpanBuktiPembayaran(kodePegawai, uri.toString())
-
-        showPopup(
-            "Bukti Pembayaran",
-            "Bukti dari $source berhasil diunggah.\nStatus: Menunggu verifikasi admin."
-        )
-    }
-
-    private fun resetForm() {
-        inputJumlah.setText("")
-        inputJumlah.isEnabled = true
-        dropdownJenis.setText("", false)
-        inputJumlah.clearFocus()
-        dropdownJenis.clearFocus()
-
-        view?.let { v ->
-            val imm = requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE)
-                    as InputMethodManager
-            imm.hideSoftInputFromWindow(v.windowToken, 0)
         }
     }
 
-    private fun loadHistoriSimpanan() {
-        val kodePegawai = prefManager.getKodePegawai() ?: "EMP001"
-        dataHistori.clear()
-        dataHistori.addAll(DummyUserData.getHistoriSimpanan(kodePegawai))
-        adapterHistori.notifyDataSetChanged()
+    private fun updateSaldo() {
+        val s = dataSimpanan
+        val pokok = s?.simpananPokok ?: 0.0
+        val wajib = s?.simpananWajib ?: 0.0
+        val sukarela = s?.simpananSukarela ?: 0.0
+        val total = pokok + wajib + sukarela
 
-        val total = DummyUserData.getTotalSimpanan(kodePegawai)
-        tvTotalSaldo.text = "Total Saldo Simpanan: Rp ${String.format("%,.0f", total).replace(',', '.')}"
+        tvSaldoPokok.text = rupiah.format(pokok)
+        tvSaldoWajib.text = rupiah.format(wajib)
+        tvSaldoSukarela.text = rupiah.format(sukarela)
+        tvTotalSaldo.text = rupiah.format(total)
     }
 
-    // 🔹 Fungsi popup reusable
-    private fun showPopup(title: String, message: String) {
+    private fun updateEmptyState() {
+        tvEmptyHistori.visibility = if (dataHistori.isEmpty()) View.VISIBLE else View.GONE
+        rvHistori.visibility = if (dataHistori.isEmpty()) View.GONE else View.VISIBLE
+
+        tvEmptyTransaksi.visibility = if (dataTransaksi.isEmpty()) View.VISIBLE else View.GONE
+        rvTransaksi.visibility = if (dataTransaksi.isEmpty()) View.GONE else View.VISIBLE
+    }
+
+    private fun showDialogTransaksi(kodePegawai: String, jenis: String) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_transaksi_simpanan, null)
+        val etJumlah = dialogView.findViewById<EditText>(R.id.etJumlah)
+        val etKeterangan = dialogView.findViewById<EditText>(R.id.etKeterangan)
+        val tvLabel = dialogView.findViewById<TextView>(R.id.tvLabelJenis)
+
+        tvLabel.text = when (jenis) {
+            "pokok" -> "Setoran Simpanan Pokok"
+            "wajib" -> "Setoran Simpanan Wajib"
+            "sukarela" -> "Setoran Simpanan Sukarela"
+            "penarikan" -> "Penarikan Simpanan Sukarela"
+            else -> "Transaksi Simpanan"
+        }
+
         AlertDialog.Builder(requireContext())
-            .setTitle(title)
-            .setMessage(message)
-            .setPositiveButton("OK", null)
+            .setTitle("Transaksi Simpanan")
+            .setView(dialogView)
+            .setPositiveButton("Simpan") { _, _ ->
+                val jumlah = etJumlah.text.toString().toDoubleOrNull()
+                val ket = etKeterangan.text.toString().trim()
+
+                if (jumlah == null || jumlah <= 0.0) {
+                    Toast.makeText(requireContext(), "Jumlah tidak valid", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+
+                tambahTransaksiSimpanan(kodePegawai, jenis, jumlah, ket)
+            }
+            .setNegativeButton("Batal", null)
             .show()
+    }
+
+    private fun tambahTransaksiSimpanan(
+        kodePegawai: String,
+        jenis: String,
+        jumlah: Double,
+        keterangan: String
+    ) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val res = ApiClient.instance.tambahSimpanan(
+                    kodePegawai = kodePegawai,
+                    jenis = jenis,
+                    jumlah = jumlah,
+                    keterangan = keterangan
+                )
+                withContext(Dispatchers.Main) {
+                    if (res.isSuccessful && res.body()?.success == true) {
+                        Toast.makeText(
+                            requireContext(),
+                            "Transaksi simpanan berhasil",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        loadDataSimpanan(kodePegawai)
+                    } else {
+                        Toast.makeText(
+                            requireContext(),
+                            res.body()?.message ?: "Gagal menyimpan transaksi",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        requireContext(),
+                        "Error koneksi: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
     }
 }
