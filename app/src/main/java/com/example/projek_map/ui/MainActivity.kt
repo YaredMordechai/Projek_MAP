@@ -21,6 +21,7 @@ import com.example.projek_map.R
 import com.example.projek_map.databinding.ActivityMainBinding
 import com.example.projek_map.ui.fragments.*
 import com.example.projek_map.utils.NotificationHelper
+import com.example.projek_map.utils.PrefManager
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationView
@@ -34,6 +35,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var toolbar: MaterialToolbar
     private var isAdmin: Boolean = false
     private var toggle: ActionBarDrawerToggle? = null
+    private lateinit var pref: PrefManager
+
 
     private val requestNotificationPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* ignored */ }
@@ -43,6 +46,7 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        pref = PrefManager(this)  // init PrefManager
         NotificationHelper.createNotificationChannel(this)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -61,18 +65,28 @@ class MainActivity : AppCompatActivity() {
         // ✅ Jadwalkan pengecekan harian jatuh tempo & pengumuman (Mode B - AlarmReceiver tanpa extra "type")
         scheduleDailyDueCheck()
 
-        val userName = intent.getStringExtra("userName") ?: ""
-        val userEmail = intent.getStringExtra("userEmail") ?: ""
-        val userTelepon = intent.getStringExtra("userTelepon") ?: ""
-        val userStatus = intent.getStringExtra("userStatusKeanggotaan") ?: ""
-        val userKodePegawai = intent.getStringExtra("userKodePegawai") ?: ""
-        isAdmin = intent.getBooleanExtra("isAdmin", false)
+        val intentUserName = intent.getStringExtra("userName")
+        val intentUserEmail = intent.getStringExtra("userEmail")
+        val intentUserTelepon = intent.getStringExtra("userTelepon")
+        val intentUserStatus = intent.getStringExtra("userStatusKeanggotaan")
+        val intentUserKodePegawai = intent.getStringExtra("userKodePegawai")
+        val intentIsAdmin = intent.getBooleanExtra("isAdmin", pref.isAdmin())
 
-        if (userName.isEmpty()) {
+        val userName = intentUserName ?: pref.getUserName().orEmpty()
+        val userEmail = intentUserEmail ?: pref.getEmail().orEmpty()
+        val userTelepon = intentUserTelepon ?: ""              // belum disimpan di Pref, jadi kosong kalau nggak ada
+        val userStatus = intentUserStatus ?: ""                // sama
+        val userKodePegawai = intentUserKodePegawai ?: pref.getKodePegawai().orEmpty()
+        isAdmin = intentIsAdmin
+
+
+        if (userName.isEmpty() || userKodePegawai.isEmpty()) {
+            // Belum login / data nggak lengkap → balikin ke login
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
             return
         }
+
 
         // 🔔 Kirim notifikasi keputusan pinjaman yang tertunda (khusus user non-admin)
         if (!isAdmin && userKodePegawai.isNotEmpty()) {

@@ -1,17 +1,33 @@
 package com.example.projek_map.api
 
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object ApiClient {
-    private const val BASE_URL = "http://10.0.2.2/projek_map/" // emulator Android, sesuaikan folder projek PHP kamu
 
-    val instance: ApiService by lazy {
-        val retrofit = Retrofit.Builder()
+    // Kalau pakai emulator: 10.0.2.2
+    private const val BASE_URL = "http://10.0.2.2/koperasi_api/"
+
+    private val logging by lazy {
+        HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
+    }
+
+    private val httpClient by lazy {
+        OkHttpClient.Builder()
+            .addInterceptor(logging)
+            .build()
+    }
+
+    val apiService: KoperasiApiService by lazy {
+        Retrofit.Builder()
             .baseUrl(BASE_URL)
+            .client(httpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-
-        retrofit.create(ApiService::class.java)
+            .create(KoperasiApiService::class.java)
     }
 }
