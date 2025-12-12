@@ -19,16 +19,23 @@ class SignupActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_signup)   // <-- pastikan nama layout ini benar
+        setContentView(R.layout.activity_signup)
 
         pref = PrefManager(this)
 
-        // Ambil view dari layout (ID harus sama dengan yang di XML)
         val btnSignup: MaterialButton = findViewById(R.id.btnSignup)
+        val btnToLogin: MaterialButton = findViewById(R.id.btnToLogin)
+
         val etKodePegawai: EditText = findViewById(R.id.etKodePegawai)
         val etEmail: EditText = findViewById(R.id.etEmail)
         val etPassword: EditText = findViewById(R.id.etPassword)
         val etNama: EditText = findViewById(R.id.etNama)
+
+        // Tombol ke Login
+        btnToLogin.setOnClickListener {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+        }
 
         btnSignup.setOnClickListener {
             val kodePegawai = etKodePegawai.text.toString().trim()
@@ -51,7 +58,6 @@ class SignupActivity : AppCompatActivity() {
                 if (result?.success == true && result.data != null) {
                     val user = result.data
 
-                    // Simpan data login ke PrefManager
                     pref.saveLogin(user.nama, user.email, user.kodePegawai)
 
                     Toast.makeText(

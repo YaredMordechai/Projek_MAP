@@ -80,23 +80,28 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSignup"
-            android:text="Daftar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            app:backgroundTint="#4CAF50"
+            android:layout_marginTop="15dp"
+            android:text="Daftar"
             android:textColor="@android:color/white"
-            app:cornerRadius="12dp"/>
+            app:backgroundTint="#4CAF50"
+            app:cornerRadius="12dp" />
 
         <TextView
-            android:id="@+id/tvLogin"
-            android:text="Sudah punya akun? Login"
-            android:textAlignment="center"
-            android:textColor="#2E7D32"
-            android:layout_marginTop="16dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            android:layout_gravity="center_horizontal"/>
+            android:text="Sudah punya akun?"
+            android:textColor="#2E7D32"
+            android:layout_marginTop="5dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnToLogin"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Login"
+            android:textAllCaps="false"
+            android:textColor="#2E7D32" />
     </LinearLayout>
 </ScrollView>
