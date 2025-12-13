@@ -10,6 +10,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Query
+import retrofit2.http.Headers
 
 interface KoperasiApiService {
 
@@ -27,9 +28,32 @@ interface KoperasiApiService {
     @GET("users_get.php")
     suspend fun getAllUsers(): Response<ApiResponse<List<User>>>
 
+    // AUTH (ADMIN)
+    @Headers("Content-Type: application/json")
+    @POST("admin_login.php")
+    suspend fun loginAdmin(
+        @Body request: LoginRequest
+    ): Response<ApiResponse<com.example.projek_map.data.Admin>>
+
+
     // SIMPANAN
     @GET("simpanan_get.php")
     suspend fun getSimpanan(@Query("kodePegawai") kodePegawai: String): Response<ApiResponse<Simpanan?>>
+
+    // SIMPANAN - TRANSAKSI SETOR / TARIK (update simpanan + insert histori)
+    @POST("simpanan_transaksi.php")
+    suspend fun simpananTransaksi(@Body req: SimpananTransaksiRequest): Response<ApiResponse<Simpanan>>
+
+    // BUKTI PEMBAYARAN ANGGOTA (upload uri bukti)
+    @POST("bukti_pembayaran_anggota_add.php")
+    suspend fun addBuktiPembayaranAnggota(@Body req: BuktiPembayaranAnggotaRequest): Response<ApiResponse<Boolean>>
+
+    // optional: versi filter histori (tetap biarkan getAllHistoriSimpanan() yang lama)
+    @GET("histori_simpanan_get.php")
+    suspend fun getHistoriSimpananByKodePegawai(
+        @Query("kodePegawai") kodePegawai: String
+    ): Response<ApiResponse<List<HistoriSimpanan>>>
+
 
     // PINJAMAN
     @GET("pinjaman_get.php")

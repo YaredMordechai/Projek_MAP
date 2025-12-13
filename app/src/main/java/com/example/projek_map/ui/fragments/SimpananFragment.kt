@@ -17,16 +17,21 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
-import com.example.projek_map.data.DummyUserData
+import com.example.projek_map.api.ApiClient
+import com.example.projek_map.api.BuktiPembayaranAnggotaRequest
+import com.example.projek_map.api.SimpananTransaksiRequest
+import com.example.projek_map.data.HistoriSimpanan
 import com.example.projek_map.ui.adapters.HistoriSimpananAdapter
 import com.example.projek_map.utils.PrefManager
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import com.google.android.material.textfield.TextInputEditText
+import kotlinx.coroutines.launch
 import java.io.File
 
 class SimpananFragment : Fragment() {
@@ -44,11 +49,13 @@ class SimpananFragment : Fragment() {
 
     private lateinit var prefManager: PrefManager
     private lateinit var adapterHistori: HistoriSimpananAdapter
-    private val dataHistori = mutableListOf<com.example.projek_map.data.HistoriSimpanan>()
+    private val dataHistori = mutableListOf<HistoriSimpanan>()
 
     private val jenisList = listOf("Simpanan Pokok", "Simpanan Wajib", "Simpanan Sukarela")
-    private val nilaiPokok = DummyUserData.DEFAULT_POKOK
-    private val nilaiWajib = DummyUserData.DEFAULT_WAJIB
+
+    // agar tidak bergantung DummyUserData sama sekali
+    private val nilaiPokok = 100_000.0
+    private val nilaiWajib = 50_000.0
 
     private var buktiUri: Uri? = null
     private var tempPhotoUri: Uri? = null
@@ -98,8 +105,11 @@ class SimpananFragment : Fragment() {
         adapterHistori = HistoriSimpananAdapter(dataHistori)
         rvHistori.adapter = adapterHistori
 
-        val adapterJenis = ArrayAdapter(requireContext(),
-            android.R.layout.simple_dropdown_item_1line, jenisList)
+        val adapterJenis = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_dropdown_item_1line,
+            jenisList
+        )
         dropdownJenis.setAdapter(adapterJenis)
         dropdownJenis.setOnItemClickListener { _, _, position, _ ->
             when (jenisList[position]) {
@@ -118,6 +128,7 @@ class SimpananFragment : Fragment() {
             }
         }
 
+        // ambil dari API
         loadHistoriSimpanan()
 
         btnSetor.setOnClickListener {
@@ -126,19 +137,37 @@ class SimpananFragment : Fragment() {
             val kodePegawai = prefManager.getKodePegawai() ?: "EMP001"
 
             if (jenis.isEmpty()) {
-                Toast.makeText(requireContext(), "Pilih jenis simpanan", Toast.LENGTH_SHORT).show(); return@setOnClickListener
+                Toast.makeText(requireContext(), "Pilih jenis simpanan", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
             if (jumlah == null || jumlah <= 0) {
-                Toast.makeText(requireContext(), "Masukkan jumlah valid", Toast.LENGTH_SHORT).show(); return@setOnClickListener
+                Toast.makeText(requireContext(), "Masukkan jumlah valid", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
 
-            DummyUserData.tambahSimpanan(kodePegawai, jenis, jumlah, "-")
-            loadHistoriSimpanan()
-            resetForm()
+            lifecycleScope.launch {
+                try {
+                    val api = ApiClient.apiService
+                    val resp = api.simpananTransaksi(
+                        SimpananTransaksiRequest(
+                            kodePegawai = kodePegawai,
+                            jenisInput = jenis,
+                            jumlah = jumlah,
+                            keterangan = "-"
+                        )
+                    )
 
-            // Pop-up dialog konfirmasi
-            showPopup("Setoran Berhasil",
-                "Setoran $jenis sebesar Rp ${String.format("%,.0f", jumlah).replace(',', '.')} tercatat.")
+                    val body = resp.body()
+                    if (resp.isSuccessful && body?.success == true) {
+                        loadHistoriSimpanan()
+                        showPopup("Penarikan Berhasil", "Penarikan $jenis sebesar Rp ${String.format("%,.0f", jumlah).replace(',', '.')}")
+                    } else {
+                        Toast.makeText(requireContext(), body?.message ?: "Gagal tarik simpanan", Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(requireContext(), e.message ?: "Gagal konek ke server", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
 
         btnTarik.setOnClickListener {
@@ -147,19 +176,41 @@ class SimpananFragment : Fragment() {
             val kodePegawai = prefManager.getKodePegawai() ?: "EMP001"
 
             if (jenis.isEmpty()) {
-                Toast.makeText(requireContext(), "Pilih jenis simpanan", Toast.LENGTH_SHORT).show(); return@setOnClickListener
+                Toast.makeText(requireContext(), "Pilih jenis simpanan", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
             if (jumlah == null || jumlah <= 0) {
-                Toast.makeText(requireContext(), "Masukkan jumlah valid", Toast.LENGTH_SHORT).show(); return@setOnClickListener
+                Toast.makeText(requireContext(), "Masukkan jumlah valid", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
 
-            DummyUserData.tambahSimpanan(kodePegawai, jenis, -jumlah, "-")
-            loadHistoriSimpanan()
-            resetForm()
+            lifecycleScope.launch {
+                try {
+                    val api = ApiClient.apiService
+                    val resp = api.simpananTransaksi(
+                        SimpananTransaksiRequest(
+                            kodePegawai = kodePegawai,
+                            jenisInput = jenis,
+                            jumlah = -jumlah, // tarik = minus
+                            keterangan = "-"
+                        )
+                    )
 
-            // Pop-up dialog konfirmasi
-            showPopup("Penarikan Berhasil",
-                "Penarikan $jenis sebesar Rp ${String.format("%,.0f", jumlah).replace(',', '.')} tercatat.")
+                    val body = resp.body()
+                    if (resp.isSuccessful && body?.success == true) {
+                        loadHistoriSimpanan()
+                        resetForm()
+                        showPopup(
+                            "Penarikan Berhasil",
+                            "Penarikan $jenis sebesar Rp ${String.format("%,.0f", jumlah).replace(',', '.')} tercatat."
+                        )
+                    } else {
+                        Snackbar.make(view, body?.message ?: "Gagal tarik simpanan", Snackbar.LENGTH_LONG).show()
+                    }
+                } catch (e: Exception) {
+                    Snackbar.make(view, e.message ?: "Gagal konek ke server", Snackbar.LENGTH_LONG).show()
+                }
+            }
         }
 
         btnUploadBukti.setOnClickListener { pickImage.launch("image/*") }
@@ -194,12 +245,27 @@ class SimpananFragment : Fragment() {
         ivBuktiPreview.setImageURI(uri)
 
         val kodePegawai = prefManager.getKodePegawai() ?: "EMP001"
-        DummyUserData.simpanBuktiPembayaran(kodePegawai, uri.toString())
 
-        showPopup(
-            "Bukti Pembayaran",
-            "Bukti dari $source berhasil diunggah.\nStatus: Menunggu verifikasi admin."
-        )
+        // simpan ke DB via API (URI saja)
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val api = ApiClient.apiService
+                val resp = api.addBuktiPembayaranAnggota(
+                    BuktiPembayaranAnggotaRequest(
+                        kodePegawai = kodePegawai,
+                        uri = uri.toString()
+                    )
+                )
+                val body = resp.body()
+                if (resp.isSuccessful && body?.success == true) {
+                    showPopup("Bukti Pembayaran", "Bukti berhasil dikirim. Status: menunggu verifikasi admin.")
+                } else {
+                    showPopup("Bukti Pembayaran", body?.message ?: "Gagal kirim bukti ke server")
+                }
+            } catch (e: Exception) {
+                showPopup("Bukti Pembayaran", e.message ?: "Gagal konek ke server")
+            }
+        }
     }
 
     private fun resetForm() {
@@ -218,15 +284,41 @@ class SimpananFragment : Fragment() {
 
     private fun loadHistoriSimpanan() {
         val kodePegawai = prefManager.getKodePegawai() ?: "EMP001"
-        dataHistori.clear()
-        dataHistori.addAll(DummyUserData.getHistoriSimpanan(kodePegawai))
-        adapterHistori.notifyDataSetChanged()
 
-        val total = DummyUserData.getTotalSimpanan(kodePegawai)
-        tvTotalSaldo.text = "Total Saldo Simpanan: Rp ${String.format("%,.0f", total).replace(',', '.')}"
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val api = ApiClient.apiService
+
+                // 1) saldo simpanan
+                val simpananResp = api.getSimpanan(kodePegawai)
+                val simpananBody = simpananResp.body()
+
+                // 2) histori simpanan (pakai filter endpoint biar tidak ambil semua)
+                val historiResp = api.getHistoriSimpananByKodePegawai(kodePegawai)
+                val historiBody = historiResp.body()
+
+                dataHistori.clear()
+                if (historiResp.isSuccessful && historiBody?.success == true) {
+                    dataHistori.addAll(historiBody.data ?: emptyList())
+                }
+                adapterHistori.notifyDataSetChanged()
+
+                val s = if (simpananResp.isSuccessful && simpananBody?.success == true) simpananBody.data else null
+                val total = if (s != null) (s.simpananPokok + s.simpananWajib + s.simpananSukarela) else 0.0
+
+                tvTotalSaldo.text = "Total Saldo Simpanan: Rp ${
+                    String.format("%,.0f", total).replace(',', '.')
+                }"
+
+            } catch (e: Exception) {
+                tvTotalSaldo.text = "Total Saldo Simpanan: Rp 0"
+                Toast.makeText(requireContext(), e.message ?: "Gagal ambil data simpanan", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
-    // 🔹 Fungsi popup reusable
+
+    // popup reusable
     private fun showPopup(title: String, message: String) {
         AlertDialog.Builder(requireContext())
             .setTitle(title)

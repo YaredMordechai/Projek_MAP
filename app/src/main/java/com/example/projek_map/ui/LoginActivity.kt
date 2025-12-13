@@ -32,18 +32,17 @@ class LoginActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Panggil API lewat repository
             lifecycleScope.launch {
                 binding.btnLogin.isEnabled = false
 
-                val result = authRepository.login(email, password)
+                // 1) coba login USER dulu (biar alur lama kamu tetap jalan)
+                val userResult = authRepository.login(email, password)
 
-                binding.btnLogin.isEnabled = true
+                if (userResult?.success == true && userResult.data != null) {
+                    binding.btnLogin.isEnabled = true
+                    val user = userResult.data
 
-                if (result?.success == true && result.data != null) {
-                    val user = result.data
-
-                    // Simpan ke PrefManager
+                    // Simpan ke PrefManager (struktur lama tetap)
                     pref.saveLogin(user.nama, user.email, user.kodePegawai)
 
                     Toast.makeText(
@@ -57,13 +56,44 @@ class LoginActivity : AppCompatActivity() {
                     intent.putExtra("userEmail", user.email)
                     intent.putExtra("userStatusKeanggotaan", user.statusKeanggotaan)
                     intent.putExtra("userKodePegawai", user.kodePegawai)
-                    intent.putExtra("isAdmin", false) // sementara semua dari API dianggap user biasa
+                    intent.putExtra("isAdmin", false)
+                    startActivity(intent)
+                    finish()
+                    return@launch
+                }
+
+                // 2) kalau USER gagal, coba login ADMIN (ADM001, ADM002, atau email admin)
+                val adminResult = authRepository.loginAdmin(email, password)
+
+                binding.btnLogin.isEnabled = true
+
+                if (adminResult?.success == true && adminResult.data != null) {
+                    val admin = adminResult.data
+
+                    // Simpan ke PrefManager juga (biar fragment lain bisa pakai kodePegawai)
+                    // Admin juga punya kodePegawai, email, nama.
+                    pref.saveLogin(admin.nama, admin.email, admin.kodePegawai)
+
+                    Toast.makeText(
+                        this@LoginActivity,
+                        "Login admin berhasil! Selamat datang ${admin.nama}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                    intent.putExtra("userName", admin.nama)
+                    intent.putExtra("userEmail", admin.email)
+                    intent.putExtra("userStatusKeanggotaan", admin.role) // optional (role)
+                    intent.putExtra("userKodePegawai", admin.kodePegawai)
+                    intent.putExtra("isAdmin", true)
                     startActivity(intent)
                     finish()
                 } else {
                     Toast.makeText(
                         this@LoginActivity,
-                        result?.message ?: "Email / password salah atau server error",
+                        adminResult?.message
+                            ?: userResult?.message
+                            ?: "Email / password salah atau server error",
                         Toast.LENGTH_SHORT
                     ).show()
                 }

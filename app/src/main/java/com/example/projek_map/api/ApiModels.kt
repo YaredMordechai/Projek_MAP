@@ -31,3 +31,17 @@ data class AddHistoriPembayaranRequest(
     val status: String,
     val buktiPembayaranUri: String? = null
 )
+
+// === SIMPANAN TRANSAKSI (SETOR / TARIK) ===
+data class SimpananTransaksiRequest(
+    val kodePegawai: String,
+    val jenisInput: String,     // "Simpanan Pokok" / "Simpanan Wajib" / "Simpanan Sukarela"
+    val jumlah: Double,         // +setor, -tarik
+    val keterangan: String = "-"
+)
+
+// === BUKTI PEMBAYARAN ANGGOTA (upload bukti simpanan) ===
+data class BuktiPembayaranAnggotaRequest(
+    val kodePegawai: String,
+    val uri: String
+)
