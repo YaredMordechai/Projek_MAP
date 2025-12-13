@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_dashboard"
+        android:icon="@drawable/ic_dashboard"
+        android:title="Dashboard" />
+
+    <item
+        android:id="@+id/navigation_pengumuman"
+        android:icon="@drawable/ic_announcement"
+        android:title="Pengumuman" />
+
+    <item
+        android:id="@+id/navigation_simpanan"
+        android:icon="@drawable/ic_simpanan"
+        android:title="Simpanan" />
+
+
+    <item
+        android:id="@+id/navigation_pinjaman"
+        android:icon="@drawable/ic_pinjaman"
+        android:title="Pinjaman" />
+
+<!--    <item-->
+<!--        android:id="@+id/navigation_laporan"-->
+<!--        android:icon="@drawable/ic_laporan"-->
+<!--        android:title="Laporan" />-->
+
+    <item
+        android:id="@+id/navigation_profil"
+        android:icon="@drawable/ic_profil"
+        android:title="Profil" />
+
+</menu>
