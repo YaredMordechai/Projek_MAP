@@ -70,7 +70,7 @@ class MainActivity : AppCompatActivity() {
         val intentUserTelepon = intent.getStringExtra("userTelepon")
         val intentUserStatus = intent.getStringExtra("userStatusKeanggotaan")
         val intentUserKodePegawai = intent.getStringExtra("userKodePegawai")
-        val intentIsAdmin = intent.getBooleanExtra("isAdmin", pref.isAdmin())
+        val intentIsAdmin = pref.isAdmin()
 
         val userName = intentUserName ?: pref.getUserName().orEmpty()
         val userEmail = intentUserEmail ?: pref.getEmail().orEmpty()
@@ -80,7 +80,7 @@ class MainActivity : AppCompatActivity() {
         isAdmin = intentIsAdmin
 
 
-        if (userName.isEmpty() || userKodePegawai.isEmpty()) {
+        if (!pref.isLoggedIn() || userName.isEmpty() || userKodePegawai.isEmpty())  {
             // Belum login / data nggak lengkap → balikin ke login
             startActivity(Intent(this, LoginActivity::class.java))
             finish()

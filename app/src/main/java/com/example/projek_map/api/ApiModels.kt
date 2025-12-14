@@ -22,6 +22,13 @@ data class CreatePinjamanRequest(
     val tenor: Int
 )
 
+data class DecidePinjamanRequest(
+    val pinjamanId: Int,
+    val decision: String, // "approve" / "reject"
+    val adminKode: String,
+)
+
+
 /** === HISTORI PEMBAYARAN === */
 data class AddHistoriPembayaranRequest(
     val kodePegawai: String,
@@ -44,4 +51,19 @@ data class SimpananTransaksiRequest(
 data class BuktiPembayaranAnggotaRequest(
     val kodePegawai: String,
     val uri: String
+)
+
+//NOTIFIKASI
+data class DecisionNotificationDto(
+    val id: Int,
+    val kodePegawai: String,
+    val pinjamanId: Int,
+    val decision: String,   // "Disetujui" / "Ditolak"
+    val jumlah: Int,
+    val tanggal: String,
+    val is_read: Int        // 0/1 dari MySQL
+)
+
+data class MarkReadRequest(
+    val ids: List<Int>
 )

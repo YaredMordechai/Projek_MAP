@@ -65,6 +65,13 @@ interface KoperasiApiService {
     @POST("pinjaman_create.php")
     suspend fun createPinjaman(@Body req: CreatePinjamanRequest): Response<ApiResponse<Pinjaman>>
 
+    //PINJAMAN ADMIN
+    @POST("pinjaman_decide.php")
+    suspend fun decidePinjaman(
+        @Body req: DecidePinjamanRequest
+    ): Response<ApiResponse<Boolean>>
+
+
     // HISTORI SIMPANAN
     @GET("histori_simpanan_get.php")
     suspend fun getHistoriSimpanan(@Query("kodePegawai") kodePegawai: String): Response<ApiResponse<List<HistoriSimpanan>>>
@@ -82,4 +89,19 @@ interface KoperasiApiService {
     // PENGUMUMAN
     @GET("pengumuman_list.php")
     suspend fun getPengumuman(): Response<ApiResponse<List<Pengumuman>>>
+
+    //NOTIFIKASI
+    @GET("decision_notifications_get.php")
+    suspend fun getDecisionNotifications(
+        @Query("kodePegawai") kodePegawai: String,
+        @Query("onlyUnread") onlyUnread: Int = 1
+    ): Response<ApiResponse<List<DecisionNotificationDto>>>
+
+    @POST("decision_notifications_mark_read.php")
+    suspend fun markDecisionNotificationsRead(
+        @Body req: MarkReadRequest
+    ): Response<ApiResponse<Boolean>>
+
+
+
 }

@@ -1,15 +1,15 @@
-#Sun Dec 14 16:26:20 ICT 2025
-base.0=D\:\\COLLEGE STUFF\\MAP\\Projek_MAP\\app\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes.dex
-base.1=D\:\\COLLEGE STUFF\\MAP\\Projek_MAP\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\0\\classes.dex
-base.10=D\:\\COLLEGE STUFF\\MAP\\Projek_MAP\\app\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes2.dex
-base.2=D\:\\COLLEGE STUFF\\MAP\\Projek_MAP\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\11\\classes.dex
-base.3=D\:\\COLLEGE STUFF\\MAP\\Projek_MAP\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\12\\classes.dex
-base.4=D\:\\COLLEGE STUFF\\MAP\\Projek_MAP\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\14\\classes.dex
-base.5=D\:\\COLLEGE STUFF\\MAP\\Projek_MAP\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\15\\classes.dex
-base.6=D\:\\COLLEGE STUFF\\MAP\\Projek_MAP\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\1\\classes.dex
-base.7=D\:\\COLLEGE STUFF\\MAP\\Projek_MAP\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\3\\classes.dex
-base.8=D\:\\COLLEGE STUFF\\MAP\\Projek_MAP\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\5\\classes.dex
-base.9=D\:\\COLLEGE STUFF\\MAP\\Projek_MAP\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\7\\classes.dex
+#Sun Dec 14 23:46:49 WIB 2025
+base.0=C\:\\Users\\ASUS\\AndroidStudioProjects\\Proyek_MAP\\app\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes.dex
+base.1=C\:\\Users\\ASUS\\AndroidStudioProjects\\Proyek_MAP\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\0\\classes.dex
+base.10=C\:\\Users\\ASUS\\AndroidStudioProjects\\Proyek_MAP\\app\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes2.dex
+base.2=C\:\\Users\\ASUS\\AndroidStudioProjects\\Proyek_MAP\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\11\\classes.dex
+base.3=C\:\\Users\\ASUS\\AndroidStudioProjects\\Proyek_MAP\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\12\\classes.dex
+base.4=C\:\\Users\\ASUS\\AndroidStudioProjects\\Proyek_MAP\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\14\\classes.dex
+base.5=C\:\\Users\\ASUS\\AndroidStudioProjects\\Proyek_MAP\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\15\\classes.dex
+base.6=C\:\\Users\\ASUS\\AndroidStudioProjects\\Proyek_MAP\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\1\\classes.dex
+base.7=C\:\\Users\\ASUS\\AndroidStudioProjects\\Proyek_MAP\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\3\\classes.dex
+base.8=C\:\\Users\\ASUS\\AndroidStudioProjects\\Proyek_MAP\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\5\\classes.dex
+base.9=C\:\\Users\\ASUS\\AndroidStudioProjects\\Proyek_MAP\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\7\\classes.dex
 path.0=classes.dex
 path.1=0/classes.dex
 path.10=classes2.dex

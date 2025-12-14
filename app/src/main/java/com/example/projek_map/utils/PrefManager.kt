@@ -12,16 +12,16 @@ class PrefManager(context: Context) {
     private val KEY_EMAIL = "user_email"
     private val KEY_KODE_PEGAWAI = "kode_pegawai"
 
-    // ✅ Tambahan key untuk fitur pengumuman (dipakai AlarmReceiver Mode B)
+    // ✅ Tambahan key untuk fitur pengumuman
     private val KEY_LAST_SEEN_ANNOUNCE = "last_seen_announce"
 
-    // ✅ Tambahan key baru untuk flag admin (tidak mengganggu API lama)
+    // ✅ Key admin (SUDAH ADA, kita pakai dengan benar)
     private val KEY_IS_ADMIN = "is_admin"
 
     private val pref = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
     private val editor = pref.edit()
 
-    // ====== API lama (tetap ada) ======
+    // ====== API lama (TETAP, TIDAK DIUBAH) ======
     fun saveLogin(userName: String, email: String, kodePegawai: String) {
         editor.putBoolean(KEY_IS_LOGGED_IN, true)
         editor.putString(KEY_USER_NAME, userName)
@@ -35,12 +35,13 @@ class PrefManager(context: Context) {
     fun getEmail(): String? = pref.getString(KEY_EMAIL, "")
     fun getKodePegawai(): String? = pref.getString(KEY_KODE_PEGAWAI, "")
 
+    // ====== LOGOUT (FIX BUG ROLE NYANGKUT) ======
     fun logout() {
         editor.clear()
         editor.apply()
     }
 
-    // ====== API baru (dipakai AlarmReceiver Mode B) ======
+    // ====== API pengumuman (TETAP) ======
     fun getLastSeenAnnouncementDate(): String? =
         pref.getString(KEY_LAST_SEEN_ANNOUNCE, null)
 
@@ -48,14 +49,13 @@ class PrefManager(context: Context) {
         editor.putString(KEY_LAST_SEEN_ANNOUNCE, date).apply()
     }
 
-    // ====== Tambahan kecil: flag admin (opsional, tidak memecah kompatibilitas) ======
+    // ====== FLAG ADMIN (INTI PERBAIKAN) ======
     fun setIsAdmin(isAdmin: Boolean) {
         editor.putBoolean(KEY_IS_ADMIN, isAdmin).apply()
     }
 
     fun isAdmin(): Boolean = pref.getBoolean(KEY_IS_ADMIN, false)
 
-    // ====== ALIAS kompatibilitas (tambahan minimal) ======
-    // Beberapa tempat di kode memanggil getIsAdmin(); supaya tidak error, kita sediakan alias ini.
+    // ====== ALIAS kompatibilitas ======
     fun getIsAdmin(): Boolean = isAdmin()
 }

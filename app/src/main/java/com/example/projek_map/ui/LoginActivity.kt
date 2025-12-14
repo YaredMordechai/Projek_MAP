@@ -35,44 +35,16 @@ class LoginActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 binding.btnLogin.isEnabled = false
 
-                // 1) coba login USER dulu (biar alur lama kamu tetap jalan)
-                val userResult = authRepository.login(email, password)
-
-                if (userResult?.success == true && userResult.data != null) {
-                    binding.btnLogin.isEnabled = true
-                    val user = userResult.data
-
-                    // Simpan ke PrefManager (struktur lama tetap)
-                    pref.saveLogin(user.nama, user.email, user.kodePegawai)
-
-                    Toast.makeText(
-                        this@LoginActivity,
-                        "Login berhasil! Selamat datang ${user.nama}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-
-                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                    intent.putExtra("userName", user.nama)
-                    intent.putExtra("userEmail", user.email)
-                    intent.putExtra("userStatusKeanggotaan", user.statusKeanggotaan)
-                    intent.putExtra("userKodePegawai", user.kodePegawai)
-                    intent.putExtra("isAdmin", false)
-                    startActivity(intent)
-                    finish()
-                    return@launch
-                }
-
-                // 2) kalau USER gagal, coba login ADMIN (ADM001, ADM002, atau email admin)
+                // =========================
+                // 1️⃣ COBA LOGIN ADMIN DULU
+                // =========================
                 val adminResult = authRepository.loginAdmin(email, password)
-
-                binding.btnLogin.isEnabled = true
-
                 if (adminResult?.success == true && adminResult.data != null) {
                     val admin = adminResult.data
 
-                    // Simpan ke PrefManager juga (biar fragment lain bisa pakai kodePegawai)
-                    // Admin juga punya kodePegawai, email, nama.
+                    pref.logout() // 🔒 PENTING: bersihkan session lama
                     pref.saveLogin(admin.nama, admin.email, admin.kodePegawai)
+                    pref.setIsAdmin(true)
 
                     Toast.makeText(
                         this@LoginActivity,
@@ -80,24 +52,43 @@ class LoginActivity : AppCompatActivity() {
                         Toast.LENGTH_SHORT
                     ).show()
 
-                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                    intent.putExtra("userName", admin.nama)
-                    intent.putExtra("userEmail", admin.email)
-                    intent.putExtra("userStatusKeanggotaan", admin.role) // optional (role)
-                    intent.putExtra("userKodePegawai", admin.kodePegawai)
-                    intent.putExtra("isAdmin", true)
-                    startActivity(intent)
+                    startActivity(Intent(this@LoginActivity, MainActivity::class.java))
                     finish()
-                } else {
+                    return@launch
+                }
+
+                // =========================
+                // 2️⃣ BARU COBA LOGIN USER
+                // =========================
+                val userResult = authRepository.login(email, password)
+                if (userResult?.success == true && userResult.data != null) {
+                    val user = userResult.data
+
+                    pref.logout() // 🔒 bersihkan session lama
+                    pref.saveLogin(user.nama, user.email, user.kodePegawai)
+                    pref.setIsAdmin(false)
+
                     Toast.makeText(
                         this@LoginActivity,
-                        adminResult?.message
-                            ?: userResult?.message
-                            ?: "Email / password salah atau server error",
+                        "Login berhasil! Selamat datang ${user.nama}",
                         Toast.LENGTH_SHORT
                     ).show()
+
+                    startActivity(Intent(this@LoginActivity, MainActivity::class.java))
+                    finish()
+                    return@launch
                 }
+
+                binding.btnLogin.isEnabled = true
+                Toast.makeText(
+                    this@LoginActivity,
+                    adminResult?.message
+                        ?: userResult?.message
+                        ?: "Email / password salah",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
+
         }
 
         binding.tvSignup.setOnClickListener {
