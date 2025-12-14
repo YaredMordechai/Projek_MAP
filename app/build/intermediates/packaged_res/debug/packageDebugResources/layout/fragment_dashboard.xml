@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/green_50"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- Foto Profil -->
+        <ImageView
+            android:id="@+id/imgProfile"
+            android:layout_width="130dp"
+            android:layout_height="130dp"
+            android:layout_marginTop="30dp"
+            android:background="@drawable/bg_circle"
+            android:contentDescription="@string/profil"
+            android:elevation="8dp"
+            android:padding="16dp"
+            android:src="@drawable/ic_profil" />
+
+        <TextView
+            android:id="@+id/tvWelcome"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Halo, User"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:layout_marginTop="12dp"
+            android:textColor="@color/green_900" />
+
+        <TextView
+            android:id="@+id/tvUserId"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="KodePegawai"
+            android:textColor="@color/green_600"
+            android:textSize="14sp"
+            android:layout_marginBottom="24dp" />
+
+        <!-- 🔽 Grafik Perkembangan Simpanan & Pinjaman -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardGrafikKeuangan"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="6dp"
+            app:cardBackgroundColor="@color/white">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Grafik Perkembangan Simpanan &amp; Pinjaman"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/green_900"
+                    android:layout_marginBottom="8dp"/>
+
+                <com.github.mikephil.charting.charts.LineChart
+                    android:id="@+id/chartKeuangan"
+                    android:layout_width="match_parent"
+                    android:layout_height="220dp"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Grid Menu -->
+        <GridLayout
+            android:id="@+id/gridMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="2"
+            android:alignmentMode="alignMargins"
+            android:columnOrderPreserved="false"
+            android:layout_marginBottom="24dp"
+            android:layout_gravity="center"
+            android:padding="4dp">
+
+            <!-- Item 1 -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardLaporan"
+                android:layout_width="0dp"
+                android:layout_height="140dp"
+                android:layout_margin="8dp"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="6dp"
+                app:cardBackgroundColor="@color/green_100">
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <ImageView
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:src="@drawable/ic_laporan"
+                        app:tint="@color/green_800" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Laporan Bulanan"
+                        android:textColor="@color/green_900"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="8dp" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Item 2 -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardProfil"
+                android:layout_width="0dp"
+                android:layout_height="140dp"
+                android:layout_margin="8dp"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="6dp"
+                app:cardBackgroundColor="@color/green_100">
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <ImageView
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:src="@drawable/ic_profil"
+                        app:tint="@color/green_800" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Profil Pengguna"
+                        android:textColor="@color/green_900"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="8dp" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Item 3 -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardSimpanan"
+                android:layout_width="0dp"
+                android:layout_height="140dp"
+                android:layout_margin="8dp"
+                android:layout_columnWeight="1"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="6dp"
+                app:cardBackgroundColor="@color/green_100">
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <ImageView
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:src="@drawable/ic_simpanan"
+                        app:tint="@color/green_800" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Kelola Simpanan"
+                        android:textColor="@color/green_900"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="8dp" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Item 4 -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardPinjaman"
+                android:layout_width="0dp"
+                android:layout_height="140dp"
+                android:layout_margin="8dp"
+                android:layout_columnWeight="1"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="6dp"
+                app:cardBackgroundColor="@color/green_100">
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <ImageView
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:src="@drawable/ic_pinjaman"
+                        app:tint="@color/green_800" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Kelola Pinjaman"
+                        android:textColor="@color/green_900"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="8dp" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Item 5 — Kelola Kas -->
+          <!--  VERSI B: SETENGAH LEBAR (1 kolom) — jika kamu ingin sejajar dengan kartu lain-->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardKas"
+                android:layout_width="0dp"
+                android:layout_height="140dp"
+                android:layout_margin="8dp"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="6dp"
+                app:cardBackgroundColor="@color/green_100">
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <ImageView
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:src="@drawable/ic_payment"
+                        app:tint="@color/green_800" />
+
+                    <TextView
+                        android:id="@+id/tvKasTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Kelola Kas"
+                        android:textColor="@color/green_900"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="8dp" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Item 6 -->
+            <!-- Card: Laporan Koperasi (khusus Admin) -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardLaporanAdmin"
+                android:layout_width="0dp"
+                android:layout_height="140dp"
+                android:layout_margin="8dp"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="6dp"
+                app:cardBackgroundColor="@color/green_100">
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <ImageView
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:src="@drawable/ic_laporan"
+                        app:tint="@color/green_800" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Laporan Koperasi"
+                        android:textColor="@color/green_900"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="8dp" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+
+        </GridLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnKirimPengumuman"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Kirim Pengumuman (Tes)"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/green_700"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+</ScrollView>

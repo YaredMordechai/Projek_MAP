@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp">
+
+    <LinearLayout
+        android:padding="12dp"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/tvNamaAnggota"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nama Anggota"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="@color/green_900"/>
+
+        <TextView
+            android:id="@+id/tvKodeAnggota"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="EMP001"
+            android:layout_marginTop="2dp"/>
+
+        <TextView
+            android:id="@+id/tvStatusAnggota"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Anggota Aktif"
+            android:layout_marginTop="2dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="6dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Total Simpanan"/>
+                <TextView
+                    android:id="@+id/tvTotalSimpananAnggota"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Rp 0"
+                    android:textStyle="bold"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Pinjaman Aktif"/>
+                <TextView
+                    android:id="@+id/tvTotalPinjamanAnggota"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Rp 0"
+                    android:textStyle="bold"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDetailAnggota"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Lihat Detail"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/green_700"
+            android:layout_marginTop="8dp"
+            app:icon="@drawable/ic_laporan"
+            app:iconPadding="8dp"
+            app:iconGravity="textStart"/>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

@@ -8,11 +8,13 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.example.projek_map.R
-import com.example.projek_map.data.DummyUserData
+import com.example.projek_map.api.ApiClient
 import com.example.projek_map.ui.LoginActivity
 import com.example.projek_map.utils.PrefManager
 import com.google.android.material.button.MaterialButton
+import kotlinx.coroutines.launch
 
 class ProfileFragment : Fragment() {
 
@@ -35,36 +37,31 @@ class ProfileFragment : Fragment() {
         val btnBackDashboard = view.findViewById<MaterialButton>(R.id.btnBackDashboard)
 
         val pref = PrefManager(requireContext())
+        val kodePegawai = pref.getKodePegawai().orEmpty()
+        val nama = pref.getUserName().orEmpty()
+        val email = pref.getEmail().orEmpty()
 
-        val namaArg = arguments?.getString("nama")
-        val emailArg = arguments?.getString("email")
-        val teleponArg = arguments?.getString("telepon")
-        val statusArg = arguments?.getString("statusKeanggotaan")
-        val kodePegawaiArg = arguments?.getString("kodePegawai")
+        // Tampilkan dulu dari pref (biar UI langsung keisi)
+        tvNamaUser.text = if (nama.isNotBlank()) nama else "Pengguna"
+        tvIdUser.text = "Kode Pegawai: ${if (kodePegawai.isNotBlank()) kodePegawai else "-"}"
+        tvEmail.text = "Email: ${if (email.isNotBlank()) email else "-"}"
+        tvStatus.text = "Status Keanggotaan: -"
 
-        if (!namaArg.isNullOrEmpty()) {
-            tvNamaUser.text = namaArg
-            tvIdUser.text = "Kode Pegawai: ${kodePegawaiArg ?: "-"}"
-            tvEmail.text = "Email: ${emailArg ?: "-"}"
-            tvStatus.text = "Status Keanggotaan: ${statusArg ?: "-"}"
-        } else {
-            val loggedEmail = pref.getEmail() ?: ""
-            val loggedKode = pref.getKodePegawai() ?: ""
-
-            val currentUser = DummyUserData.users.find {
-                it.email.equals(loggedEmail, ignoreCase = true) || it.kodePegawai == loggedKode
-            }
-
-            if (currentUser != null) {
-                tvNamaUser.text = currentUser.nama
-                tvIdUser.text = "Kode Pegawai: ${currentUser.kodePegawai}"
-                tvEmail.text = "Email: ${currentUser.email}"
-                tvStatus.text = "Status Keanggotaan: ${currentUser.statusKeanggotaan}"
-            } else {
-                tvNamaUser.text = pref.getUserName() ?: "Pengguna Tidak Dikenal"
-                tvIdUser.text = "Kode Pegawai: ${pref.getKodePegawai() ?: "-"}"
-                tvEmail.text = "Email: ${pref.getEmail() ?: "-"}"
-                tvStatus.text = "Status Keanggotaan: -"
+        // Optional: update dari API (ambil statusKeanggotaan terbaru)
+        if (kodePegawai.isNotBlank()) {
+            lifecycleScope.launch {
+                try {
+                    val resp = ApiClient.apiService.getUser(kodePegawai)
+                    val user = resp.body()?.data
+                    if (user != null) {
+                        tvNamaUser.text = user.nama
+                        tvIdUser.text = "Kode Pegawai: ${user.kodePegawai}"
+                        tvEmail.text = "Email: ${user.email}"
+                        tvStatus.text = "Status Keanggotaan: ${user.statusKeanggotaan}"
+                    }
+                } catch (_: Exception) {
+                    // kalau gagal, biar tetap pakai pref
+                }
             }
         }
 
@@ -72,14 +69,12 @@ class ProfileFragment : Fragment() {
 
         btnLogout.setOnClickListener {
             pref.logout()
-            val intent = Intent(requireContext(), LoginActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(requireContext(), LoginActivity::class.java))
             requireActivity().finish()
         }
 
         btnBackDashboard.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
-
     }
 }

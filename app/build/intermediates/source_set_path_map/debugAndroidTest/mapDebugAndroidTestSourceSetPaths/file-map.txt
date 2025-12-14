@@ -1,0 +1,6 @@
+com.example.projek_map.test.app-core-1.7.0-0 C:\Users\tommy\.gradle\caches\8.13\transforms\498764543b642df9d1e9bf7eaa32de0b\transformed\core-1.7.0\res
+com.example.projek_map.test.app-tracing-1.2.0-1 C:\Users\tommy\.gradle\caches\8.13\transforms\8659a9835d1fa32f2c9daeeff13a6156\transformed\tracing-1.2.0\res
+com.example.projek_map.test.app-androidTest-2 D:\COLLEGE STUFF\MAP\Projek_MAP\app\build\generated\res\resValues\androidTest\debug
+com.example.projek_map.test.app-mergeDebugAndroidTestResources-3 D:\COLLEGE STUFF\MAP\Projek_MAP\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\merged.dir
+com.example.projek_map.test.app-mergeDebugAndroidTestResources-4 D:\COLLEGE STUFF\MAP\Projek_MAP\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\stripped.dir
+com.example.projek_map.test.app-debugAndroidTest-5 D:\COLLEGE STUFF\MAP\Projek_MAP\app\build\intermediates\merged_res\debugAndroidTest\mergeDebugAndroidTestResources

@@ -4,53 +4,54 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.projek_map.data.DummyUserData
+import androidx.lifecycle.lifecycleScope
+import com.example.projek_map.data.AuthRepository
 import com.example.projek_map.databinding.ActivityLoginBinding
 import com.example.projek_map.utils.PrefManager
+import kotlinx.coroutines.launch
 
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
+    private lateinit var pref: PrefManager
+    private val authRepository = AuthRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val pref = PrefManager(this)
+        pref = PrefManager(this)
 
         binding.btnLogin.setOnClickListener {
             val email = binding.etEmail.text.toString().trim()
             val password = binding.etPassword.text.toString().trim()
 
-            // 🔹 Cek user biasa
-            val user = DummyUserData.users.find {
-                (it.email == email || it.kodePegawai == email) && it.password == password
+            if (email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, "Email dan password wajib diisi", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
 
-            // 🔹 Cek admin
-            val admin = DummyUserData.admins.find {
-                (it.email == email || it.kodePegawai == email) && it.password == password
-            }
+            lifecycleScope.launch {
+                binding.btnLogin.isEnabled = false
 
-            when {
-                admin != null -> {
-                    pref.saveLogin(admin.nama, admin.email, admin.kodePegawai)
-                    Toast.makeText(this, "Login Admin berhasil: ${admin.nama}", Toast.LENGTH_SHORT).show()
+                // 1) coba login USER dulu (biar alur lama kamu tetap jalan)
+                val userResult = authRepository.login(email, password)
 
-                    val intent = Intent(this, MainActivity::class.java)
-                    intent.putExtra("userName", admin.nama)
-                    intent.putExtra("userEmail", admin.email)
-                    intent.putExtra("isAdmin", true)
-                    startActivity(intent)
-                    finish()
-                }
+                if (userResult?.success == true && userResult.data != null) {
+                    binding.btnLogin.isEnabled = true
+                    val user = userResult.data
 
-                user != null -> {
+                    // Simpan ke PrefManager (struktur lama tetap)
                     pref.saveLogin(user.nama, user.email, user.kodePegawai)
-                    Toast.makeText(this, "Login berhasil! Selamat datang ${user.nama}", Toast.LENGTH_SHORT).show()
 
-                    val intent = Intent(this, MainActivity::class.java)
+                    Toast.makeText(
+                        this@LoginActivity,
+                        "Login berhasil! Selamat datang ${user.nama}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
                     intent.putExtra("userName", user.nama)
                     intent.putExtra("userEmail", user.email)
                     intent.putExtra("userStatusKeanggotaan", user.statusKeanggotaan)
@@ -58,10 +59,43 @@ class LoginActivity : AppCompatActivity() {
                     intent.putExtra("isAdmin", false)
                     startActivity(intent)
                     finish()
+                    return@launch
                 }
 
-                else -> {
-                    Toast.makeText(this, "Email / Password salah!", Toast.LENGTH_SHORT).show()
+                // 2) kalau USER gagal, coba login ADMIN (ADM001, ADM002, atau email admin)
+                val adminResult = authRepository.loginAdmin(email, password)
+
+                binding.btnLogin.isEnabled = true
+
+                if (adminResult?.success == true && adminResult.data != null) {
+                    val admin = adminResult.data
+
+                    // Simpan ke PrefManager juga (biar fragment lain bisa pakai kodePegawai)
+                    // Admin juga punya kodePegawai, email, nama.
+                    pref.saveLogin(admin.nama, admin.email, admin.kodePegawai)
+
+                    Toast.makeText(
+                        this@LoginActivity,
+                        "Login admin berhasil! Selamat datang ${admin.nama}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                    intent.putExtra("userName", admin.nama)
+                    intent.putExtra("userEmail", admin.email)
+                    intent.putExtra("userStatusKeanggotaan", admin.role) // optional (role)
+                    intent.putExtra("userKodePegawai", admin.kodePegawai)
+                    intent.putExtra("isAdmin", true)
+                    startActivity(intent)
+                    finish()
+                } else {
+                    Toast.makeText(
+                        this@LoginActivity,
+                        adminResult?.message
+                            ?: userResult?.message
+                            ?: "Email / password salah atau server error",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }

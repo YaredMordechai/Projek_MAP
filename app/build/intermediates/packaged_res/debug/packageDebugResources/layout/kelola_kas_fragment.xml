@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F7FFF8">
+
+    <!-- Saldo -->
+    <TextView
+        android:id="@+id/tvSaldoKas"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Saldo Kas: Rp 0"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_marginBottom="12dp" />
+
+    <!-- ============== FILTER CARD ============== -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardFilterKas"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <!-- Baris 1: Jenis + Kategori -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:paddingEnd="8dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Jenis" />
+
+                    <Spinner
+                        android:id="@+id/spFilterJenis"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:paddingStart="8dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Kategori" />
+
+                    <Spinner
+                        android:id="@+id/spFilterKategori"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Baris 2: Dari - Sampai -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:paddingEnd="8dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Dari (yyyy-MM-dd)"/>
+
+                    <EditText
+                        android:id="@+id/etFilterDari"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="2025-10-01"
+                        android:inputType="textNoSuggestions" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:paddingStart="8dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Sampai (yyyy-MM-dd)"/>
+
+                    <EditText
+                        android:id="@+id/etFilterSampai"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="2025-10-31"
+                        android:inputType="textNoSuggestions" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Baris 3: Cari & Tombol -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="8dp">
+
+                <EditText
+                    android:id="@+id/etFilterCari"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="Cari (kategori/deskripsi)"
+                    android:inputType="text"
+                    android:paddingEnd="8dp"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFilterTerapkan"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Filter"
+                    android:textColor="@color/white"
+                    android:backgroundTint="@color/green_700" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnFilterReset"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Reset"
+                    android:layout_marginStart="8dp"
+                    android:textColor="@color/white"
+                    android:backgroundTint="@color/green_700" />
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+    <!-- ============ END FILTER CARD ============ -->
+
+    <!-- Tombol Tambah -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnTambahKas"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tambah Transaksi Kas"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/green_700"
+        android:layout_marginBottom="12dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnLabaBersih"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Lihat Laba Bersih"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/green_800"
+        android:layout_marginBottom="12dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnLabaRugi"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Lihat Laporan Laba Rugi"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/green_800"
+        android:layout_marginBottom="12dp" />
+
+    <!-- List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvKas"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+
+    <!-- Empty state -->
+    <TextView
+        android:id="@+id/tvEmptyKas"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Belum ada transaksi kas."
+        android:textAlignment="center"
+        android:textColor="@android:color/darker_gray"
+        android:visibility="gone"
+        android:layout_marginTop="8dp"/>
+</LinearLayout>

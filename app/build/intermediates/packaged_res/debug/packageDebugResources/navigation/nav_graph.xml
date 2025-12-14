@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:startDestination="@id/dashboardFragment">
+
+    <fragment
+        android:id="@+id/dashboardFragment"
+        android:name="com.example.koperasi.ui.DashboardFragment"
+        android:label="Dashboard" />
+
+    <fragment
+        android:id="@+id/simpananFragment"
+        android:name="com.example.koperasi.ui.SimpananFragment"
+        android:label="Simpanan" />
+
+    <fragment
+        android:id="@+id/pinjamanFragment"
+        android:name="com.example.koperasi.ui.PinjamanFragment"
+        android:label="Pinjaman" />
+
+    <fragment
+        android:id="@+id/profilFragment"
+        android:name="com.example.koperasi.ui.ProfilFragment"
+        android:label="Profil" />
+</navigation>

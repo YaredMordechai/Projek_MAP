@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/green_50"
+    android:padding="16dp">
+
+
+    <!-- 🔹 Konten Scrollable -->
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:paddingVertical="10dp"
+                android:layout_marginBottom="25dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:text="Profil Pengguna"
+                    android:textColor="@color/green_900"
+                    android:textSize="25sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Foto Profil -->
+            <ImageView
+                android:id="@+id/imgProfile"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="1dp"
+                android:background="@drawable/bg_circle"
+                android:contentDescription="@string/profil"
+                android:elevation="6dp"
+                android:padding="12dp"
+                android:src="@drawable/ic_profil" />
+
+            <!-- Nama & ID -->
+            <TextView
+                android:id="@+id/tvNamaUser"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nama User"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="#1B5E20"
+                android:layout_gravity="center"/>
+
+            <TextView
+                android:id="@+id/tvIdUser"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Kode Pegawai: -"
+                android:textSize="15sp"
+                android:textColor="#4E4E4E"
+                android:layout_marginBottom="24dp"
+                android:layout_gravity="center"/>
+
+            <!-- Card Data Diri -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="6dp"
+                app:strokeColor="#81C784"
+                app:strokeWidth="2dp">
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="20dp"
+                    android:background="@color/white">
+
+
+                    <TextView
+                        android:id="@+id/tvEmail"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Email: -"
+                        android:textSize="16sp"
+                        android:textColor="#333" />
+
+                    <TextView
+                        android:id="@+id/tvStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Status Keanggotaan: -"
+                        android:textSize="16sp"
+                        android:textColor="#333"
+                        android:layout_marginTop="8dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Tombol Aksi -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnLogout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Logout"
+                android:textAllCaps="false"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:backgroundTint="#388E3C"
+                android:layout_marginBottom="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnBackDashboard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Kembali ke Dashboard"
+                android:textAllCaps="false"
+                android:textStyle="bold"
+                android:backgroundTint="#A5D6A7"
+                android:textColor="#1B5E20"
+                android:visibility="gone"/>
+    </LinearLayout>
+</ScrollView>
