@@ -28,9 +28,18 @@ data class DecidePinjamanRequest(
     val adminKode: String,
 )
 
-
 /** === HISTORI PEMBAYARAN === */
 data class AddHistoriPembayaranRequest(
+    val kodePegawai: String,
+    val pinjamanId: Int,
+    val tanggal: String,          // "yyyy-MM-dd"
+    val jumlah: Int,
+    val status: String,
+    val buktiPembayaranUri: String? = null
+)
+
+data class HistoriPembayaran(
+    val id: Int,
     val kodePegawai: String,
     val pinjamanId: Int,
     val tanggal: String,          // "yyyy-MM-dd"
@@ -53,7 +62,7 @@ data class BuktiPembayaranAnggotaRequest(
     val uri: String
 )
 
-//NOTIFIKASI
+// NOTIFIKASI
 data class DecisionNotificationDto(
     val id: Int,
     val kodePegawai: String,
@@ -99,7 +108,7 @@ data class DeleteUserRequest(
     val kodePegawai: String
 )
 
-//KAS TRANSAKSI
+// KAS TRANSAKSI
 data class KasTransaksi(
     val id: Int,
     val tanggal: String,   // "yyyy-MM-dd"
@@ -108,6 +117,7 @@ data class KasTransaksi(
     val deskripsi: String,
     val jumlah: Double
 )
+
 data class KasTransaksiAddRequest(
     val tanggal: String,
     val jenis: String,

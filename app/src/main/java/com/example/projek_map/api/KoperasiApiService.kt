@@ -4,9 +4,9 @@ import com.example.projek_map.data.*
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Headers
 import retrofit2.http.POST
 import retrofit2.http.Query
-import retrofit2.http.Headers
 
 interface KoperasiApiService {
 
@@ -46,21 +46,11 @@ interface KoperasiApiService {
     // =========================
     // SIMPANAN
     // =========================
-
-    /**
-     * GET saldo simpanan (Pokok/Wajib/Sukarela)
-     * Backend: simpanan_get.php
-     */
     @GET("simpanan_get.php")
     suspend fun getSimpanan(
         @Query("kodePegawai") kodePegawai: String
     ): Response<ApiResponse<Simpanan?>>
 
-    /**
-     * SETOR / TARIK simpanan
-     * Backend: simpanan_transaksi.php
-     * jumlah (+) setor, (-) tarik
-     */
     @POST("simpanan_transaksi.php")
     suspend fun simpananTransaksi(
         @Body req: SimpananTransaksiRequest
@@ -69,20 +59,11 @@ interface KoperasiApiService {
     // =========================
     // HISTORI SIMPANAN
     // =========================
-
-    /**
-     * Histori simpanan per pegawai
-     * Backend: histori_simpanan_get.php?kodePegawai=...
-     * → DIPAKAI di KelolaSimpananFragment
-     */
     @GET("histori_simpanan_get.php")
     suspend fun getHistoriSimpanan(
         @Query("kodePegawai") kodePegawai: String
     ): Response<ApiResponse<List<HistoriSimpanan>>>
 
-    /**
-     * Histori simpanan semua (admin / debug)
-     */
     @GET("histori_simpanan_get.php")
     suspend fun getAllHistoriSimpanan(): Response<ApiResponse<List<HistoriSimpanan>>>
 
@@ -132,7 +113,7 @@ interface KoperasiApiService {
     @GET("histori_pembayaran_get.php")
     suspend fun getHistoriPembayaran(
         @Query("pinjamanId") pinjamanId: Int
-    ): Response<ApiResponse<List<Map<String, Any?>>>>
+    ): Response<ApiResponse<List<HistoriPembayaran>>>
 
     @POST("histori_pembayaran_add.php")
     suspend fun addHistoriPembayaran(
@@ -146,7 +127,7 @@ interface KoperasiApiService {
     suspend fun getHistoriPembayaranAdmin(
         @Query("pinjamanId") pinjamanId: Int? = null,
         @Query("kodePegawai") kodePegawai: String? = null
-    ): Response<ApiResponse<List<Map<String, Any?>>>>
+    ): Response<ApiResponse<List<HistoriPembayaran>>>
 
     @POST("histori_pembayaran_admin_add.php")
     suspend fun catatPembayaranAdmin(
@@ -173,7 +154,9 @@ interface KoperasiApiService {
         @Body req: MarkReadRequest
     ): Response<ApiResponse<Boolean>>
 
-    // === USERS (ADMIN CRUD) ===
+    // =========================
+    // USERS (ADMIN CRUD)
+    // =========================
     @POST("users_add.php")
     suspend fun addUser(@Body req: AddUserRequest): Response<ApiResponse<User>>
 
@@ -187,8 +170,8 @@ interface KoperasiApiService {
     suspend fun deleteUser(@Body req: DeleteUserRequest): Response<ApiResponse<Boolean>>
 
     // =========================
-// KAS (ADMIN)
-// =========================
+    // KAS (ADMIN)
+    // =========================
     @GET("kas_get.php")
     suspend fun getKas(): Response<ApiResponse<List<KasTransaksi>>>
 
@@ -200,7 +183,4 @@ interface KoperasiApiService {
 
     @POST("kas_delete.php")
     suspend fun deleteKas(@Body req: KasDeleteRequest): Response<ApiResponse<Boolean>>
-
-
-
 }

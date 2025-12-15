@@ -19,16 +19,15 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
+import com.example.projek_map.api.HistoriPembayaran
 import com.example.projek_map.data.Pinjaman
 import com.example.projek_map.data.PinjamanRepository
-import com.example.projek_map.ui.adapters.HistoriPembayaranAdapter
 import com.example.projek_map.ui.adapters.PinjamanAdapter
 import com.example.projek_map.utils.PrefManager
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
 import java.io.File
-import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -238,8 +237,6 @@ class PinjamanFragment : Fragment() {
     }
 
     private fun showHistoriPembayaranFromApi(pinjamanId: Int) {
-        // kalau kamu sudah punya adapter histori yang expects list model,
-        // kamu bisa sesuaikan. Di sini aku tampilkan simple "raw".
         lifecycleScope.launch {
             try {
                 val resp = com.example.projek_map.api.ApiClient.apiService.getHistoriPembayaran(pinjamanId)
@@ -249,15 +246,14 @@ class PinjamanFragment : Fragment() {
                     return@launch
                 }
 
-                val list = body.data ?: emptyList()
+                val list: List<HistoriPembayaran> = body.data ?: emptyList()
+
                 val text = if (list.isEmpty()) {
                     "Belum ada pembayaran untuk pinjaman ini."
                 } else {
-                    list.joinToString("\n\n") { row ->
-                        val tanggal = row["tanggal"]?.toString() ?: "-"
-                        val jumlah = row["jumlah"]?.toString() ?: "0"
-                        val status = row["status"]?.toString() ?: "-"
-                        "Tanggal: $tanggal\nJumlah: Rp $jumlah\nStatus: $status"
+                    list.joinToString("\n\n") { h ->
+                        val bukti = if (h.buktiPembayaranUri.isNullOrEmpty()) "-" else "✓"
+                        "Tanggal: ${h.tanggal}\nJumlah: Rp ${h.jumlah}\nStatus: ${h.status}\nBukti: $bukti"
                     }
                 }
 

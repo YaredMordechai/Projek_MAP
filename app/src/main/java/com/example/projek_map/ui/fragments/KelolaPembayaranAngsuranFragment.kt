@@ -9,14 +9,19 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
-import com.example.projek_map.data.DummyUserData
-import com.example.projek_map.data.HistoriPembayaran
+import com.example.projek_map.api.AddHistoriPembayaranRequest
+import com.example.projek_map.api.ApiClient
+import com.example.projek_map.api.HistoriPembayaran
 import com.example.projek_map.ui.adapters.HistoriPembayaranAdapter
 import com.google.android.material.button.MaterialButton
+import kotlinx.coroutines.launch
 import java.text.NumberFormat
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 class KelolaPembayaranAngsuranFragment : Fragment() {
@@ -28,7 +33,7 @@ class KelolaPembayaranAngsuranFragment : Fragment() {
 
     // List tampilan (bisa dimodifikasi lalu notifyDataSetChanged)
     private val display = mutableListOf<HistoriPembayaran>()
-    private val rupiah = NumberFormat.getCurrencyInstance(Locale("in", "ID"))
+    private val rupiah = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,7 +47,6 @@ class KelolaPembayaranAngsuranFragment : Fragment() {
         tvEmpty = v.findViewById(R.id.tvEmptyPembayaran)
 
         rvHistori.layoutManager = LinearLayoutManager(requireContext())
-        // Adapter milikmu menerima List<HistoriPembayaran> → kita kirim display (MutableList) sebagai List
         adapter = HistoriPembayaranAdapter(display)
         rvHistori.adapter = adapter
 
@@ -58,14 +62,32 @@ class KelolaPembayaranAngsuranFragment : Fragment() {
     }
 
     private fun refresh() {
-        // urutkan terbaru dulu (opsional)
-        val list = DummyUserData.historiPembayaranList.sortedByDescending { it.tanggal }
-        display.clear()
-        display.addAll(list)
-        adapter.notifyDataSetChanged()
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                // ambil semua histori pembayaran (admin)
+                val resp = ApiClient.apiService.getHistoriPembayaranAdmin()
 
-        tvEmpty.visibility = if (display.isEmpty()) View.VISIBLE else View.GONE
-        rvHistori.visibility = if (display.isEmpty()) View.GONE else View.VISIBLE
+                if (resp.isSuccessful && resp.body()?.success == true) {
+                    val list = (resp.body()?.data ?: emptyList())
+                        .sortedByDescending { it.tanggal }
+
+                    display.clear()
+                    display.addAll(list)
+                    adapter.notifyDataSetChanged()
+
+                    tvEmpty.visibility = if (display.isEmpty()) View.VISIBLE else View.GONE
+                    rvHistori.visibility = if (display.isEmpty()) View.GONE else View.VISIBLE
+                } else {
+                    Toast.makeText(
+                        requireContext(),
+                        resp.body()?.message ?: "Gagal ambil histori pembayaran",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Server error: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun showCatatDialog() {
@@ -81,58 +103,45 @@ class KelolaPembayaranAngsuranFragment : Fragment() {
                 val kode = edtKode.text.toString().trim()
                 val pinjamanId = edtPinjamanId.text.toString().trim().toIntOrNull()
 
-                // Parsing jumlah yang tahan titik/koma & desimal
                 val jumlahRaw = edtJumlah.text.toString().trim()
-                val jumlah = jumlahRaw
-                    .replace(".", "")        // 200.000 -> 200000
-                    .replace(",", "")        // 200,000.50 -> 20000050 (nanti dibagi 100 kalau perlu)
-                    .toLongOrNull()
-                    ?.let { it.toInt() }     // kita simpan sebagai Int sesuai DummyUserData
+                val jumlah = jumlahRaw.replace(".", "").replace(",", "").toIntOrNull()
 
                 if (kode.isEmpty() || pinjamanId == null || jumlah == null || jumlah <= 0) {
                     Toast.makeText(requireContext(), "Isi data dengan benar.", Toast.LENGTH_SHORT).show()
                     return@setPositiveButton
                 }
 
-                // Pastikan pinjaman ada & milik Kode Pegawai tsb
-                val pinj = DummyUserData.pinjamanList.find { it.id == pinjamanId }
-                if (pinj == null) {
-                    Toast.makeText(requireContext(), "Pinjaman #$pinjamanId tidak ditemukan.", Toast.LENGTH_SHORT).show()
-                    return@setPositiveButton
-                }
-                if (!pinj.kodePegawai.equals(kode, true)) {
-                    Toast.makeText(requireContext(), "Pinjaman #$pinjamanId bukan milik $kode.", Toast.LENGTH_SHORT).show()
-                    return@setPositiveButton
-                }
+                viewLifecycleOwner.lifecycleScope.launch {
+                    try {
+                        val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
 
-                // Validasi sisa angsuran
-                val sisa = DummyUserData.getSisaAngsuran(pinjamanId)
-                if (sisa <= 0) {
-                    Toast.makeText(requireContext(), "Pinjaman sudah lunas.", Toast.LENGTH_SHORT).show()
-                    return@setPositiveButton
+                        val resp = ApiClient.apiService.addHistoriPembayaran(
+                            AddHistoriPembayaranRequest(
+                                kodePegawai = kode,
+                                pinjamanId = pinjamanId,
+                                tanggal = today,
+                                jumlah = jumlah,
+                                status = "Dibayar (Admin)",
+                                buktiPembayaranUri = null
+                            )
+                        )
+
+                        if (resp.isSuccessful && resp.body()?.success == true) {
+                            refresh()
+                            Toast.makeText(requireContext(), "Pembayaran dicatat.", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(
+                                requireContext(),
+                                resp.body()?.message ?: "Gagal menyimpan pembayaran",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    } catch (e: Exception) {
+                        Toast.makeText(requireContext(), "Server error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
                 }
-                if (jumlah > sisa) {
-                    Toast.makeText(requireContext(), "Jumlah melebihi sisa (Rp ${rupiah.format(sisa)}).", Toast.LENGTH_SHORT).show()
-                    return@setPositiveButton
-                }
-
-                // Catat pembayaran → masuk ke historiPembayaranList
-                DummyUserData.catatPembayaranAngsuranAdmin(
-                    kodePegawai = kode,
-                    pinjamanId = pinjamanId,
-                    jumlahBayar = jumlah
-                )
-
-                // Auto-lunas jika sisa habis
-                val sisaBaru = DummyUserData.getSisaAngsuran(pinjamanId)
-                if (sisaBaru == 0) DummyUserData.setStatusPinjaman(pinjamanId, "Lunas")
-
-                // Refresh list agar histori langsung terlihat
-                refresh()
-                Toast.makeText(requireContext(), "Pembayaran dicatat.", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("Batal", null)
             .show()
     }
-
 }

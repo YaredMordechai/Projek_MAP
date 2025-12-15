@@ -9,7 +9,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
-import com.example.projek_map.data.HistoriPembayaran
+import com.example.projek_map.api.HistoriPembayaran   // ✅ PENTING: pakai api
 
 class HistoriPembayaranAdapter(
     private val data: List<HistoriPembayaran>
@@ -33,11 +33,12 @@ class HistoriPembayaranAdapter(
     @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val pembayaran = data[position]
+
         holder.tvTanggal.text = pembayaran.tanggal
         holder.tvJumlah.text = "Rp ${pembayaran.jumlah}"
         holder.txtStatus.text = pembayaran.status
 
-        // Tampilkan bukti pembayaran jika ada URI-nya
+        // ===== Bukti Pembayaran =====
         if (!pembayaran.buktiPembayaranUri.isNullOrEmpty()) {
             holder.imgBukti.visibility = View.VISIBLE
             try {
@@ -49,28 +50,33 @@ class HistoriPembayaranAdapter(
             holder.imgBukti.visibility = View.GONE
         }
 
-        // Tentukan warna status
+        // ===== Warna Status =====
         when {
             pembayaran.status.contains("Denda", true) -> {
                 holder.tvStatus.setTextColor(holder.itemView.context.getColor(R.color.red_600))
-                holder.imgPaymentIcon.setColorFilter(holder.itemView.context.getColor(R.color.red_400))
+                holder.imgPaymentIcon.setColorFilter(
+                    holder.itemView.context.getColor(R.color.red_400)
+                )
             }
             pembayaran.status.contains("Lunas", true) -> {
                 holder.tvStatus.setTextColor(holder.itemView.context.getColor(R.color.green_700))
-                holder.imgPaymentIcon.setColorFilter(holder.itemView.context.getColor(R.color.green_700))
+                holder.imgPaymentIcon.setColorFilter(
+                    holder.itemView.context.getColor(R.color.green_700)
+                )
             }
             else -> {
                 holder.tvStatus.setTextColor(holder.itemView.context.getColor(R.color.green_900))
-                holder.imgPaymentIcon.setColorFilter(holder.itemView.context.getColor(R.color.green_400))
+                holder.imgPaymentIcon.setColorFilter(
+                    holder.itemView.context.getColor(R.color.green_400)
+                )
             }
         }
 
-        val statusText = if (!pembayaran.buktiPembayaranUri.isNullOrEmpty()) {
-            "${pembayaran.status}  •  Bukti: ✓"
-        } else pembayaran.status
-
-        holder.tvStatus.text = statusText
+        holder.tvStatus.text =
+            if (!pembayaran.buktiPembayaranUri.isNullOrEmpty())
+                "${pembayaran.status}  •  Bukti: ✓"
+            else pembayaran.status
     }
 
-    override fun getItemCount() = data.size
+    override fun getItemCount(): Int = data.size
 }

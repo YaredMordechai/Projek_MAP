@@ -250,6 +250,11 @@
           <theme>@style/Theme.Projek_MAP</theme>
         </config>
       </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/item_angsuran.xml">
+        <config>
+          <theme>@style/Theme.Projek_MAP</theme>
+        </config>
+      </layout>
       <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/item_histori_bulanan.xml">
         <config>
           <theme>@style/Theme.Projek_MAP</theme>
@@ -321,7 +326,7 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5824b786-6475-4c17-b6c2-ddb4b105cc34" name="Changes" comment="Kelola Anggota by Admin">
+    <list default="true" id="5824b786-6475-4c17-b6c2-ddb4b105cc34" name="Changes" comment="Kelola Kas by Admin">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/build/intermediates/apk/debug/app-debug.apk" beforeDir="false" afterPath="$PROJECT_DIR$/app/build/intermediates/apk/debug/app-debug.apk" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/build/intermediates/dex/debug/mergeProjectDexDebug/12/classes.dex" beforeDir="false" afterPath="$PROJECT_DIR$/app/build/intermediates/dex/debug/mergeProjectDexDebug/12/classes.dex" afterDir="false" />
@@ -329,13 +334,21 @@
       <change beforePath="$PROJECT_DIR$/app/build/intermediates/dex/debug/mergeProjectDexDebug/3/classes.dex" beforeDir="false" afterPath="$PROJECT_DIR$/app/build/intermediates/dex/debug/mergeProjectDexDebug/3/classes.dex" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/build/intermediates/incremental/packageDebug/tmp/debug/dex-renamer-state.txt" beforeDir="false" afterPath="$PROJECT_DIR$/app/build/intermediates/incremental/packageDebug/tmp/debug/dex-renamer-state.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/build/intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/projek_map/api/KoperasiApiService.dex" beforeDir="false" afterPath="$PROJECT_DIR$/app/build/intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/projek_map/api/KoperasiApiService.dex" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/build/intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/projek_map/ui/adapters/AnggotaAdapter.dex" beforeDir="false" afterPath="$PROJECT_DIR$/app/build/intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/projek_map/ui/adapters/AnggotaAdapter.dex" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/build/intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/projek_map/ui/fragments/KelolaAnggotaFragment.dex" beforeDir="false" afterPath="$PROJECT_DIR$/app/build/intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/projek_map/ui/fragments/KelolaAnggotaFragment.dex" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build/intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/projek_map/ui/adapters/KasAdapter$VH.dex" beforeDir="false" afterPath="$PROJECT_DIR$/app/build/intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/projek_map/ui/adapters/KasAdapter$VH.dex" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build/intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/projek_map/ui/adapters/KasAdapter.dex" beforeDir="false" afterPath="$PROJECT_DIR$/app/build/intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/projek_map/ui/adapters/KasAdapter.dex" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build/intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/projek_map/ui/fragments/KelolaKasFragment$showAddDialog$1.dex" beforeDir="false" afterPath="$PROJECT_DIR$/app/build/intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/projek_map/ui/fragments/KelolaKasFragment$showAddDialog$1.dex" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build/intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/projek_map/ui/fragments/KelolaKasFragment$showEditDialog$1.dex" beforeDir="false" afterPath="$PROJECT_DIR$/app/build/intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/projek_map/ui/fragments/KelolaKasFragment$showEditDialog$1.dex" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build/intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/projek_map/ui/fragments/KelolaKasFragment.dex" beforeDir="false" afterPath="$PROJECT_DIR$/app/build/intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/projek_map/ui/fragments/KelolaKasFragment.dex" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build/intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/projek_map/ui/fragments/KelolaPinjamanFragment.dex" beforeDir="false" afterPath="$PROJECT_DIR$/app/build/intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/projek_map/ui/fragments/KelolaPinjamanFragment.dex" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/build/kotlin/compileDebugKotlin/local-state/build-history.bin" beforeDir="false" afterPath="$PROJECT_DIR$/app/build/kotlin/compileDebugKotlin/local-state/build-history.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/api/ApiClient.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/api/ApiClient.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/api/ApiModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/api/ApiModels.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/api/KoperasiApiService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/api/KoperasiApiService.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/adapters/KasAdapter.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/adapters/KasAdapter.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/fragments/KelolaKasFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/fragments/KelolaKasFragment.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/data/HistoriPembayaranAdminRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/data/HistoriPembayaranAdminRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/adapters/HistoriPembayaranAdapter.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/adapters/HistoriPembayaranAdapter.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/fragments/KelolaPembayaranAngsuranFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/fragments/KelolaPembayaranAngsuranFragment.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/fragments/KelolaPinjamanFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/fragments/KelolaPinjamanFragment.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/fragments/PinjamanFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/fragments/PinjamanFragment.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -761,7 +774,15 @@
       <option name="project" value="LOCAL" />
       <updated>1765785167920</updated>
     </task>
-    <option name="localTasksCounter" value="31" />
+    <task id="LOCAL-00031" summary="Kelola Kas by Admin">
+      <option name="closed" value="true" />
+      <created>1765790300548</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1765790300548</updated>
+    </task>
+    <option name="localTasksCounter" value="32" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -776,7 +797,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Update ProfilFragment dan penyesuasian UserDummy" />
     <MESSAGE value="Simpanan sama Pinjaman, banyak refactor file" />
     <MESSAGE value="Tambahan Admin Dummy Data, ViewFragment Admin beda, CRUD Admin, Page Admin Khusus" />
     <MESSAGE value="Pinjaman aktif (pkok, bunga, total cicilan, sisa angsuran." />
@@ -801,7 +821,8 @@
     <MESSAGE value="Kelola Pinjaman Admin sudah API full" />
     <MESSAGE value="Kelola Simpanan Admin sudah API full" />
     <MESSAGE value="Kelola Anggota by Admin" />
-    <option name="LAST_COMMIT_MESSAGE" value="Kelola Anggota by Admin" />
+    <MESSAGE value="Kelola Kas by Admin" />
+    <option name="LAST_COMMIT_MESSAGE" value="Kelola Kas by Admin" />
   </component>
   <component name="play_dynamic_filters_status">
     <option name="appIdToCheckInfo">
