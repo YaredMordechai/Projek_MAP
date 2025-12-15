@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Waktu pembuatan: 15 Des 2025 pada 11.31
+-- Waktu pembuatan: 15 Des 2025 pada 11.55
 -- Versi server: 8.0.30
 -- Versi PHP: 8.1.10
 
@@ -250,7 +250,8 @@ INSERT INTO `pinjaman` (`id`, `kodePegawai`, `jumlah`, `tenor`, `status`, `appro
 (5, 'EMP003', 1000000, 12, 'Proses', NULL, NULL, NULL, 0.1000, 0),
 (6, 'EMP001', 10000000, 12, 'Ditolak', 'ADM001', '2025-12-15 04:41:41', NULL, 0.1000, 0),
 (7, 'EMP001', 123456, 0, 'Ditolak', 'ADM001', '2025-12-15 05:02:47', NULL, 0.1000, 0),
-(8, 'EMP001', 123456, 0, 'Disetujui', 'ADM001', '2025-12-15 05:02:45', NULL, 0.1000, 0);
+(8, 'EMP001', 123456, 0, 'Disetujui', 'ADM001', '2025-12-15 05:02:45', NULL, 0.1000, 0),
+(9, 'EMP001', 410000, 6, 'Proses', NULL, NULL, NULL, 0.1000, 0);
 
 -- --------------------------------------------------------
 
@@ -285,6 +286,26 @@ CREATE TABLE `pinjaman_rincian` (
   `sisaPokok` int NOT NULL,
   `angsuranDibayar` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `settings`
+--
+
+CREATE TABLE `settings` (
+  `id` int NOT NULL,
+  `bungaPersen` double NOT NULL DEFAULT '10',
+  `dendaPersenPerHari` double NOT NULL DEFAULT '1',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `settings`
+--
+
+INSERT INTO `settings` (`id`, `bungaPersen`, `dendaPersenPerHari`, `updated_at`) VALUES
+(1, 20, 2, '2025-12-15 11:49:55');
 
 -- --------------------------------------------------------
 
@@ -450,6 +471,12 @@ ALTER TABLE `pinjaman_rincian`
   ADD PRIMARY KEY (`pinjamanId`);
 
 --
+-- Indeks untuk tabel `settings`
+--
+ALTER TABLE `settings`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indeks untuk tabel `simpanan`
 --
 ALTER TABLE `simpanan`
@@ -519,7 +546,7 @@ ALTER TABLE `pengumuman`
 -- AUTO_INCREMENT untuk tabel `pinjaman`
 --
 ALTER TABLE `pinjaman`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT untuk tabel `pinjaman_angsuran_jadwal`
