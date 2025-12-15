@@ -7,15 +7,21 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
-import com.example.projek_map.data.DummyUserData
+import com.example.projek_map.api.ApiClient
+import com.example.projek_map.api.SimpananTransaksiRequest
+import com.example.projek_map.data.HistoriSimpanan
+import com.example.projek_map.data.Simpanan
 import com.example.projek_map.data.TransaksiSimpanan
 import com.example.projek_map.ui.adapters.TransaksiSimpananAdapter
 import com.google.android.material.button.MaterialButton
+import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
+import kotlin.math.abs
 
 class KelolaSimpananFragment : Fragment() {
 
@@ -23,19 +29,23 @@ class KelolaSimpananFragment : Fragment() {
     private lateinit var btnTambah: MaterialButton
     private lateinit var adapter: TransaksiSimpananAdapter
 
-    // 🔹 Filter & ringkasan
     private lateinit var spinnerFilterJenis: Spinner
     private lateinit var tvTotalPokok: TextView
     private lateinit var tvTotalWajib: TextView
     private lateinit var tvTotalSukarela: TextView
     private lateinit var tvEmptyState: TextView
 
-    // 🔹 List tampilan (hasil filter) — tetap dipakai sesuai keinginanmu
     private val displayList = mutableListOf<TransaksiSimpanan>()
+    private val serverSourceList = mutableListOf<TransaksiSimpanan>() // ✅ LIST BAWAH: dari histori_simpanan
 
-    private val rupiah: NumberFormat by lazy {
+    // ✅ untuk isi dropdown pegawai di dialog admin (diambil dari tabel simpanan)
+    private val kodePegawaiOptions = mutableListOf<String>()
+
+    private val rupiah by lazy {
         NumberFormat.getCurrencyInstance(Locale("in", "ID"))
     }
+
+    private val api by lazy { ApiClient.apiService }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -43,7 +53,6 @@ class KelolaSimpananFragment : Fragment() {
     ): View {
         val view = inflater.inflate(R.layout.fragment_kelola_simpanan, container, false)
 
-        // View binding
         rvTransaksi = view.findViewById(R.id.rvTransaksiSimpanan)
         btnTambah = view.findViewById(R.id.btnTambahSimpanan)
 
@@ -53,70 +62,19 @@ class KelolaSimpananFragment : Fragment() {
         tvTotalSukarela = view.findViewById(R.id.tvTotalSukarela)
         tvEmptyState = view.findViewById(R.id.tvEmptyState)
 
-        // RecyclerView
         rvTransaksi.layoutManager = LinearLayoutManager(requireContext())
 
-        // ⬇️ Penting: pakai displayList langsung (bukan toMutableList)
         adapter = TransaksiSimpananAdapter(
             displayList,
-            onEdit = { item, pos ->
-                val dialogView = layoutInflater.inflate(R.layout.dialog_add_simpanan, null)
-                val etKode = dialogView.findViewById<EditText>(R.id.etKodePegawai)
-                val etJumlah = dialogView.findViewById<EditText>(R.id.etJumlah)
-                val spinnerJenis = dialogView.findViewById<Spinner>(R.id.spinnerJenis)
-
-                etKode.setText(item.kodePegawai)
-                etKode.isEnabled = false // fixed
-                etJumlah.setText(item.jumlah.toString())
-
-                val jenisList = listOf("Pokok", "Wajib", "Sukarela")
-                spinnerJenis.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, jenisList)
-                spinnerJenis.setSelection(jenisList.indexOfFirst { it.equals(item.jenis, true) })
-
-                AlertDialog.Builder(requireContext())
-                    .setTitle("Edit Transaksi Simpanan")
-                    .setView(dialogView)
-                    .setPositiveButton("Simpan") { _, _ ->
-                        val newJumlah = etJumlah.text.toString().toDoubleOrNull()
-                        val newJenis = spinnerJenis.selectedItem.toString()
-
-                        if (newJumlah == null || newJumlah <= 0) {
-                            Toast.makeText(requireContext(), "Jumlah tidak valid!", Toast.LENGTH_SHORT).show()
-                            return@setPositiveButton
-                        }
-
-                        // Update sumber data global
-                        val index = DummyUserData.transaksiSimpananList.indexOfFirst { it.id == item.id }
-                        if (index >= 0) {
-                            DummyUserData.transaksiSimpananList[index] =
-                                item.copy(jenis = newJenis, jumlah = newJumlah)
-                        }
-
-                        // Update tampilan & ringkasan
-                        adapter.updateAt(pos, item.copy(jenis = newJenis, jumlah = newJumlah))
-                        applyFilterAndRefresh()
-                        Toast.makeText(requireContext(), "Transaksi diperbarui!", Toast.LENGTH_SHORT).show()
-                    }
-                    .setNegativeButton("Batal", null)
-                    .show()
+            onEdit = { _, _ ->
+                Toast.makeText(requireContext(), "Edit belum tersedia", Toast.LENGTH_SHORT).show()
             },
-            onDelete = { item, pos ->
-                AlertDialog.Builder(requireContext())
-                    .setTitle("Hapus Transaksi")
-                    .setMessage("Hapus transaksi ${item.jenis} milik ${item.kodePegawai}?")
-                    .setPositiveButton("Hapus") { _, _ ->
-                        DummyUserData.transaksiSimpananList.removeAll { it.id == item.id }
-                        adapter.removeAt(pos)
-                        applyFilterAndRefresh()
-                        Toast.makeText(requireContext(), "Transaksi dihapus!", Toast.LENGTH_SHORT).show()
-                    }
-                    .setNegativeButton("Batal", null)
-                    .show()
+            onDelete = { _, _ ->
+                Toast.makeText(requireContext(), "Hapus belum tersedia", Toast.LENGTH_SHORT).show()
             }
         )
         rvTransaksi.adapter = adapter
 
-        // Spinner filter — isi dari kode
         val jenisFilter = listOf("Semua", "Pokok", "Wajib", "Sukarela")
         spinnerFilterJenis.adapter = ArrayAdapter(
             requireContext(),
@@ -124,105 +82,216 @@ class KelolaSimpananFragment : Fragment() {
             jenisFilter
         )
         spinnerFilterJenis.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>?, view: View?, position: Int, id: Long
-            ) {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
                 applyFilterAndRefresh()
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-        // Tombol tambah
-        btnTambah.setOnClickListener { showAddDialog() }
+        btnTambah.setOnClickListener { showAddDialogAdmin() }
 
-        // Tampilkan awal
-        applyFilterAndRefresh()
+        // ✅ ADMIN:
+        // 1) Header total + dropdown pegawai dari tabel simpanan (ALL)
+        loadAllSimpananFromServer()
+
+        // 2) List bawah dari histori_simpanan (ALL)
+        loadAllHistoriSimpananForList()
 
         return view
     }
 
-    private fun showAddDialog() {
+    override fun onResume() {
+        super.onResume()
+        loadAllSimpananFromServer()
+        loadAllHistoriSimpananForList()
+    }
+
+    // =========================
+    // ✅ ADMIN: LOAD ALL SIMPANAN (TOTAL HEADER + DROPDOWN PEGAWAI)
+    // =========================
+    private fun loadAllSimpananFromServer() {
+        lifecycleScope.launch {
+            try {
+                val resp = api.getAllSimpanan()
+                if (!resp.isSuccessful) {
+                    Toast.makeText(requireContext(), "HTTP ${resp.code()}", Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
+
+                val body = resp.body()
+                if (body?.success != true) {
+                    Toast.makeText(requireContext(), body?.message ?: "Gagal load simpanan", Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
+
+                val list: List<Simpanan> = body.data.orEmpty()
+
+                // ✅ isi dropdown pegawai dari tabel simpanan
+                kodePegawaiOptions.clear()
+                kodePegawaiOptions.addAll(list.map { it.kodePegawai }.distinct().sorted())
+
+                // ✅ HEADER TOTAL = SUM tabel simpanan (bukan histori)
+                val totalPokokAll = list.sumOf { it.simpananPokok }
+                val totalWajibAll = list.sumOf { it.simpananWajib }
+                val totalSukarelaAll = list.sumOf { it.simpananSukarela }
+
+                tvTotalPokok.text = rupiah.format(totalPokokAll)
+                tvTotalWajib.text = rupiah.format(totalWajibAll)
+                tvTotalSukarela.text = rupiah.format(totalSukarelaAll)
+
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    // =========================
+    // ✅ ADMIN: LIST BAWAH DARI histori_simpanan (ALL)
+    // =========================
+    private fun loadAllHistoriSimpananForList() {
+        lifecycleScope.launch {
+            try {
+                val resp = api.getAllHistoriSimpanan()
+                if (!resp.isSuccessful) {
+                    Toast.makeText(requireContext(), "HTTP ${resp.code()}", Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
+
+                val body = resp.body()
+                if (body?.success != true) {
+                    Toast.makeText(requireContext(), body?.message ?: "Gagal load histori", Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
+
+                val list: List<HistoriSimpanan> = body.data.orEmpty()
+
+                val mapped = list.map { h ->
+                    TransaksiSimpanan(
+                        id = h.id,
+                        kodePegawai = h.kodePegawai,
+                        jenis = extractJenis(h.jenis),
+                        jumlah = abs(h.jumlah),
+                        tanggal = h.tanggal ?: ""
+                    )
+                }
+
+                serverSourceList.clear()
+                serverSourceList.addAll(mapped)
+
+                applyFilterAndRefresh()
+
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    // =========================
+    // ✅ ADMIN: TAMBAH TRANSAKSI UNTUK EMPLOYEE PILIHAN
+    // =========================
+    private fun showAddDialogAdmin() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_add_simpanan, null)
+
+        val spinnerPegawai = dialogView.findViewById<Spinner>(R.id.spinnerPegawai)
         val etKode = dialogView.findViewById<EditText>(R.id.etKodePegawai)
         val etJumlah = dialogView.findViewById<EditText>(R.id.etJumlah)
         val spinnerJenis = dialogView.findViewById<Spinner>(R.id.spinnerJenis)
 
         val jenisList = listOf("Pokok", "Wajib", "Sukarela")
-        spinnerJenis.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, jenisList)
+        spinnerJenis.adapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, jenisList)
+
+        val pegawaiAdapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            if (kodePegawaiOptions.isNotEmpty()) kodePegawaiOptions else listOf("Tidak ada data")
+        )
+        spinnerPegawai.adapter = pegawaiAdapter
+
+        if (kodePegawaiOptions.isNotEmpty()) etKode.setText(kodePegawaiOptions[0]) else etKode.setText("")
+        etKode.isEnabled = false
+
+        spinnerPegawai.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
+                if (kodePegawaiOptions.isNotEmpty() && pos in kodePegawaiOptions.indices) {
+                    etKode.setText(kodePegawaiOptions[pos])
+                }
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
 
         AlertDialog.Builder(requireContext())
-            .setTitle("Tambah Transaksi Simpanan")
+            .setTitle("Tambah Transaksi Simpanan (Admin)")
             .setView(dialogView)
             .setPositiveButton("Simpan") { _, _ ->
                 val kode = etKode.text.toString().trim()
-                val jumlahText = etJumlah.text.toString().trim()
+                val jumlah = etJumlah.text.toString().toDoubleOrNull()
                 val jenis = spinnerJenis.selectedItem.toString()
 
-                if (kode.isEmpty() || jumlahText.isEmpty()) {
-                    Toast.makeText(requireContext(), "Isi semua kolom!", Toast.LENGTH_SHORT).show()
+                if (kode.isBlank()) {
+                    Toast.makeText(requireContext(), "Kode pegawai wajib diisi", Toast.LENGTH_SHORT).show()
                     return@setPositiveButton
                 }
-
-                val jumlah = jumlahText.toDoubleOrNull()
                 if (jumlah == null || jumlah <= 0) {
-                    Toast.makeText(requireContext(), "Jumlah tidak valid!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Jumlah tidak valid", Toast.LENGTH_SHORT).show()
                     return@setPositiveButton
                 }
 
-                val user = DummyUserData.users.find { it.kodePegawai == kode }
-                if (user == null) {
-                    Toast.makeText(requireContext(), "Kode pegawai tidak ditemukan!", Toast.LENGTH_SHORT).show()
-                    return@setPositiveButton
-                }
+                val req = SimpananTransaksiRequest(
+                    kodePegawai = kode,
+                    jenisInput = "Simpanan $jenis",
+                    jumlah = jumlah,
+                    keterangan = "-"
+                )
 
-                DummyUserData.tambahTransaksiSimpanan(kode, jenis, jumlah)
-                applyFilterAndRefresh()
-                Toast.makeText(requireContext(), "Transaksi simpanan berhasil ditambahkan!", Toast.LENGTH_SHORT).show()
+                lifecycleScope.launch {
+                    try {
+                        val resp = api.simpananTransaksi(req)
+                        val body = resp.body()
+                        if (resp.isSuccessful && body?.success == true) {
+                            Toast.makeText(requireContext(), "Berhasil", Toast.LENGTH_SHORT).show()
+
+                            // refresh total (simpanan) + list bawah (histori)
+                            loadAllSimpananFromServer()
+                            loadAllHistoriSimpananForList()
+                        } else {
+                            Toast.makeText(requireContext(), body?.message ?: "Gagal", Toast.LENGTH_SHORT).show()
+                        }
+                    } catch (e: Exception) {
+                        Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
             .setNegativeButton("Batal", null)
             .show()
     }
 
-    override fun onResume() {
-        super.onResume()
-        applyFilterAndRefresh()
-    }
-
-    // ==============================
-    // 🔧 Helper: Filter + Ringkasan
-    // ==============================
-
+    // =========================
+    // FILTER & UI
+    // =========================
     private fun applyFilterAndRefresh() {
         val selected = spinnerFilterJenis.selectedItem?.toString() ?: "Semua"
 
-        val source = DummyUserData.transaksiSimpananList
         val filtered = if (selected == "Semua") {
-            source
+            serverSourceList
         } else {
-            source.filter { it.jenis.equals(selected, ignoreCase = true) }
+            serverSourceList.filter { it.jenis.equals(selected, true) }
         }
 
-        // ⬇️ Kamu minta baris ini tetap → aman, adapter memegang list yang sama (displayList)
         displayList.clear()
         displayList.addAll(filtered)
         adapter.notifyDataSetChanged()
 
-        updateEmptyState(displayList.isEmpty())
-        updateSummary(filtered)
+        tvEmptyState.visibility = if (displayList.isEmpty()) View.VISIBLE else View.GONE
+        rvTransaksi.visibility = if (displayList.isEmpty()) View.GONE else View.VISIBLE
     }
 
-    private fun updateSummary(list: List<TransaksiSimpanan>) {
-        val totalPokok = list.filter { it.jenis.equals("Pokok", true) }.sumOf { it.jumlah }
-        val totalWajib = list.filter { it.jenis.equals("Wajib", true) }.sumOf { it.jumlah }
-        val totalSukarela = list.filter { it.jenis.equals("Sukarela", true) }.sumOf { it.jumlah }
-
-        tvTotalPokok.text = rupiah.format(totalPokok)
-        tvTotalWajib.text = rupiah.format(totalWajib)
-        tvTotalSukarela.text = rupiah.format(totalSukarela)
-    }
-
-    private fun updateEmptyState(isEmpty: Boolean) {
-        tvEmptyState.visibility = if (isEmpty) View.VISIBLE else View.GONE
-        rvTransaksi.visibility = if (isEmpty) View.GONE else View.VISIBLE
+    private fun extractJenis(jenisHistori: String): String {
+        val s = jenisHistori.lowercase()
+        return when {
+            "pokok" in s -> "Pokok"
+            "wajib" in s -> "Wajib"
+            else -> "Sukarela"
+        }
     }
 }

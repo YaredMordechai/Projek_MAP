@@ -152,7 +152,7 @@ class SimpananFragment : Fragment() {
                         SimpananTransaksiRequest(
                             kodePegawai = kodePegawai,
                             jenisInput = jenis,
-                            jumlah = jumlah,
+                            jumlah = jumlah, // setor = plus
                             keterangan = "-"
                         )
                     )
@@ -160,9 +160,13 @@ class SimpananFragment : Fragment() {
                     val body = resp.body()
                     if (resp.isSuccessful && body?.success == true) {
                         loadHistoriSimpanan()
-                        showPopup("Penarikan Berhasil", "Penarikan $jenis sebesar Rp ${String.format("%,.0f", jumlah).replace(',', '.')}")
+                        resetForm()
+                        showPopup(
+                            "Setoran Berhasil",
+                            "Setoran $jenis sebesar Rp ${String.format("%,.0f", jumlah).replace(',', '.')} tercatat."
+                        )
                     } else {
-                        Toast.makeText(requireContext(), body?.message ?: "Gagal tarik simpanan", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), body?.message ?: "Gagal setor simpanan", Toast.LENGTH_SHORT).show()
                     }
                 } catch (e: Exception) {
                     Toast.makeText(requireContext(), e.message ?: "Gagal konek ke server", Toast.LENGTH_SHORT).show()
@@ -220,7 +224,9 @@ class SimpananFragment : Fragment() {
                 != PackageManager.PERMISSION_GRANTED
             ) {
                 requestCameraPermission.launch(Manifest.permission.CAMERA)
-            } else launchCamera()
+            } else {
+                launchCamera()
+            }
         }
 
         return view
@@ -246,7 +252,6 @@ class SimpananFragment : Fragment() {
 
         val kodePegawai = prefManager.getKodePegawai() ?: "EMP001"
 
-        // simpan ke DB via API (URI saja)
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val api = ApiClient.apiService
@@ -293,13 +298,14 @@ class SimpananFragment : Fragment() {
                 val simpananResp = api.getSimpanan(kodePegawai)
                 val simpananBody = simpananResp.body()
 
-                // 2) histori simpanan (pakai filter endpoint biar tidak ambil semua)
+                // 2) histori simpanan (filter by kodePegawai)
                 val historiResp = api.getHistoriSimpananByKodePegawai(kodePegawai)
                 val historiBody = historiResp.body()
 
                 dataHistori.clear()
                 if (historiResp.isSuccessful && historiBody?.success == true) {
-                    dataHistori.addAll(historiBody.data ?: emptyList())
+                    // ✅ FIX: akses data dari body API, bukan resp.data
+                    dataHistori.addAll(historiBody.data.orEmpty())
                 }
                 adapterHistori.notifyDataSetChanged()
 
@@ -309,7 +315,6 @@ class SimpananFragment : Fragment() {
                 tvTotalSaldo.text = "Total Saldo Simpanan: Rp ${
                     String.format("%,.0f", total).replace(',', '.')
                 }"
-
             } catch (e: Exception) {
                 tvTotalSaldo.text = "Total Saldo Simpanan: Rp 0"
                 Toast.makeText(requireContext(), e.message ?: "Gagal ambil data simpanan", Toast.LENGTH_SHORT).show()
@@ -317,8 +322,6 @@ class SimpananFragment : Fragment() {
         }
     }
 
-
-    // popup reusable
     private fun showPopup(title: String, message: String) {
         AlertDialog.Builder(requireContext())
             .setTitle(title)
