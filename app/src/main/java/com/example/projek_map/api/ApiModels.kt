@@ -168,3 +168,34 @@ data class PengumumanUpdateRequest(
 data class PengumumanDeleteRequest(
     val id: Int
 )
+
+/** === LAPORAN USER === */
+data class LaporanUserApiData(
+    val kodePegawai: String,
+    val year: Int,
+    val bulan: Int,
+    val totalSimpanan: Double,
+    val totalPinjamanAktif: Double,
+    val totalAngsuranBulanan: Double,
+    val monthlySimpanan: List<Double>,
+    val monthlyAngsuran: List<Double>
+)
+
+/** === LAPORAN ADMIN === */
+data class LaporanAdminApiUserRow(
+    val kodePegawai: String,
+    val email: String,
+    val password: String,
+    val nama: String,
+    val statusKeanggotaan: String,
+    val totalSimpanan: Double,
+    val totalPinjamanAktif: Double
+)
+
+data class LaporanAdminApiData(
+    val jumlahAnggota: Int,
+    val totalSimpananAll: Double,
+    val totalPinjamanAll: Double,
+    val saldoKas: Double,
+    val users: List<LaporanAdminApiUserRow>
+)

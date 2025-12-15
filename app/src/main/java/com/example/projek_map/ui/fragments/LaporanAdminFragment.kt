@@ -6,12 +6,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
+import com.example.projek_map.api.ApiClient
 import com.example.projek_map.data.DummyUserData
 import com.example.projek_map.data.User
 import com.example.projek_map.ui.adapters.LaporanAdminAdapter
+import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -32,6 +35,13 @@ class LaporanAdminFragment : Fragment() {
     private lateinit var tvEmpty: TextView
 
     private val rupiah: NumberFormat = NumberFormat.getCurrencyInstance(Locale("in", "ID"))
+
+    // cache data dari DB (supaya filter tidak hit API terus)
+    private val anggotaDbCache = mutableListOf<UserSummary>()
+
+    // cache response admin (biar loadSummary + loadAnggota bisa share)
+    private var adminLoaded = false
+    private var loadingAdmin = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -57,7 +67,6 @@ class LaporanAdminFragment : Fragment() {
         rvAnggota.layoutManager = LinearLayoutManager(requireContext())
 
         adapter = LaporanAdminAdapter(mutableListOf()) { item ->
-            // Klik item → tampilkan detail sederhana (dummy) dalam dialog
             val msg = """
                 Kode: ${item.user.kodePegawai}
                 Nama: ${item.user.nama}
@@ -66,6 +75,7 @@ class LaporanAdminFragment : Fragment() {
                 Total Simpanan: ${rupiah.format(item.totalSimpanan)}
                 Total Pinjaman Aktif: ${rupiah.format(item.totalPinjamanAktif)}
             """.trimIndent()
+
             android.app.AlertDialog.Builder(requireContext())
                 .setTitle("Detail Anggota")
                 .setMessage(msg)
@@ -76,9 +86,9 @@ class LaporanAdminFragment : Fragment() {
 
         // Spinner status
         val statusItems = listOf("Semua", "Anggota Aktif", "Anggota Tidak Aktif")
-        spStatus.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, statusItems)
+        spStatus.adapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, statusItems)
 
-        // Tombol filter
         btnFilter.setOnClickListener { applyFilter() }
         btnReset.setOnClickListener {
             spStatus.setSelection(0)
@@ -86,24 +96,108 @@ class LaporanAdminFragment : Fragment() {
             applyFilter()
         }
 
-        // Muat awal
-        renderSummary()
-        applyFilter()
+        // ✅ LOAD DARI DATABASE
+        loadSummaryFromApi()
+        loadAnggotaFromApi()
 
         return v
     }
 
-    private fun renderSummary() {
-        // Saldo kas dari DummyUserData
-        val saldoKas = DummyUserData.getSaldoKas()
+    // =======================
+    // RINGKASAN (DB → fallback dummy)
+    // =======================
+    private fun loadSummaryFromApi() {
+        ensureAdminLoaded(
+            onSuccess = {
+                // sudah di-set di ensureAdminLoaded
+            },
+            onFail = {
+                renderSummaryDummy()
+            }
+        )
+    }
 
-        // Total simpanan seluruh anggota
-        // (pakai simpananList yang sudah menyimpan saldo per anggota)
+    // =======================
+    // LIST ANGGOTA (DB → fallback dummy)
+    // =======================
+    private fun loadAnggotaFromApi() {
+        ensureAdminLoaded(
+            onSuccess = {
+                applyFilterDb()
+            },
+            onFail = {
+                applyFilterDummy()
+            }
+        )
+    }
+
+    // ✅ load sekali dari endpoint laporan_admin.php
+    private fun ensureAdminLoaded(onSuccess: () -> Unit, onFail: () -> Unit) {
+        if (adminLoaded && anggotaDbCache.isNotEmpty()) {
+            onSuccess()
+            return
+        }
+        if (loadingAdmin) {
+            // kalau sedang loading, kita biarkan user bisa klik filter → pakai dummy dulu
+            // (agar nggak “ngerusak” UI)
+            onFail()
+            return
+        }
+
+        loadingAdmin = true
+        lifecycleScope.launch {
+            try {
+                // ⚠️ Pastikan KoperasiApiService punya getLaporanAdmin()
+                val resp = ApiClient.apiService.getLaporanAdmin()
+                val body = resp.body()
+
+                if (resp.isSuccessful && body?.success == true && body.data != null) {
+                    val d = body.data
+
+                    // set summary
+                    tvSaldoKas.text = rupiah.format(d.saldoKas)
+                    tvTotalSimpananAll.text = rupiah.format(d.totalSimpananAll)
+                    tvTotalPinjamanAll.text = rupiah.format(d.totalPinjamanAll)
+                    tvJumlahAnggota.text = d.jumlahAnggota.toString()
+
+                    // map list user rows -> UserSummary
+                    anggotaDbCache.clear()
+                    anggotaDbCache.addAll(
+                        d.users.map { r ->
+                            UserSummary(
+                                user = User(
+                                    kodePegawai = r.kodePegawai,
+                                    email = r.email,
+                                    password = r.password,
+                                    nama = r.nama,
+                                    statusKeanggotaan = r.statusKeanggotaan
+                                ),
+                                totalSimpanan = r.totalSimpanan,
+                                totalPinjamanAktif = r.totalPinjamanAktif
+                            )
+                        }
+                    )
+
+                    adminLoaded = true
+                    loadingAdmin = false
+                    onSuccess()
+                } else {
+                    loadingAdmin = false
+                    onFail()
+                }
+            } catch (_: Exception) {
+                loadingAdmin = false
+                onFail()
+            }
+        }
+    }
+
+    // 🔁 fallback lama (tidak dihapus)
+    private fun renderSummaryDummy() {
+        val saldoKas = DummyUserData.getSaldoKas()
         val totalSimpananAll = DummyUserData.simpananList.sumOf {
             it.simpananPokok + it.simpananWajib + it.simpananSukarela
         }
-
-        // Total pinjaman aktif seluruh anggota (status != "Lunas")
         val totalPinjamanAll = DummyUserData.pinjamanList
             .filter { !it.status.equals("Lunas", true) }
             .sumOf { it.jumlah.toDouble() }
@@ -116,7 +210,36 @@ class LaporanAdminFragment : Fragment() {
         tvJumlahAnggota.text = jumlahAnggota.toString()
     }
 
-    private fun applyFilter() {
+    // =======================
+    // FILTER DARI DB
+    // =======================
+    private fun applyFilterDb() {
+        val q = etCari.text?.toString()?.trim()?.lowercase().orElse("")
+        val status = spStatus.selectedItem?.toString().orElse("Semua")
+
+        val list = anggotaDbCache
+            .filter { row ->
+                val user = row.user
+                val okStatus = when (status) {
+                    "Anggota Aktif" -> user.statusKeanggotaan.equals("Anggota Aktif", true)
+                    "Anggota Tidak Aktif" -> user.statusKeanggotaan.equals("Anggota Tidak Aktif", true)
+                    else -> true
+                }
+                if (!okStatus) return@filter false
+                if (q.isBlank()) return@filter true
+                "${user.nama} ${user.kodePegawai} ${user.email}".lowercase().contains(q)
+            }
+            .sortedBy { it.user.nama.lowercase() }
+
+        adapter.replaceAll(list)
+        tvEmpty.visibility = if (list.isEmpty()) View.VISIBLE else View.GONE
+        rvAnggota.visibility = if (list.isEmpty()) View.GONE else View.VISIBLE
+    }
+
+    // =======================
+    // FILTER DUMMY (fallback lama)
+    // =======================
+    private fun applyFilterDummy() {
         val q = etCari.text?.toString()?.trim()?.lowercase().orElse("")
         val status = spStatus.selectedItem?.toString().orElse("Semua")
 
@@ -130,8 +253,7 @@ class LaporanAdminFragment : Fragment() {
                 }
                 if (!okStatus) return@filter false
                 if (q.isBlank()) return@filter true
-                val join = "${user.nama} ${user.kodePegawai} ${user.email}".lowercase()
-                join.contains(q)
+                "${user.nama} ${user.kodePegawai} ${user.email}".lowercase().contains(q)
             }
             .map { user ->
                 UserSummary(
@@ -148,8 +270,13 @@ class LaporanAdminFragment : Fragment() {
         rvAnggota.visibility = if (list.isEmpty()) View.GONE else View.VISIBLE
     }
 
+    private fun applyFilter() {
+        if (anggotaDbCache.isNotEmpty()) applyFilterDb() else applyFilterDummy()
+    }
+
     private fun String?.orElse(def: String) = this ?: def
 
+    // ===== MODEL (TIDAK DIUBAH) =====
     data class UserSummary(
         val user: User,
         val totalSimpanan: Double,

@@ -212,4 +212,19 @@ interface KoperasiApiService {
 
     @POST("kas_delete.php")
     suspend fun deleteKas(@Body req: KasDeleteRequest): Response<ApiResponse<Boolean>>
+
+    // =========================
+// LAPORAN
+// =========================
+    @GET("laporan_user.php")
+    suspend fun getLaporanUser(
+        @Query("kodePegawai") kodePegawai: String,
+        @Query("bulan") bulan: Int,
+        @Query("year") year: Int
+    ): Response<ApiResponse<LaporanUserApiData>>
+
+    @GET("laporan_admin.php")
+    suspend fun getLaporanAdmin(): Response<ApiResponse<LaporanAdminApiData>>
+
+
 }

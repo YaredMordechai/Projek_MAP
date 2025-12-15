@@ -21,6 +21,9 @@ import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.utils.ColorTemplate
 import java.text.NumberFormat
 import java.util.*
+import androidx.lifecycle.lifecycleScope
+import com.example.projek_map.api.ApiClient
+import kotlinx.coroutines.launch
 
 class LaporanFragment : Fragment() {
 
@@ -31,6 +34,11 @@ class LaporanFragment : Fragment() {
     private lateinit var chartRekapKeuangan: BarChart
 
     private var kodePegawaiAktif: String? = null
+
+    // ✅ cache monthly dari DB untuk chart
+    private var lastMonthlySimpanan: List<Double>? = null
+    private var lastMonthlyAngsuran: List<Double>? = null
+    private var lastYear: Int = Calendar.getInstance().get(Calendar.YEAR)
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -59,7 +67,13 @@ class LaporanFragment : Fragment() {
 
         setupSpinner()
         setupChart()
-        updateLaporan(Calendar.getInstance().get(Calendar.MONTH) + 1)
+
+        val cal = Calendar.getInstance()
+        val bulanSekarang = cal.get(Calendar.MONTH) + 1
+        lastYear = cal.get(Calendar.YEAR)
+
+        // ✅ ambil DB dulu
+        loadLaporanFromApi(bulanSekarang, lastYear)
 
         return view
     }
@@ -82,15 +96,15 @@ class LaporanFragment : Fragment() {
             override fun onItemSelected(
                 parent: AdapterView<*>, view: View?, position: Int, id: Long
             ) {
-                updateLaporan(position + 1)
-                updateChart()
+                val bulan = position + 1
+                loadLaporanFromApi(bulan, lastYear)
             }
 
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
     }
 
-    // === Update nilai total (TextView) ===
+    // === Update nilai total (TextView) [DUMMY - fallback] ===
     private fun updateLaporan(bulan: Int) {
         val formatter = NumberFormat.getCurrencyInstance(Locale("in", "ID"))
         val kode = kodePegawaiAktif ?: return
@@ -102,6 +116,11 @@ class LaporanFragment : Fragment() {
         txtTotalSimpanan.text = formatter.format(totalSimpanan)
         txtTotalPinjaman.text = formatter.format(totalPinjaman)
         txtTotalAngsuran.text = formatter.format(totalAngsuran)
+
+        // chart tetap jalan pakai dummy
+        lastMonthlySimpanan = null
+        lastMonthlyAngsuran = null
+        updateChart()
     }
 
     // === Setup chart awal ===
@@ -118,33 +137,77 @@ class LaporanFragment : Fragment() {
         updateChart()
     }
 
+    // ✅ === Ambil laporan dari API (DB) ===
+    private fun loadLaporanFromApi(bulan: Int, year: Int) {
+        lifecycleScope.launch {
+            val kode = kodePegawaiAktif ?: return@launch
+            try {
+                // ⚠️ Pastikan KoperasiApiService punya getLaporanUser(kode, bulan, year)
+                val resp = ApiClient.apiService.getLaporanUser(kode, bulan, year)
+                val body = resp.body()
+
+                if (resp.isSuccessful && body?.success == true && body.data != null) {
+                    val d = body.data
+                    val formatter = NumberFormat.getCurrencyInstance(Locale("in", "ID"))
+
+                    txtTotalSimpanan.text = formatter.format(d.totalSimpanan)
+                    txtTotalPinjaman.text = formatter.format(d.totalPinjamanAktif)
+                    txtTotalAngsuran.text = formatter.format(d.totalAngsuranBulanan)
+
+                    // cache monthly utk chart
+                    lastMonthlySimpanan = d.monthlySimpanan
+                    lastMonthlyAngsuran = d.monthlyAngsuran
+
+                    updateChart()
+                } else {
+                    // fallback ke dummy
+                    updateLaporan(bulan)
+                }
+            } catch (_: Exception) {
+                // fallback ke dummy
+                updateLaporan(bulan)
+            }
+        }
+    }
+
     // === Update data chart sesuai bulan ===
     private fun updateChart() {
         val bulanList = listOf("Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des")
         val kode = kodePegawaiAktif ?: return
 
-        // Ambil data dummy untuk semua bulan
-        val simpananData = bulanList.indices.map { DummyUserData.getTotalSimpanan(kode).toFloat() + it * 100000 }
-        val pinjamanData = bulanList.indices.map { DummyUserData.getTotalPinjamanAktif(kode).toFloat() - it * 50000 }
+        val monthlyS = lastMonthlySimpanan
+        val monthlyA = lastMonthlyAngsuran
+
+        val simpananData: List<Float>
+        val angsuranData: List<Float>
+
+        // ✅ kalau DB ada monthly 12 data, pakai DB
+        if (monthlyS != null && monthlyA != null && monthlyS.size == 12 && monthlyA.size == 12) {
+            simpananData = monthlyS.map { it.toFloat() }
+            angsuranData = monthlyA.map { it.toFloat() }
+        } else {
+            // fallback dummy (behavior lama)
+            simpananData = bulanList.indices.map { DummyUserData.getTotalSimpanan(kode).toFloat() + it * 100000 }
+            angsuranData = bulanList.indices.map { DummyUserData.getTotalAngsuranBulanan(kode, it + 1).toFloat() }
+        }
 
         val entriesSimpanan = simpananData.mapIndexed { i, v -> BarEntry(i.toFloat(), v) }
-        val entriesPinjaman = pinjamanData.mapIndexed { i, v -> BarEntry(i.toFloat(), v) }
+        val entriesAngsuran = angsuranData.mapIndexed { i, v -> BarEntry(i.toFloat(), v) }
 
         val dataSetSimpanan = BarDataSet(entriesSimpanan, "Simpanan").apply {
             color = ColorTemplate.MATERIAL_COLORS[0]
             valueTextSize = 9f
         }
 
-        val dataSetPinjaman = BarDataSet(entriesPinjaman, "Pinjaman").apply {
+        val dataSetAngsuran = BarDataSet(entriesAngsuran, "Angsuran").apply {
             color = ColorTemplate.MATERIAL_COLORS[1]
             valueTextSize = 9f
         }
 
-        val barData = BarData(dataSetSimpanan, dataSetPinjaman)
+        val barData = BarData(dataSetSimpanan, dataSetAngsuran)
         barData.barWidth = 0.3f
         chartRekapKeuangan.data = barData
 
-        // Set X-Axis label
         val xAxis = chartRekapKeuangan.xAxis
         xAxis.valueFormatter = com.github.mikephil.charting.formatter.IndexAxisValueFormatter(bulanList)
         xAxis.granularity = 1f
