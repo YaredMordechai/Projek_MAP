@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Waktu pembuatan: 15 Des 2025 pada 04.53
+-- Waktu pembuatan: 15 Des 2025 pada 07.22
 -- Versi server: 8.0.30
 -- Versi PHP: 8.1.10
 
@@ -78,7 +78,10 @@ CREATE TABLE `decision_notifications` (
 
 INSERT INTO `decision_notifications` (`id`, `kodePegawai`, `pinjamanId`, `decision`, `jumlah`, `tanggal`, `is_read`) VALUES
 (1, 'EMP001', 1, 'ditolak', 2000000, '2025-12-15', 1),
-(2, 'EMP001', 6, 'ditolak', 10000000, '2025-12-15', 1);
+(2, 'EMP001', 6, 'ditolak', 10000000, '2025-12-15', 1),
+(3, 'EMP001', 8, 'disetujui', 123456, '2025-12-15', 1),
+(4, 'EMP001', 7, 'ditolak', 123456, '2025-12-15', 1),
+(5, 'EMP002', 2, 'ditolak', 1500000, '2025-12-15', 1);
 
 -- --------------------------------------------------------
 
@@ -145,7 +148,9 @@ INSERT INTO `histori_simpanan` (`id`, `kodePegawai`, `tanggal`, `jenis`, `jumlah
 (2, 'EMP001', '2025-08-01', 'Setoran Sukarela', 300000.00, 'Setoran tambahan Agustus'),
 (3, 'EMP002', '2025-09-01', 'Penarikan Sukarela', -150000.00, 'Penarikan keperluan pribadi'),
 (4, 'EMP001', '2025-12-14', 'Setoran Sukarela', 100000.00, '-'),
-(5, 'EMP001', '2025-12-14', 'Setoran Sukarela', 15000.00, '-');
+(5, 'EMP001', '2025-12-14', 'Setoran Sukarela', 15000.00, '-'),
+(6, 'EMP001', '2025-12-15', 'Setoran Pokok', 100000.00, '-'),
+(7, 'EMP002', '2025-12-15', 'Setoran Sukarela', 321123.00, '-');
 
 -- --------------------------------------------------------
 
@@ -237,13 +242,13 @@ CREATE TABLE `pinjaman` (
 
 INSERT INTO `pinjaman` (`id`, `kodePegawai`, `jumlah`, `tenor`, `status`, `approved_by`, `approved_at`, `reject_reason`, `bunga`, `angsuranTerbayar`) VALUES
 (1, 'EMP001', 2000000, 12, 'Ditolak', 'ADM001', '2025-12-15 04:31:40', NULL, 0.1000, 0),
-(2, 'EMP002', 1500000, 6, 'Proses', NULL, NULL, NULL, 0.1000, 0),
+(2, 'EMP002', 1500000, 6, 'Ditolak', 'ADM001', '2025-12-15 05:05:56', NULL, 0.1000, 0),
 (3, 'EMP001', 3000000, 12, 'Disetujui', NULL, NULL, NULL, 0.1000, 0),
 (4, 'EMP002', 5500000, 6, 'Disetujui', NULL, NULL, NULL, 0.1000, 0),
 (5, 'EMP003', 1000000, 12, 'Proses', NULL, NULL, NULL, 0.1000, 0),
 (6, 'EMP001', 10000000, 12, 'Ditolak', 'ADM001', '2025-12-15 04:41:41', NULL, 0.1000, 0),
-(7, 'EMP001', 123456, 0, 'Proses', NULL, NULL, NULL, 0.1000, 0),
-(8, 'EMP001', 123456, 0, 'Proses', NULL, NULL, NULL, 0.1000, 0);
+(7, 'EMP001', 123456, 0, 'Ditolak', 'ADM001', '2025-12-15 05:02:47', NULL, 0.1000, 0),
+(8, 'EMP001', 123456, 0, 'Disetujui', 'ADM001', '2025-12-15 05:02:45', NULL, 0.1000, 0);
 
 -- --------------------------------------------------------
 
@@ -297,8 +302,8 @@ CREATE TABLE `simpanan` (
 --
 
 INSERT INTO `simpanan` (`kodePegawai`, `simpananPokok`, `simpananWajib`, `simpananSukarela`) VALUES
-('EMP001', 500000.00, 200000.00, 415000.00),
-('EMP002', 500000.00, 250000.00, 150000.00),
+('EMP001', 600000.00, 200000.00, 415000.00),
+('EMP002', 500000.00, 250000.00, 471123.00),
 ('EMP003', 0.00, 0.00, 0.00),
 ('EMP004', 0.00, 0.00, 0.00);
 
@@ -476,7 +481,7 @@ ALTER TABLE `bukti_pembayaran_anggota`
 -- AUTO_INCREMENT untuk tabel `decision_notifications`
 --
 ALTER TABLE `decision_notifications`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT untuk tabel `due_reminders`
@@ -494,7 +499,7 @@ ALTER TABLE `histori_pembayaran`
 -- AUTO_INCREMENT untuk tabel `histori_simpanan`
 --
 ALTER TABLE `histori_simpanan`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT untuk tabel `kas_transaksi`
