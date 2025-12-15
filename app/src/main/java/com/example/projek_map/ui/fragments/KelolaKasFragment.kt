@@ -9,15 +9,21 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
-import com.example.projek_map.data.DummyUserData
-import com.example.projek_map.data.KasTransaksi
+import com.example.projek_map.api.ApiClient
+import com.example.projek_map.api.KasDeleteRequest
+import com.example.projek_map.api.KasTransaksiAddRequest
+import com.example.projek_map.api.KasTransaksiUpdateRequest
+import com.example.projek_map.api.KasTransaksi
 import com.example.projek_map.ui.adapters.KasAdapter
+import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
+
 
 class KelolaKasFragment : Fragment() {
 
@@ -35,7 +41,6 @@ class KelolaKasFragment : Fragment() {
     private lateinit var btnFilterReset: Button
 
     private lateinit var btnLabaBersih: Button
-
     private lateinit var btnLabaRugi: Button
 
     // Filter views
@@ -48,6 +53,12 @@ class KelolaKasFragment : Fragment() {
     private val rupiah = NumberFormat.getCurrencyInstance(Locale("in","ID"))
     private val dateFmt = SimpleDateFormat("yyyy-MM-dd", Locale("id","ID"))
 
+    // === SOURCE DATA (dulu DummyUserData.kasTransaksiList) ===
+    private val kasAll = mutableListOf<KasTransaksi>()
+
+    private val api = ApiClient.apiService
+
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -67,6 +78,7 @@ class KelolaKasFragment : Fragment() {
         etFilterCari      = v.findViewById(R.id.etFilterCari)
         btnFilterTerapkan = v.findViewById(R.id.btnFilterTerapkan)
         btnFilterReset    = v.findViewById(R.id.btnFilterReset)
+
         btnLabaBersih = v.findViewById(R.id.btnLabaBersih)
         btnLabaBersih.setOnClickListener {
             parentFragmentManager.beginTransaction()
@@ -74,6 +86,7 @@ class KelolaKasFragment : Fragment() {
                 .addToBackStack(null)
                 .commit()
         }
+
         btnLabaRugi = v.findViewById(R.id.btnLabaRugi)
         btnLabaRugi.setOnClickListener {
             parentFragmentManager.beginTransaction()
@@ -85,9 +98,9 @@ class KelolaKasFragment : Fragment() {
         // Recycler
         rvKas.layoutManager = LinearLayoutManager(requireContext())
         adapter = KasAdapter(
-            DummyUserData.kasTransaksiList.toMutableList(),
+            mutableListOf(), // tampilannya akan diisi dari applyFilter()
             onEdit = { item, _ -> showEditDialog(item) },
-            onDelete = { item, pos -> confirmDelete(item, pos) } // <-- konfirmasi hapus
+            onDelete = { item, pos -> confirmDelete(item, pos) }
         )
         rvKas.adapter = adapter
 
@@ -99,16 +112,14 @@ class KelolaKasFragment : Fragment() {
             jenisItems
         )
 
-        // Filter: Kategori (distinct dari data + "Semua")
-        val distinctKategori = DummyUserData.kasTransaksiList.map { it.kategori }.distinct().sorted()
-        val kategoriItems = mutableListOf("Semua").apply { addAll(distinctKategori) }
+        // Filter: Kategori (awal kosong dulu, nanti diupdate setelah loadKas)
         spFilterKategori.adapter = ArrayAdapter(
             requireContext(),
             android.R.layout.simple_spinner_dropdown_item,
-            kategoriItems
+            listOf("Semua")
         )
 
-        // (Opsional) default date range awal bulan - hari ini bila kosong
+        // default date range awal bulan - hari ini bila kosong
         if (etFilterDari.text.isNullOrBlank() || etFilterSampai.text.isNullOrBlank()) {
             val calNow = java.util.Calendar.getInstance()
             val calStart = (calNow.clone() as java.util.Calendar).apply {
@@ -132,7 +143,7 @@ class KelolaKasFragment : Fragment() {
         // Tambah
         btnTambahKas.setOnClickListener { showAddDialog() }
 
-        // Tampilkan awal
+        // Tampilkan awal (akan diisi setelah load)
         applyFilter()
         updateSaldoAndEmpty()
 
@@ -145,13 +156,59 @@ class KelolaKasFragment : Fragment() {
     }
 
     private fun refreshList() {
-        // Data bisa berubah — pakai filter aktif
-        applyFilter()
+        // Data bisa berubah — ambil dari MySQL dulu, lalu filter aktif
+        loadKas()
+    }
+
+    private fun loadKas() {
+        lifecycleScope.launch {
+            try {
+                val res = api.getKas()
+                if (res.isSuccessful && res.body()?.success == true) {
+                    val data = res.body()?.data ?: emptyList()
+                    kasAll.clear()
+                    kasAll.addAll(data)
+
+                    // update kategori spinner dari data terbaru
+                    updateKategoriSpinner()
+
+                    // pakai filter aktif
+                    applyFilter()
+                } else {
+                    Toast.makeText(
+                        requireContext(),
+                        res.body()?.message ?: "Gagal memuat kas",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun updateKategoriSpinner() {
+        val distinctKategori = kasAll.map { it.kategori }.distinct().sorted()
+        val items = mutableListOf("Semua").apply { addAll(distinctKategori) }
+
+        val current = spFilterKategori.selectedItem?.toString() ?: "Semua"
+        val adapterSpinner = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            items
+        )
+        spFilterKategori.adapter = adapterSpinner
+
+        val idx = items.indexOfFirst { it.equals(current, true) }.let { if (it >= 0) it else 0 }
+        spFilterKategori.setSelection(idx)
     }
 
     private fun updateSaldoAndEmpty() {
         // Header saldo menampilkan total global (tidak terfilter)
-        tvSaldoKas.text = "Saldo Kas: ${rupiah.format(DummyUserData.getSaldoKas())}"
+        val saldo = kasAll.sumOf { t ->
+            if (t.jenis.equals("Masuk", true)) t.jumlah else -t.jumlah
+        }
+        tvSaldoKas.text = "Saldo Kas: ${rupiah.format(saldo)}"
 
         val isEmpty = adapter.itemCount == 0
         tvEmptyKas.visibility = if (isEmpty) View.VISIBLE else View.GONE
@@ -163,7 +220,7 @@ class KelolaKasFragment : Fragment() {
     } catch (_: Exception) { null }
 
     private fun applyFilter() {
-        val all = DummyUserData.kasTransaksiList
+        val all = kasAll
 
         val jenisSelected = spFilterJenis.selectedItem?.toString()?.lowercase() ?: "semua"
         val kategoriSelected = spFilterKategori.selectedItem?.toString() ?: "Semua"
@@ -224,10 +281,20 @@ class KelolaKasFragment : Fragment() {
             .setTitle("Konfirmasi Hapus")
             .setMessage(msg)
             .setPositiveButton("Hapus") { _, _ ->
-                DummyUserData.hapusKasTransaksi(item.id)
-                adapter.removeAt(pos)
-                updateSaldoAndEmpty()
-                Toast.makeText(requireContext(), "Transaksi kas dihapus.", Toast.LENGTH_SHORT).show()
+                lifecycleScope.launch {
+                    try {
+                        val res = api.deleteKas(KasDeleteRequest(item.id))
+                        if (res.isSuccessful && res.body()?.success == true) {
+                            // reload biar kategori/saldo aman
+                            loadKas()
+                            Toast.makeText(requireContext(), "Transaksi kas dihapus.", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(requireContext(), res.body()?.message ?: "Gagal hapus", Toast.LENGTH_SHORT).show()
+                        }
+                    } catch (e: Exception) {
+                        Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
             .setNegativeButton("Batal", null)
             .show()
@@ -249,8 +316,8 @@ class KelolaKasFragment : Fragment() {
             listOf("Masuk","Keluar")
         )
 
-        // Daftar kategori distinct + "Tambah kategori..."
-        val baseKategori = DummyUserData.kasTransaksiList.map { it.kategori }.distinct().sorted()
+        // Daftar kategori distinct dari kasAll + "Tambah kategori..."
+        val baseKategori = kasAll.map { it.kategori }.distinct().sorted()
         val kategoriItems = baseKategori.toMutableList().apply { add("Tambah kategori...") }
         spKategori.adapter = ArrayAdapter(
             requireContext(),
@@ -288,9 +355,27 @@ class KelolaKasFragment : Fragment() {
                     return@setPositiveButton
                 }
 
-                DummyUserData.tambahKasTransaksi(tanggal, jenis, kategori, deskripsi, jumlah)
-                refreshList()
-                Toast.makeText(requireContext(), "Transaksi kas ditambahkan.", Toast.LENGTH_SHORT).show()
+                lifecycleScope.launch {
+                    try {
+                        val res = api.addKas(
+                            KasTransaksiAddRequest(
+                                tanggal = tanggal,
+                                jenis = jenis,
+                                kategori = kategori,
+                                deskripsi = deskripsi,
+                                jumlah = jumlah
+                            )
+                        )
+                        if (res.isSuccessful && res.body()?.success == true) {
+                            loadKas()
+                            Toast.makeText(requireContext(), "Transaksi kas ditambahkan.", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(requireContext(), res.body()?.message ?: "Gagal tambah kas", Toast.LENGTH_SHORT).show()
+                        }
+                    } catch (e: Exception) {
+                        Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
             .setNegativeButton("Batal", null)
             .show()
@@ -311,7 +396,7 @@ class KelolaKasFragment : Fragment() {
             listOf("Masuk","Keluar")
         )
 
-        val baseKategori = DummyUserData.kasTransaksiList.map { it.kategori }.distinct().sorted()
+        val baseKategori = kasAll.map { it.kategori }.distinct().sorted()
         val kategoriItems = baseKategori.toMutableList().apply { add("Tambah kategori...") }
         spKategori.adapter = ArrayAdapter(
             requireContext(),
@@ -323,10 +408,10 @@ class KelolaKasFragment : Fragment() {
         etTanggal.setText(item.tanggal)
         spJenis.setSelection(if (item.jenis.equals("Masuk", true)) 0 else 1)
 
-        // Pilih kategori; jika tidak ada di list → mode custom
         val idxKategori = kategoriItems.indexOfFirst { it.equals(item.kategori, true) }
-            .let { if (it >= 0) it else kategoriItems.lastIndex } // "Tambah kategori..."
+            .let { if (it >= 0) it else kategoriItems.lastIndex }
         spKategori.setSelection(idxKategori)
+
         if (idxKategori == kategoriItems.lastIndex) {
             etKategoriCustom.visibility = View.VISIBLE
             etKategoriCustom.setText(item.kategori)
@@ -364,9 +449,28 @@ class KelolaKasFragment : Fragment() {
                     return@setPositiveButton
                 }
 
-                DummyUserData.updateKasTransaksi(item.id, tanggal, jenis, kategori, deskripsi, jumlah)
-                refreshList()
-                Toast.makeText(requireContext(), "Transaksi kas diperbarui.", Toast.LENGTH_SHORT).show()
+                lifecycleScope.launch {
+                    try {
+                        val res = api.updateKas(
+                            KasTransaksiUpdateRequest(
+                                id = item.id,
+                                tanggal = tanggal,
+                                jenis = jenis,
+                                kategori = kategori,
+                                deskripsi = deskripsi,
+                                jumlah = jumlah
+                            )
+                        )
+                        if (res.isSuccessful && res.body()?.success == true) {
+                            loadKas()
+                            Toast.makeText(requireContext(), "Transaksi kas diperbarui.", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(requireContext(), res.body()?.message ?: "Gagal update kas", Toast.LENGTH_SHORT).show()
+                        }
+                    } catch (e: Exception) {
+                        Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
             .setNegativeButton("Batal", null)
             .show()

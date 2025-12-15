@@ -186,4 +186,21 @@ interface KoperasiApiService {
     @POST("users_delete.php")
     suspend fun deleteUser(@Body req: DeleteUserRequest): Response<ApiResponse<Boolean>>
 
+    // =========================
+// KAS (ADMIN)
+// =========================
+    @GET("kas_get.php")
+    suspend fun getKas(): Response<ApiResponse<List<KasTransaksi>>>
+
+    @POST("kas_add.php")
+    suspend fun addKas(@Body req: KasTransaksiAddRequest): Response<ApiResponse<Map<String, Int>>>
+
+    @POST("kas_update.php")
+    suspend fun updateKas(@Body req: KasTransaksiUpdateRequest): Response<ApiResponse<Boolean>>
+
+    @POST("kas_delete.php")
+    suspend fun deleteKas(@Body req: KasDeleteRequest): Response<ApiResponse<Boolean>>
+
+
+
 }

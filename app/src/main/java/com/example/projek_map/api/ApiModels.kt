@@ -99,3 +99,30 @@ data class DeleteUserRequest(
     val kodePegawai: String
 )
 
+//KAS TRANSAKSI
+data class KasTransaksi(
+    val id: Int,
+    val tanggal: String,   // "yyyy-MM-dd"
+    val jenis: String,     // "Masuk" / "Keluar"
+    val kategori: String,
+    val deskripsi: String,
+    val jumlah: Double
+)
+data class KasTransaksiAddRequest(
+    val tanggal: String,
+    val jenis: String,
+    val kategori: String,
+    val deskripsi: String,
+    val jumlah: Double
+)
+
+data class KasTransaksiUpdateRequest(
+    val id: Int,
+    val tanggal: String,
+    val jenis: String,
+    val kategori: String,
+    val deskripsi: String,
+    val jumlah: Double
+)
+
+data class KasDeleteRequest(val id: Int)
