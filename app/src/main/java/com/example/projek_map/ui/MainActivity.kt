@@ -61,8 +61,6 @@ class MainActivity : AppCompatActivity() {
             } else {
                 scheduleDailyDueCheck()
             }
-        } else {
-            scheduleDailyDueCheck()
         }
 
         // ✅ Jadwalkan pengecekan harian jatuh tempo & pengumuman (Mode B - AlarmReceiver tanpa extra "type")
@@ -73,7 +71,7 @@ class MainActivity : AppCompatActivity() {
         val intentUserTelepon = intent.getStringExtra("userTelepon")
         val intentUserStatus = intent.getStringExtra("userStatusKeanggotaan")
         val intentUserKodePegawai = intent.getStringExtra("userKodePegawai")
-        val intentIsAdmin = pref.isAdmin()
+        val intentIsAdmin = intent.getBooleanExtra("isAdmin", pref.isAdmin())
 
         val userName = intentUserName ?: pref.getUserName().orEmpty()
         val userEmail = intentUserEmail ?: pref.getEmail().orEmpty()
@@ -81,6 +79,8 @@ class MainActivity : AppCompatActivity() {
         val userStatus = intentUserStatus ?: ""                // sama
         val userKodePegawai = intentUserKodePegawai ?: pref.getKodePegawai().orEmpty()
         isAdmin = intentIsAdmin
+        pref.setIsAdmin(isAdmin)
+
 
 
         if (!pref.isLoggedIn() || userName.isEmpty() || userKodePegawai.isEmpty())  {

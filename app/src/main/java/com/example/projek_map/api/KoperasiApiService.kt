@@ -100,6 +100,17 @@ interface KoperasiApiService {
         @Body req: MarkReadRequest
     ): Response<ApiResponse<Boolean>>
 
+//HISTORI PEMBAYARAN
+@GET("histori_pembayaran_get.php")
+suspend fun getHistoriPembayaranAdmin(
+    @Query("pinjamanId") pinjamanId: Int? = null,
+    @Query("kodePegawai") kodePegawai: String? = null
+): Response<ApiResponse<List<Map<String, Any?>>>>
+
+    @POST("histori_pembayaran_admin_add.php")
+    suspend fun catatPembayaranAdmin(
+        @Body req: AdminCatatPembayaranRequest
+    ): Response<ApiResponse<Boolean>>
 
 
 }

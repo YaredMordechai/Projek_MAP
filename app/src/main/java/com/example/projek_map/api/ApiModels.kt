@@ -67,3 +67,12 @@ data class DecisionNotificationDto(
 data class MarkReadRequest(
     val ids: List<Int>
 )
+
+data class AdminCatatPembayaranRequest(
+    val kodePegawai: String,
+    val pinjamanId: Int,
+    val tanggal: String, // yyyy-MM-dd
+    val jumlah: Int,
+    val status: String = "Dibayar (Admin)"
+)
+
