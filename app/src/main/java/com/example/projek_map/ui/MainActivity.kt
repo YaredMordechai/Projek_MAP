@@ -26,6 +26,9 @@ import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationView
 import java.util.Calendar
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -89,23 +92,38 @@ class MainActivity : AppCompatActivity() {
 
 
         // 🔔 Kirim notifikasi keputusan pinjaman yang tertunda (khusus user non-admin)
+        // 🔔 Kirim notifikasi keputusan pinjaman (DB) — khusus user non-admin
         if (!isAdmin && userKodePegawai.isNotEmpty()) {
-            val pending = com.example.projek_map.data.DummyUserData
-                .drainDecisionNotificationsFor(userKodePegawai)
+            lifecycleScope.launch {
+                try {
+                    val api = com.example.projek_map.api.ApiClient.apiService
+                    val repo = com.example.projek_map.data.DecisionNotificationRepository(api)
 
-            pending.forEach { ev ->
-                val title = if (ev.decision == "disetujui") "Pinjaman Disetujui" else "Pinjaman Ditolak"
-                val jumlahFmt = String.format("%,d", ev.jumlah).replace(',', '.')
-                val msg = "Pinjaman #${ev.pinjamanId} sebesar Rp $jumlahFmt telah ${ev.decision}."
+                    val list = repo.fetchUnread(userKodePegawai)
 
-                com.example.projek_map.utils.NotificationHelper.showNotification(
-                    this,
-                    3000 + ev.id, // id unik biar tidak ketimpa
-                    title,
-                    msg
-                )
+                    if (list.isNotEmpty()) {
+                        list.forEach { ev ->
+                            val title = if (ev.decision.equals("Disetujui", true)) "Pinjaman Disetujui" else "Pinjaman Ditolak"
+                            val jumlahFmt = String.format("%,d", ev.jumlah).replace(',', '.')
+                            val msg = "Pinjaman #${ev.pinjamanId} sebesar Rp $jumlahFmt telah ${ev.decision}."
+
+                            NotificationHelper.showNotification(
+                                this@MainActivity,
+                                4000 + ev.id,  // id unik
+                                title,
+                                msg
+                            )
+                        }
+
+                        // tandai sudah dibaca agar tidak muncul lagi
+                        repo.markRead(list.map { it.id })
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("MainActivity", "Decision notif fetch failed", e)
+                }
             }
         }
+
 
         // 🔹 setup views
         drawerLayout = findViewById(R.id.drawerLayout)

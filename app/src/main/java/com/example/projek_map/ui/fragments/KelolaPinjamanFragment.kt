@@ -10,17 +10,26 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
+import com.example.projek_map.api.ApiClient
+import com.example.projek_map.api.DecidePinjamanRequest
 import com.example.projek_map.data.DummyUserData
 import com.example.projek_map.data.HistoriPembayaran
 import com.example.projek_map.data.Pinjaman
 import com.example.projek_map.ui.adapters.HistoriPembayaranAdapter
 import com.example.projek_map.ui.adapters.KelolaPinjamanAdapter
+import com.example.projek_map.utils.PrefManager
 import com.google.android.material.button.MaterialButton
+import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
+import com.example.projek_map.data.PinjamanRepository
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+
 
 class KelolaPinjamanFragment : Fragment() {
 
@@ -41,11 +50,20 @@ class KelolaPinjamanFragment : Fragment() {
     private lateinit var btnKelolaPembayaran: MaterialButton
     private var modePembayaran: Boolean = false // default: mode persetujuan
 
+    // ✅ Pref (ambil adminKode utk API decide)
+    private lateinit var pref: PrefManager
+
+    private val pinjamanRepo = PinjamanRepository()
+    private val apiPinjamanList = mutableListOf<Pinjaman>()
+
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         val v = inflater.inflate(R.layout.fragment_kelola_pinjaman, container, false)
+
+        pref = PrefManager(requireContext())
 
         // ====== Bind view umum ======
         btnKelolaPembayaran = v.findViewById(R.id.btnKelolaPembayaranAngsuran)
@@ -54,7 +72,7 @@ class KelolaPinjamanFragment : Fragment() {
         rvPinjaman = v.findViewById(R.id.rvKelolaPinjaman)
         rvPinjaman.layoutManager = LinearLayoutManager(requireContext())
         adapterPinjaman = KelolaPinjamanAdapter(
-            pendingOnly().toMutableList(),
+            apiPinjamanList,
             onApprove = { pinjaman -> showApprovalDialog(pinjaman, true) },
             onReject = { pinjaman -> showApprovalDialog(pinjaman, false) }
         )
@@ -87,10 +105,10 @@ class KelolaPinjamanFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        // Refresh keduanya (aman)
-        adapterPinjaman.replaceAll(pendingOnly())
+        loadPinjamanAdmin()
         refreshHistori()
     }
+
 
     // =========================
     // Mode & UI toggle
@@ -193,30 +211,65 @@ class KelolaPinjamanFragment : Fragment() {
             .setTitle("$actionText Pinjaman")
             .setMessage("Apakah kamu yakin ingin $actionText pinjaman dari ${pinjaman.kodePegawai}?")
             .setPositiveButton(actionText) { _, _ ->
-                if (approve) {
-                    DummyUserData.approvePinjaman(pinjaman.id)
-                } else {
-                    DummyUserData.rejectPinjaman(pinjaman.id)
+
+                // 🔹 PANGGIL API DECIDE (approve / reject)
+                decidePinjamanViaApi(pinjaman, approve) { success, message ->
+                    if (success) {
+                        Toast.makeText(
+                            requireContext(),
+                            "Pinjaman ${pinjaman.kodePegawai} berhasil ${actionText.lowercase()}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        // ✅ INI INTINYA (poin 6)
+                        // Ambil ulang data dari server
+                        loadPinjamanAdmin()
+
+                    } else {
+                        Toast.makeText(
+                            requireContext(),
+                            message ?: "Gagal memproses pinjaman",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
-
-                DummyUserData.enqueueDecisionNotification(
-                    kodePegawai = pinjaman.kodePegawai,
-                    pinjamanId = pinjaman.id,
-                    decision = if (approve) "disetujui" else "ditolak",
-                    jumlah = pinjaman.jumlah
-                )
-
-                sendDecisionBroadcast(pinjaman, approve)
-                adapterPinjaman.removeItemById(pinjaman.id)
-
-                Toast.makeText(
-                    requireContext(),
-                    "Pinjaman ${pinjaman.kodePegawai} telah ${if (approve) "disetujui" else "ditolak"}.",
-                    Toast.LENGTH_SHORT
-                ).show()
             }
             .setNegativeButton("Batal", null)
             .show()
+    }
+
+    // =========================
+    // Call API decide pinjaman
+    // =========================
+    private fun decidePinjamanViaApi(
+        pinjaman: Pinjaman,
+        approve: Boolean,
+        onDone: (Boolean, String) -> Unit
+    ) {
+        val adminKode = pref.getKodePegawai().orEmpty()
+        if (adminKode.isEmpty()) {
+            onDone(false, "Admin belum login (kode admin kosong).")
+            return
+        }
+
+        val decision = if (approve) "approve" else "reject"
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val res = ApiClient.apiService.decidePinjaman(
+                    DecidePinjamanRequest(
+                        pinjamanId = pinjaman.id,
+                        decision = decision,
+                        adminKode = adminKode
+                    )
+                )
+                val body = res.body()
+                val ok = res.isSuccessful && body?.success == true
+                onDone(ok, body?.message ?: if (ok) "OK" else "Gagal memproses keputusan")
+            } catch (e: Exception) {
+                onDone(false, "Server error: ${e.message}")
+            }
+        }
     }
 
     // =========================
@@ -239,4 +292,24 @@ class KelolaPinjamanFragment : Fragment() {
             val s = it.status.lowercase()
             s == "proses" || s == "menunggu"
         }
+
+    private fun loadPinjamanAdmin() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val resp = pinjamanRepo.getAllPinjamanAdmin()
+
+            if (resp.success) {
+                val pending = (resp.data ?: emptyList()).filter {
+                    val s = it.status.lowercase()
+                    s == "proses" || s == "menunggu"
+                }
+
+                apiPinjamanList.clear()
+                apiPinjamanList.addAll(pending)
+                adapterPinjaman.notifyDataSetChanged()
+            } else {
+                Toast.makeText(requireContext(), resp.message ?: "Gagal ambil pinjaman", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
 }

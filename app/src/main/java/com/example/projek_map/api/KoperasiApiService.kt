@@ -67,9 +67,7 @@ interface KoperasiApiService {
 
     //PINJAMAN ADMIN
     @POST("pinjaman_decide.php")
-    suspend fun decidePinjaman(
-        @Body req: DecidePinjamanRequest
-    ): Response<ApiResponse<Boolean>>
+    suspend fun decidePinjaman(@Body req: DecidePinjamanRequest): Response<ApiResponse<Boolean>>
 
 
     // HISTORI SIMPANAN

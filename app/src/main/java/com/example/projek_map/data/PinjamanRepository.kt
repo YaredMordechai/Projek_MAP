@@ -62,4 +62,16 @@ class PinjamanRepository {
             }
         }
     }
+    suspend fun getAllPinjamanAdmin(): ApiResponse<List<Pinjaman>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val resp = api.getAllPinjaman()
+                if (resp.isSuccessful) resp.body() ?: ApiResponse(false, "Response kosong", emptyList())
+                else ApiResponse(false, "HTTP ${resp.code()} ${resp.message()}", emptyList())
+            } catch (e: Exception) {
+                ApiResponse(false, e.message ?: "Gagal konek ke server", emptyList())
+            }
+        }
+    }
+
 }
