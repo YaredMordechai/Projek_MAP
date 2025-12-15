@@ -13,8 +13,14 @@ if (!is_array($data)) {
 $kodePegawai = trim($data["kodePegawai"] ?? "");
 $pinjamanId  = intval($data["pinjamanId"] ?? 0);
 $jumlah      = intval($data["jumlah"] ?? 0);
-$status      = trim($data["status"] ?? "Lunas");
+
+// ✅ status histori (bukan status pinjaman)
+$status      = trim($data["status"] ?? "Dibayar (Admin)");
 $buktiUri    = $data["buktiPembayaranUri"] ?? null;
+
+// ✅ optional tanggal dari body, kalau tidak ada pakai CURDATE()
+$tanggalBody = trim($data["tanggal"] ?? "");
+$useTanggal  = ($tanggalBody !== "") ? $tanggalBody : null;
 
 if ($kodePegawai === "" || $pinjamanId <= 0 || $jumlah <= 0) {
   echo json_encode(["success"=>false, "message"=>"Data tidak lengkap"]);
@@ -41,9 +47,15 @@ try {
   }
 
   // insert histori
-  $stmt = $pdo->prepare("INSERT INTO histori_pembayaran (kodePegawai, pinjamanId, tanggal, jumlah, status, buktiPembayaranUri)
-                         VALUES (?, ?, CURDATE(), ?, ?, ?)");
-  $stmt->execute([$kodePegawai, $pinjamanId, $jumlah, $status, $buktiUri]);
+  if ($useTanggal) {
+    $stmt = $pdo->prepare("INSERT INTO histori_pembayaran (kodePegawai, pinjamanId, tanggal, jumlah, status, buktiPembayaranUri)
+                           VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->execute([$kodePegawai, $pinjamanId, $useTanggal, $jumlah, $status, $buktiUri]);
+  } else {
+    $stmt = $pdo->prepare("INSERT INTO histori_pembayaran (kodePegawai, pinjamanId, tanggal, jumlah, status, buktiPembayaranUri)
+                           VALUES (?, ?, CURDATE(), ?, ?, ?)");
+    $stmt->execute([$kodePegawai, $pinjamanId, $jumlah, $status, $buktiUri]);
+  }
 
   // update angsuranTerbayar
   $newTerbayar = intval($pinj["angsuranTerbayar"]) + $jumlah;
@@ -56,13 +68,16 @@ try {
   $newStatusPinjaman = $pinj["status"];
   if ($newTerbayar >= $totalTagihan) {
     $newStatusPinjaman = "Lunas";
+  } else {
+    // opsional: kalau pinjaman sebelumnya "Disetujui" tetap, kalau mau set "Aktif" juga bisa di sini
+    // $newStatusPinjaman = $pinj["status"];
   }
 
   $stmt = $pdo->prepare("UPDATE pinjaman SET angsuranTerbayar=?, status=? WHERE id=?");
   $stmt->execute([$newTerbayar, $newStatusPinjaman, $pinjamanId]);
 
   $pdo->commit();
-  echo json_encode(["success"=>true, "message"=>"Pembayaran tersimpan"]);
+  echo json_encode(["success"=>true, "message"=>"Pembayaran tersimpan", "data"=>true]);
 } catch (Exception $e) {
   if ($pdo->inTransaction()) $pdo->rollBack();
   echo json_encode(["success"=>false, "message"=>$e->getMessage()]);

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Waktu pembuatan: 14 Des 2025 pada 16.57
+-- Waktu pembuatan: 15 Des 2025 pada 04.53
 -- Versi server: 8.0.30
 -- Versi PHP: 8.1.10
 
@@ -68,8 +68,17 @@ CREATE TABLE `decision_notifications` (
   `pinjamanId` int NOT NULL,
   `decision` enum('disetujui','ditolak') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `jumlah` int NOT NULL,
-  `tanggal` date NOT NULL
+  `tanggal` date NOT NULL,
+  `is_read` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `decision_notifications`
+--
+
+INSERT INTO `decision_notifications` (`id`, `kodePegawai`, `pinjamanId`, `decision`, `jumlah`, `tanggal`, `is_read`) VALUES
+(1, 'EMP001', 1, 'ditolak', 2000000, '2025-12-15', 1),
+(2, 'EMP001', 6, 'ditolak', 10000000, '2025-12-15', 1);
 
 -- --------------------------------------------------------
 
@@ -227,12 +236,14 @@ CREATE TABLE `pinjaman` (
 --
 
 INSERT INTO `pinjaman` (`id`, `kodePegawai`, `jumlah`, `tenor`, `status`, `approved_by`, `approved_at`, `reject_reason`, `bunga`, `angsuranTerbayar`) VALUES
-(1, 'EMP001', 2000000, 12, 'Proses', NULL, NULL, NULL, 0.1000, 0),
+(1, 'EMP001', 2000000, 12, 'Ditolak', 'ADM001', '2025-12-15 04:31:40', NULL, 0.1000, 0),
 (2, 'EMP002', 1500000, 6, 'Proses', NULL, NULL, NULL, 0.1000, 0),
 (3, 'EMP001', 3000000, 12, 'Disetujui', NULL, NULL, NULL, 0.1000, 0),
 (4, 'EMP002', 5500000, 6, 'Disetujui', NULL, NULL, NULL, 0.1000, 0),
 (5, 'EMP003', 1000000, 12, 'Proses', NULL, NULL, NULL, 0.1000, 0),
-(6, 'EMP001', 10000000, 12, 'Proses', NULL, NULL, NULL, 0.1000, 0);
+(6, 'EMP001', 10000000, 12, 'Ditolak', 'ADM001', '2025-12-15 04:41:41', NULL, 0.1000, 0),
+(7, 'EMP001', 123456, 0, 'Proses', NULL, NULL, NULL, 0.1000, 0),
+(8, 'EMP001', 123456, 0, 'Proses', NULL, NULL, NULL, 0.1000, 0);
 
 -- --------------------------------------------------------
 
@@ -465,7 +476,7 @@ ALTER TABLE `bukti_pembayaran_anggota`
 -- AUTO_INCREMENT untuk tabel `decision_notifications`
 --
 ALTER TABLE `decision_notifications`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT untuk tabel `due_reminders`
@@ -501,7 +512,7 @@ ALTER TABLE `pengumuman`
 -- AUTO_INCREMENT untuk tabel `pinjaman`
 --
 ALTER TABLE `pinjaman`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT untuk tabel `pinjaman_angsuran_jadwal`
