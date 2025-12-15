@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Waktu pembuatan: 15 Des 2025 pada 09.19
+-- Waktu pembuatan: 15 Des 2025 pada 11.31
 -- Versi server: 8.0.30
 -- Versi PHP: 8.1.10
 
@@ -122,7 +122,8 @@ INSERT INTO `histori_pembayaran` (`id`, `kodePegawai`, `pinjamanId`, `tanggal`, 
 (1, 'EMP001', 3, '2025-07-10', 200000, 'Lunas', NULL),
 (2, 'EMP002', 4, '2025-08-10', 200000, 'Lunas', NULL),
 (3, 'EMP001', 3, '2025-09-10', 200000, 'Belum Lunas', NULL),
-(4, 'EMP002', 2, '2025-07-05', 250000, 'Belum Lunas', NULL);
+(4, 'EMP002', 2, '2025-07-05', 250000, 'Belum Lunas', NULL),
+(5, 'EMP001', 3, '2025-12-15', 100000, 'Dibayar (Admin)', NULL);
 
 -- --------------------------------------------------------
 
@@ -244,7 +245,7 @@ CREATE TABLE `pinjaman` (
 INSERT INTO `pinjaman` (`id`, `kodePegawai`, `jumlah`, `tenor`, `status`, `approved_by`, `approved_at`, `reject_reason`, `bunga`, `angsuranTerbayar`) VALUES
 (1, 'EMP001', 2000000, 12, 'Ditolak', 'ADM001', '2025-12-15 04:31:40', NULL, 0.1000, 0),
 (2, 'EMP002', 1500000, 6, 'Ditolak', 'ADM001', '2025-12-15 05:05:56', NULL, 0.1000, 0),
-(3, 'EMP001', 3000000, 12, 'Disetujui', NULL, NULL, NULL, 0.1000, 0),
+(3, 'EMP001', 3000000, 12, 'Disetujui', NULL, NULL, NULL, 0.1000, 100000),
 (4, 'EMP002', 5500000, 6, 'Disetujui', NULL, NULL, NULL, 0.1000, 0),
 (5, 'EMP003', 1000000, 12, 'Proses', NULL, NULL, NULL, 0.1000, 0),
 (6, 'EMP001', 10000000, 12, 'Ditolak', 'ADM001', '2025-12-15 04:41:41', NULL, 0.1000, 0),
@@ -494,7 +495,7 @@ ALTER TABLE `due_reminders`
 -- AUTO_INCREMENT untuk tabel `histori_pembayaran`
 --
 ALTER TABLE `histori_pembayaran`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT untuk tabel `histori_simpanan`
