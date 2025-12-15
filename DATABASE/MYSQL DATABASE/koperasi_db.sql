@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Waktu pembuatan: 15 Des 2025 pada 07.55
+-- Waktu pembuatan: 15 Des 2025 pada 09.19
 -- Versi server: 8.0.30
 -- Versi PHP: 8.1.10
 
@@ -174,7 +174,8 @@ CREATE TABLE `kas_transaksi` (
 INSERT INTO `kas_transaksi` (`id`, `tanggal`, `jenis`, `kategori`, `deskripsi`, `jumlah`) VALUES
 (1, '2025-10-01', 'Masuk', 'Iuran Anggota', 'Setoran wajib Oktober', 500000.00),
 (2, '2025-10-03', 'Keluar', 'Operasional', 'Beli ATK kantor', 120000.00),
-(3, '2025-10-07', 'Masuk', 'Bunga Pinjaman', 'Bunga angsuran minggu 1', 300000.00);
+(3, '2025-10-07', 'Masuk', 'Bunga Pinjaman', 'Bunga angsuran minggu 1', 300000.00),
+(4, '2025-12-15', 'Keluar', 'Operasional', '', 50000.00);
 
 -- --------------------------------------------------------
 
@@ -505,7 +506,7 @@ ALTER TABLE `histori_simpanan`
 -- AUTO_INCREMENT untuk tabel `kas_transaksi`
 --
 ALTER TABLE `kas_transaksi`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT untuk tabel `pengumuman`
