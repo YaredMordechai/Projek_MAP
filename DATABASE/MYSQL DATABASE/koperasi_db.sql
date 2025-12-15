@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Waktu pembuatan: 15 Des 2025 pada 07.22
+-- Waktu pembuatan: 15 Des 2025 pada 07.55
 -- Versi server: 8.0.30
 -- Versi PHP: 8.1.10
 
@@ -352,9 +352,9 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`kodePegawai`, `email`, `password`, `nama`, `statusKeanggotaan`) VALUES
-('EMP001', 'pegawai1@koperasi.com', '1234', 'Budi Santoso', 'Anggota Aktif'),
-('EMP002', 'pegawai2@koperasi.com', '1234', 'Siti Aminah', 'Anggota Tidak Aktif'),
-('EMP003', 'tommy@example.com', '1234', 'Tommy Viriya Irawan', 'Anggota Aktif'),
+('EMP001', 'pegawai1@koperasi.com', '1234', 'Budi Santos', 'Anggota Aktif'),
+('EMP002', 'pegawai2@koperasi.com', '1234', 'Siti Aminah', 'Nonaktif'),
+('EMP003', 'tommy@example.com', '1234', 'Tommy Viriya Irawan', 'Nonaktif'),
 ('EMP004', 'david@example.com', '1234', 'David Lin', 'Anggota Aktif');
 
 --
