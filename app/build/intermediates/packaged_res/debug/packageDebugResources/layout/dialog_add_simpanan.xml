@@ -4,19 +4,30 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
+    <!-- 🔽 DROPDOWN PEGAWAI (ADMIN PILIH EMP001 / EMP002 / dst) -->
+    <Spinner
+        android:id="@+id/spinnerPegawai"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- Tetap ada, tapi diisi otomatis dari spinner -->
     <EditText
         android:id="@+id/etKodePegawai"
         android:hint="Kode Pegawai (contoh: EMP001)"
         android:inputType="text"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:enabled="false"/>
 
+    <!-- Jenis simpanan -->
     <Spinner
         android:id="@+id/spinnerJenis"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"/>
 
+    <!-- Jumlah -->
     <EditText
         android:id="@+id/etJumlah"
         android:hint="Jumlah (Rp)"

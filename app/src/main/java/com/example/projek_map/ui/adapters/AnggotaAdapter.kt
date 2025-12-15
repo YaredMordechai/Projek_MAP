@@ -38,15 +38,16 @@ class AnggotaAdapter(
 
         holder.btnEdit.setOnClickListener { onEdit(anggota) }
         holder.btnDeactivate.setOnClickListener {
-            onDelete(anggota, position)
+            onDelete(anggota, holder.adapterPosition)
         }
     }
 
     override fun getItemCount() = anggotaList.size
 
     fun refreshData(newList: List<User>) {
+        val copy = newList.toList()      // <-- penting: bikin salinan
         anggotaList.clear()
-        anggotaList.addAll(newList)
+        anggotaList.addAll(copy)
         notifyDataSetChanged()
     }
 }

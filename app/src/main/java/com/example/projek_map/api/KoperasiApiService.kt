@@ -172,4 +172,18 @@ interface KoperasiApiService {
     suspend fun markDecisionNotificationsRead(
         @Body req: MarkReadRequest
     ): Response<ApiResponse<Boolean>>
+
+    // === USERS (ADMIN CRUD) ===
+    @POST("users_add.php")
+    suspend fun addUser(@Body req: AddUserRequest): Response<ApiResponse<User>>
+
+    @POST("users_update.php")
+    suspend fun updateUser(@Body req: UpdateUserRequest): Response<ApiResponse<Boolean>>
+
+    @POST("users_set_status.php")
+    suspend fun setUserStatus(@Body req: SetUserStatusRequest): Response<ApiResponse<Boolean>>
+
+    @POST("users_delete.php")
+    suspend fun deleteUser(@Body req: DeleteUserRequest): Response<ApiResponse<Boolean>>
+
 }

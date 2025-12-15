@@ -1,150 +1,154 @@
 [
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/fragment_laba_bersih.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/fragment_laba_bersih.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\item_anggota_summary.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\item_anggota_summary.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/dialog_catat_pembayaran.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/dialog_catat_pembayaran.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\activity_main.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\activity_main.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/activity_main.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/activity_main.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\item_kas_transaksi.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\item_kas_transaksi.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/item_angsuran.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/item_angsuran.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\activity_login.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\activity_login.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/item_histori_bulanan.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/item_histori_bulanan.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\fragment_kelola_simpanan.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\fragment_kelola_simpanan.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/fragment_simpanan.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/fragment_simpanan.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\dialog_catat_pembayaran.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\dialog_catat_pembayaran.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/dialog_add_pengumuman.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/dialog_add_pengumuman.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\item_pinjaman_admin.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\item_pinjaman_admin.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/fragment_laporan_bulanan.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/fragment_laporan_bulanan.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\fragment_pinjaman.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\fragment_pinjaman.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/item_transaksi_simpanan.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/item_transaksi_simpanan.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\fragment_kelola_pengurus.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\fragment_kelola_pengurus.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/item_pinjaman.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/item_pinjaman.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\item_simpanan.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\item_simpanan.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/fragment_kelola_pinjaman.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/fragment_kelola_pinjaman.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\item_anggota.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\item_anggota.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/item_pengumuman.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/item_pengumuman.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\dialog_add_pengumuman.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\dialog_add_pengumuman.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/item_anggota.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/item_anggota.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\item_transaksi_simpanan.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\item_transaksi_simpanan.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/fragment_profil.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/fragment_profil.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\fragment_laporan_bulanan.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\fragment_laporan_bulanan.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/item_kas_transaksi.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/item_kas_transaksi.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\fragment_simpanan.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\fragment_simpanan.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/item_histori_simpanan.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/item_histori_simpanan.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\dialog_add_kas.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\dialog_add_kas.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/fragment_pinjaman.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/fragment_pinjaman.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\fragment_pinjaman_detail.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\fragment_pinjaman_detail.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/fragment_pinjaman_detail.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/fragment_pinjaman_detail.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\item_angsuran.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\item_angsuran.xml"
+    },
+    {
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\fragment_laporan_admin.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\fragment_laporan_admin.xml"
+    },
+    {
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\dialog_histori_pembayaran.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\dialog_histori_pembayaran.xml"
     },
     {
         "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/dialog_add_simpanan.xml",
         "source": "com.example.projek_map.app-main-50:/layout/dialog_add_simpanan.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/dialog_histori_pembayaran.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/dialog_histori_pembayaran.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\item_histori_bulanan.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\item_histori_bulanan.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/fragment_laporan_admin.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/fragment_laporan_admin.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\item_pengumuman.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\item_pengumuman.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/dialog_add_kas.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/dialog_add_kas.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\fragment_kelola_pinjaman.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\fragment_kelola_pinjaman.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/fragment_laba_rugi.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/fragment_laba_rugi.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\item_histori_simpanan.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\item_histori_simpanan.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/item_pinjaman_admin.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/item_pinjaman_admin.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\item_histori_pembayaran.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\item_histori_pembayaran.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/fragment_kelola_pengurus.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/fragment_kelola_pengurus.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\fragment_laporan.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\fragment_laporan.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/item_anggota_summary.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/item_anggota_summary.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\fragment_laba_bersih.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\fragment_laba_bersih.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/fragment_pengumuman.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/fragment_pengumuman.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\item_pinjaman.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\item_pinjaman.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/item_histori_pembayaran.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/item_histori_pembayaran.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\dialog_add_user.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\dialog_add_user.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/activity_signup.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/activity_signup.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\dialog_add_simpanan.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\dialog_add_simpanan.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/activity_login.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/activity_login.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\fragment_laba_rugi.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\fragment_laba_rugi.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/fragment_dashboard.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/fragment_dashboard.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\activity_signup.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\activity_signup.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/item_simpanan.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/item_simpanan.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\kelola_kas_fragment.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\kelola_kas_fragment.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/fragment_laporan.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/fragment_laporan.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\fragment_kelola_anggota.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\fragment_kelola_anggota.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/dialog_add_user.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/dialog_add_user.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\fragment_profil.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\fragment_profil.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/fragment_kelola_anggota.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/fragment_kelola_anggota.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\fragment_pengumuman.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\fragment_pengumuman.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/fragment_kelola_simpanan.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/fragment_kelola_simpanan.xml"
-    },
-    {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/kelola_kas_fragment.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/kelola_kas_fragment.xml"
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\fragment_dashboard.xml",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\fragment_dashboard.xml"
     }
 ]

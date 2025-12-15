@@ -76,3 +76,26 @@ data class AdminCatatPembayaranRequest(
     val status: String = "Dibayar (Admin)"
 )
 
+data class AddUserRequest(
+    val kodePegawai: String,
+    val nama: String,
+    val email: String,
+    val password: String = "1234",
+    val statusKeanggotaan: String = "Anggota Aktif"
+)
+
+data class UpdateUserRequest(
+    val kodePegawai: String,
+    val nama: String,
+    val email: String
+)
+
+data class SetUserStatusRequest(
+    val kodePegawai: String,
+    val statusKeanggotaan: String // "Anggota Aktif" / "Nonaktif"
+)
+
+data class DeleteUserRequest(
+    val kodePegawai: String
+)
+

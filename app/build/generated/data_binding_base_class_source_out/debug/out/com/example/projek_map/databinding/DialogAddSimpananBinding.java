@@ -29,12 +29,17 @@ public final class DialogAddSimpananBinding implements ViewBinding {
   @NonNull
   public final Spinner spinnerJenis;
 
+  @NonNull
+  public final Spinner spinnerPegawai;
+
   private DialogAddSimpananBinding(@NonNull LinearLayout rootView, @NonNull EditText etJumlah,
-      @NonNull EditText etKodePegawai, @NonNull Spinner spinnerJenis) {
+      @NonNull EditText etKodePegawai, @NonNull Spinner spinnerJenis,
+      @NonNull Spinner spinnerPegawai) {
     this.rootView = rootView;
     this.etJumlah = etJumlah;
     this.etKodePegawai = etKodePegawai;
     this.spinnerJenis = spinnerJenis;
+    this.spinnerPegawai = spinnerPegawai;
   }
 
   @Override
@@ -82,8 +87,14 @@ public final class DialogAddSimpananBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.spinnerPegawai;
+      Spinner spinnerPegawai = ViewBindings.findChildViewById(rootView, id);
+      if (spinnerPegawai == null) {
+        break missingId;
+      }
+
       return new DialogAddSimpananBinding((LinearLayout) rootView, etJumlah, etKodePegawai,
-          spinnerJenis);
+          spinnerJenis, spinnerPegawai);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));
