@@ -22,10 +22,8 @@ if ($row = $result->fetch_assoc()) {
         "data" => $row
     ], 200);
 } else {
-    // Kalau belum punya baris simpanan
     send_json([
         "success" => true,
         "data" => null
     ], 200);
 }
-?>
