@@ -136,3 +136,19 @@ data class KasTransaksiUpdateRequest(
 )
 
 data class KasDeleteRequest(val id: Int)
+
+data class SettingsData(
+    val bungaPersen: Double,
+    val dendaPersenPerHari: Double
+)
+
+data class SettingsResponse(
+    val success: Boolean,
+    val message: String? = null,
+    val data: SettingsData? = null
+)
+
+data class SettingsUpdateRequest(
+    val bungaPersen: Double,
+    val dendaPersenPerHari: Double
+)

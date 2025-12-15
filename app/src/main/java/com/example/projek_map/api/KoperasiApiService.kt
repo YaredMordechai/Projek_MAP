@@ -91,6 +91,7 @@ interface KoperasiApiService {
         @Query("kodePegawai") kodePegawai: String
     ): Response<ApiResponse<List<Pinjaman>>>
 
+    // ✅ cukup SATU getAllPinjaman, yang di luar tadi dihapus
     @GET("pinjaman_get.php")
     suspend fun getAllPinjaman(): Response<ApiResponse<List<Pinjaman>>>
 
@@ -132,6 +133,17 @@ interface KoperasiApiService {
     @POST("histori_pembayaran_admin_add.php")
     suspend fun catatPembayaranAdmin(
         @Body req: AdminCatatPembayaranRequest
+    ): Response<ApiResponse<Boolean>>
+
+    // =========================
+    // SETTINGS (PENGATURAN KOPERASI) ✅ pindahan dari luar
+    // =========================
+    @GET("settings_get.php")
+    suspend fun getSettings(): Response<SettingsResponse>
+
+    @POST("settings_update.php")
+    suspend fun updateSettings(
+        @Body body: SettingsUpdateRequest
     ): Response<ApiResponse<Boolean>>
 
     // =========================
