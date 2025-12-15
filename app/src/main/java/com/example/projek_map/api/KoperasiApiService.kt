@@ -43,6 +43,7 @@ interface KoperasiApiService {
         @Body request: LoginRequest
     ): Response<ApiResponse<Admin>>
 
+
     // =========================
     // SIMPANAN
     // =========================
@@ -151,6 +152,22 @@ interface KoperasiApiService {
     // =========================
     @GET("pengumuman_list.php")
     suspend fun getPengumuman(): Response<ApiResponse<List<Pengumuman>>>
+
+    @POST("pengumuman_add.php")
+    suspend fun addPengumuman(
+        @Body req: PengumumanAddRequest
+    ): Response<ApiResponse<Pengumuman>>
+
+    @POST("pengumuman_update.php")
+    suspend fun updatePengumuman(
+        @Body req: PengumumanUpdateRequest
+    ): Response<ApiResponse<Boolean>>
+
+    @POST("pengumuman_delete.php")
+    suspend fun deletePengumuman(
+        @Body req: PengumumanDeleteRequest
+    ): Response<ApiResponse<Boolean>>
+
 
     // =========================
     // NOTIFIKASI

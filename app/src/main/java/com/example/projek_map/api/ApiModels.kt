@@ -152,3 +152,19 @@ data class SettingsUpdateRequest(
     val bungaPersen: Double,
     val dendaPersenPerHari: Double
 )
+
+/** === PENGUMUMAN === */
+data class PengumumanAddRequest(
+    val judul: String,
+    val isi: String
+)
+
+data class PengumumanUpdateRequest(
+    val id: Int,
+    val judul: String,
+    val isi: String
+)
+
+data class PengumumanDeleteRequest(
+    val id: Int
+)

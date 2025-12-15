@@ -8,29 +8,37 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
 import com.example.projek_map.data.Pengumuman
 
-class PengumumanAdapter(
+private class PengumumanAdapter(
     private val items: List<Pengumuman>,
-    private val onClick: ((Pengumuman) -> Unit)? = null
+    private val isAdmin: Boolean,
+    private val onEdit: (Pengumuman) -> Unit,
+    private val onDelete: (Pengumuman) -> Unit
 ) : RecyclerView.Adapter<PengumumanAdapter.VH>() {
 
-    class VH(v: View) : RecyclerView.ViewHolder(v) {
-        val tvJudul: TextView = v.findViewById(R.id.tvJudul)
-        val tvTanggal: TextView = v.findViewById(R.id.tvTanggal)
-        val tvIsi: TextView = v.findViewById(R.id.tvIsi)
+    inner class VH(v: View) : RecyclerView.ViewHolder(v) {
+        val tJudul: TextView = v.findViewById(R.id.tvJudul)
+        val tTanggal: TextView = v.findViewById(R.id.tvTanggal)
+        val tIsi: TextView = v.findViewById(R.id.tvIsi)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-        val v = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_pengumuman, parent, false)
+        val v = LayoutInflater.from(parent.context).inflate(R.layout.item_pengumuman, parent, false)
         return VH(v)
     }
 
-    override fun onBindViewHolder(holder: VH, position: Int) {
-        val it = items[position]
-        holder.tvJudul.text = it.judul
-        holder.tvTanggal.text = it.tanggal
-        holder.tvIsi.text = it.isi
-        holder.itemView.setOnClickListener { _ -> onClick?.invoke(it) }
+    override fun onBindViewHolder(h: VH, pos: Int) {
+        val p = items[pos]
+        h.tJudul.text = p.judul
+        h.tTanggal.text = p.tanggal
+        h.tIsi.text = p.isi
+
+        if (isAdmin) {
+            h.itemView.setOnClickListener { onEdit(p) }
+            h.itemView.setOnLongClickListener { onDelete(p); true }
+        } else {
+            h.itemView.setOnClickListener(null)
+            h.itemView.setOnLongClickListener(null)
+        }
     }
 
     override fun getItemCount(): Int = items.size
