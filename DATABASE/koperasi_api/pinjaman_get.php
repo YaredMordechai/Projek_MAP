@@ -2,17 +2,39 @@
 // pinjaman_get.php
 require 'config.php';
 
-// Optional: ?kodePegawai=EMP001
-$kode = $_GET['kodePegawai'] ?? null;
+$kode   = $_GET['kodePegawai'] ?? null; // optional
+$status = $_GET['status'] ?? null;      // optional (Proses/Disetujui/Ditolak/Lunas/Aktif)
 
-if ($kode) {
-    $stmt = $conn->prepare("SELECT * FROM pinjaman WHERE kodePegawai = ? ORDER BY id DESC");
-    $stmt->bind_param("s", $kode);
+$sql = "SELECT * FROM pinjaman";
+$params = [];
+$types = "";
+$where = [];
+
+if ($kode !== null && $kode !== "") {
+    $where[] = "kodePegawai = ?";
+    $params[] = $kode;
+    $types .= "s";
+}
+
+if ($status !== null && $status !== "") {
+    $where[] = "status = ?";
+    $params[] = $status;
+    $types .= "s";
+}
+
+if (!empty($where)) {
+    $sql .= " WHERE " . implode(" AND ", $where);
+}
+
+$sql .= " ORDER BY id DESC";
+
+if (!empty($params)) {
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param($types, ...$params);
     $stmt->execute();
     $result = $stmt->get_result();
 } else {
-    // tanpa parameter -> semua (admin)
-    $result = $conn->query("SELECT * FROM pinjaman ORDER BY id DESC");
+    $result = $conn->query($sql);
 }
 
 $pinjaman = [];
