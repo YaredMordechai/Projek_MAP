@@ -33,7 +33,7 @@ data class Pinjaman(
     val jumlah: Int,          // pokok pinjaman
     val tenor: Int,           // bulan
     var status: String,       // Proses / Disetujui / Ditolak / Lunas
-    val bunga: Double = 0.1,  // 10% (dummy)
+    val bunga: Double = 0.1,  //)
     val angsuranTerbayar: Int = 0,
 )
 
@@ -149,7 +149,7 @@ object DummyUserData {
             email = "pegawai2@koperasi.com",
             password = "1234",
             nama = "Siti Aminah",
-            statusKeanggotaan = "Anggota Tidak Aktif"
+            statusKeanggotaan = "Nonaktif"
         )
     )
 

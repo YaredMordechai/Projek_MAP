@@ -5,11 +5,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.example.projek_map.R
-import com.example.projek_map.data.DummyUserData
+import com.example.projek_map.api.ApiClient
+import kotlinx.coroutines.launch
 import java.text.NumberFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Locale
 
 class LabaRugiFragment : Fragment() {
 
@@ -28,31 +32,48 @@ class LabaRugiFragment : Fragment() {
         tvBeban = view.findViewById(R.id.tvTotalBeban)
         tvHasil = view.findViewById(R.id.tvLabaRugiBersih)
 
-        tampilkanData()
+        val cal = Calendar.getInstance()
+        val year = cal.get(Calendar.YEAR)
+        val bulan = cal.get(Calendar.MONTH) + 1
+
+        // ✅ 100% DB
+        loadFromDb(year, bulan)
+
         return view
     }
 
-    private fun tampilkanData() {
-        val transaksi = DummyUserData.kasTransaksiList
+    private fun loadFromDb(year: Int, bulan: Int) {
+        lifecycleScope.launch {
+            try {
+                val resp = ApiClient.apiService.getLabaRugi(year = year, bulan = bulan)
+                val body = resp.body()
 
-        // 🔹 Pendapatan = semua kas masuk
-        val totalPendapatan = transaksi.filter { it.jenis.equals("Masuk", true) }.sumOf { it.jumlah }
+                if (resp.isSuccessful && body?.success == true && body.data != null) {
+                    val d = body.data
 
-        // 🔹 Beban = semua kas keluar
-        val totalBeban = transaksi.filter { it.jenis.equals("Keluar", true) }.sumOf { it.jumlah }
+                    tvPendapatan.text = "Total Pendapatan: ${rupiah.format(d.totalPendapatan)}"
+                    tvBeban.text = "Total Beban: ${rupiah.format(d.totalBeban)}"
 
-        // 🔹 Hasil akhir
-        val labaRugi = totalPendapatan - totalBeban
+                    tvHasil.text = if (d.isLaba)
+                        "Laba Bersih: ${rupiah.format(d.labaRugi)}"
+                    else
+                        "Rugi Bersih: ${rupiah.format(d.labaRugi)}"
 
-        tvPendapatan.text = "Total Pendapatan: ${rupiah.format(totalPendapatan)}"
-        tvBeban.text = "Total Beban: ${rupiah.format(totalBeban)}"
-        tvHasil.text = if (labaRugi >= 0)
-            "Laba Bersih: ${rupiah.format(labaRugi)}"
-        else
-            "Rugi Bersih: ${rupiah.format(labaRugi)}"
+                    tvHasil.setTextColor(
+                        requireContext().getColor(
+                            if (d.isLaba) R.color.green_700 else R.color.red_600
+                        )
+                    )
+                } else {
+                    toast("Gagal load laba rugi dari server")
+                }
+            } catch (e: Exception) {
+                toast("Error: ${e.message}")
+            }
+        }
+    }
 
-        tvHasil.setTextColor(
-            requireContext().getColor(if (labaRugi >= 0) R.color.green_700 else R.color.red_600)
-        )
+    private fun toast(msg: String) {
+        Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
     }
 }

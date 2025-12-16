@@ -53,7 +53,6 @@ class KelolaKasFragment : Fragment() {
     private val rupiah = NumberFormat.getCurrencyInstance(Locale("in","ID"))
     private val dateFmt = SimpleDateFormat("yyyy-MM-dd", Locale("id","ID"))
 
-    // === SOURCE DATA (dulu DummyUserData.kasTransaksiList) ===
     private val kasAll = mutableListOf<KasTransaksi>()
 
     private val api = ApiClient.apiService

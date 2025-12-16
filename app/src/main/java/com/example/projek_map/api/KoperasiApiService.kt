@@ -221,10 +221,27 @@ interface KoperasiApiService {
         @Query("kodePegawai") kodePegawai: String,
         @Query("bulan") bulan: Int,
         @Query("year") year: Int
-    ): Response<ApiResponse<LaporanUserApiData>>
+    ): Response<ApiResponse<LaporanUserData>>
 
     @GET("laporan_admin.php")
-    suspend fun getLaporanAdmin(): Response<ApiResponse<LaporanAdminApiData>>
+    suspend fun getLaporanAdmin(): Response<com.example.projek_map.api.LaporanAdminResponse>
+
+    // =========================
+// LABA (ADMIN)
+// =========================
+    @GET("laba_bersih.php")
+    suspend fun getLabaBersih(): Response<ApiResponse<LabaBersihData>>
+
+    @GET("laba_rugi.php")
+    suspend fun getLabaRugi(
+        @Query("year") year: Int,
+        @Query("bulan") bulan: Int = 0
+    ): Response<com.example.projek_map.api.LabaRugiResponse>
+
+
+
+
+
 
 
 }

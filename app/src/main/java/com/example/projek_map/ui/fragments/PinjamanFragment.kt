@@ -211,7 +211,7 @@ class PinjamanFragment : Fragment() {
     }
 
     private fun showPinjamanDetailDialog(pinjaman: Pinjaman) {
-        // rincian dihitung lokal (tanpa DummyUserData)
+
         val r = calcRincianAnuitas(pinjaman.jumlah, pinjaman.tenor, pinjaman.bunga)
         val bungaPersenTahun = (pinjaman.bunga * 100).toInt()
 

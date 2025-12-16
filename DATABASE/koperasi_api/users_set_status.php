@@ -12,7 +12,7 @@ if ($kodePegawai === "" || $status === "") {
 }
 
 // biar konsisten dengan data kamu di DB
-$allowed = ["Anggota Aktif", "Anggota Tidak Aktif", "Nonaktif"];
+$allowed = ["Anggota Aktif", "Nonaktif"];
 if (!in_array($status, $allowed, true)) {
     send_json(["success"=>false,"message"=>"statusKeanggotaan tidak valid"], 400);
 }

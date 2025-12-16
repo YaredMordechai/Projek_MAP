@@ -33,7 +33,7 @@ class LaporanAdminAdapter(
     }
 
     override fun onBindViewHolder(h: VH, position: Int) {
-        val item = data[position]                   // <- ikat item data di sini
+        val item = data[position]
         h.tvNama.text = item.user.nama
         h.tvKode.text = item.user.kodePegawai
         h.tvStatus.text = item.user.statusKeanggotaan
@@ -41,7 +41,7 @@ class LaporanAdminAdapter(
         h.tvPinjaman.text = rupiah.format(item.totalPinjamanAktif)
 
         h.btnDetail.setOnClickListener {
-            onItemClick(item)                      // <- kirim item, bukan View
+            onItemClick(item)
         }
     }
 

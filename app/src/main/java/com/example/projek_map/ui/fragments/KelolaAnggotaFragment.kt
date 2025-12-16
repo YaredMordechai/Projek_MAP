@@ -44,7 +44,7 @@ class KelolaAnggotaFragment : Fragment() {
         adapter = AnggotaAdapter(
             anggotaList,
             onEdit = { user -> showEditDialog(user) },
-            onDeactivate = { user -> setStatusUser(user, "Anggota Tidak Aktif") },
+            onDeactivate = { user -> setStatusUser(user, "Nonaktif") },
             onDelete = { user, position -> showDeleteOptions(user) }
         )
         rvAnggota.adapter = adapter
@@ -187,7 +187,7 @@ class KelolaAnggotaFragment : Fragment() {
             .setItems(options) { _, which ->
                 when (which) {
                     0 -> setStatusUser(user, "Anggota Aktif")
-                    1 -> setStatusUser(user, "Anggota Tidak Aktif")
+                    1 -> setStatusUser(user, "Nonaktif")
                     2 -> deleteUser(user)
                 }
             }

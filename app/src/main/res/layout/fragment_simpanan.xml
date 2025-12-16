@@ -126,7 +126,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Unggah Bukti Pembayaran (Dummy)"
+            android:text="Unggah Bukti Pembayaran"
             android:textSize="16sp"
             android:textStyle="bold"
             android:textColor="@color/green_900"

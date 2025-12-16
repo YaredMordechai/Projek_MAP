@@ -3,7 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fillViewport="true"
     android:background="#F7FFF8">
+
 
     <LinearLayout
         android:orientation="vertical"
@@ -238,9 +240,9 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvAnggota"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="520dp"
             android:layout_marginTop="12dp"
-            android:nestedScrollingEnabled="false" />
+            android:nestedScrollingEnabled="true" />
 
         <TextView
             android:id="@+id/tvEmptyAnggota"

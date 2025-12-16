@@ -53,7 +53,7 @@ class SimpananFragment : Fragment() {
 
     private val jenisList = listOf("Simpanan Pokok", "Simpanan Wajib", "Simpanan Sukarela")
 
-    // agar tidak bergantung DummyUserData sama sekali
+
     private val nilaiPokok = 100_000.0
     private val nilaiWajib = 50_000.0
 

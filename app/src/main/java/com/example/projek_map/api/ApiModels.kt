@@ -170,7 +170,7 @@ data class PengumumanDeleteRequest(
 )
 
 /** === LAPORAN USER === */
-data class LaporanUserApiData(
+data class LaporanUserData(
     val kodePegawai: String,
     val year: Int,
     val bulan: Int,
@@ -182,20 +182,47 @@ data class LaporanUserApiData(
 )
 
 /** === LAPORAN ADMIN === */
-data class LaporanAdminApiUserRow(
+data class LaporanAdminResponse(
+    val success: Boolean,
+    val message: String? = null,
+    val data: LaporanAdminData? = null
+)
+
+data class LaporanAdminData(
+    val saldoKas: Double,
+    val totalSimpananAll: Double,
+    val totalPinjamanAll: Double,
+    val jumlahAnggota: Int,
+    val users: List<LaporanUserRow>
+)
+
+data class LaporanUserRow(
     val kodePegawai: String,
     val email: String,
-    val password: String,
+    val password: String = "",
     val nama: String,
     val statusKeanggotaan: String,
     val totalSimpanan: Double,
     val totalPinjamanAktif: Double
 )
 
-data class LaporanAdminApiData(
-    val jumlahAnggota: Int,
-    val totalSimpananAll: Double,
-    val totalPinjamanAll: Double,
-    val saldoKas: Double,
-    val users: List<LaporanAdminApiUserRow>
+//LABA
+data class LabaBersihData(
+    val totalMasuk: Double,
+    val totalKeluar: Double,
+    val labaBersih: Double
+)
+data class LabaRugiData(
+    val year: Int,
+    val bulan: Int,
+    val totalPendapatan: Double,
+    val totalBeban: Double,
+    val labaRugi: Double,
+    val isLaba: Boolean
+)
+
+data class LabaRugiResponse(
+    val success: Boolean,
+    val message: String?,
+    val data: LabaRugiData?
 )
