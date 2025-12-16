@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Dec 16, 2025 at 03:57 PM
+-- Generation Time: Dec 16, 2025 at 07:37 PM
 -- Server version: 8.0.30
 -- PHP Version: 8.1.10
 
@@ -347,7 +347,8 @@ INSERT INTO `simpanan` (`kodePegawai`, `simpananPokok`, `simpananWajib`, `simpan
 ('EMP001', 600000.00, 200000.00, 415000.00),
 ('EMP002', 500000.00, 250000.00, 471123.00),
 ('EMP003', 0.00, 0.00, 0.00),
-('EMP004', 100000.00, 0.00, 0.00);
+('EMP004', 100000.00, 0.00, 0.00),
+('EMP006', 0.00, 0.00, 0.00);
 
 -- --------------------------------------------------------
 
@@ -365,6 +366,13 @@ CREATE TABLE `simpanan_pending` (
   `statusVerifikasi` varchar(50) NOT NULL DEFAULT 'Menunggu Verifikasi',
   `buktiUrl` text
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `simpanan_pending`
+--
+
+INSERT INTO `simpanan_pending` (`id`, `kodePegawai`, `jenisInput`, `jumlah`, `keterangan`, `tanggal`, `statusVerifikasi`, `buktiUrl`) VALUES
+(1, 'EMP001', 'Simpanan Sukarela', 100000.00, '-', '2025-12-17', 'Menunggu Verifikasi', 'http://10.0.2.2/koperasi_api/uploads/simpanan_20251216_181442_55b53553.jpg');
 
 -- --------------------------------------------------------
 
@@ -415,7 +423,8 @@ INSERT INTO `users` (`kodePegawai`, `email`, `password`, `nama`, `statusKeanggot
 ('EMP002', 'pegawai2@koperasi.com', '1234', 'Siti Aminah', 'Anggota Aktif'),
 ('EMP003', 'tommy@example.com', '1234', 'Tommy Viriya Irawan', 'Anggota Aktif'),
 ('EMP004', 'david@example.com', '1234', 'David Lin', 'Anggota Aktif'),
-('EMP005', 'kevynsus@gmail.com', '1234', 'Kevyn Susanto', 'Anggota Aktif');
+('EMP005', 'kevynsus@gmail.com', '1234', 'Kevyn Susanto', 'Anggota Aktif'),
+('EMP006', 'kev@gmail.com', '1234', 'Kevyn Susanto Irawan', 'Anggota Aktif');
 
 --
 -- Indexes for dumped tables
@@ -614,7 +623,7 @@ ALTER TABLE `pinjaman_jadwal`
 -- AUTO_INCREMENT for table `simpanan_pending`
 --
 ALTER TABLE `simpanan_pending`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `transaksi_simpanan`
