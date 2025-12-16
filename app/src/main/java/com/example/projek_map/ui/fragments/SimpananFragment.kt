@@ -22,7 +22,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
 import com.example.projek_map.api.ApiClient
-import com.example.projek_map.api.BuktiPembayaranAnggotaRequest
 import com.example.projek_map.api.SimpananTransaksiRequest
 import com.example.projek_map.data.HistoriSimpanan
 import com.example.projek_map.ui.adapters.HistoriSimpananAdapter
@@ -53,21 +52,21 @@ class SimpananFragment : Fragment() {
 
     private val jenisList = listOf("Simpanan Pokok", "Simpanan Wajib", "Simpanan Sukarela")
 
-
     private val nilaiPokok = 100_000.0
     private val nilaiWajib = 50_000.0
 
     private var buktiUri: Uri? = null
     private var tempPhotoUri: Uri? = null
 
-    // Galeri
+    private var buktiBase64: String? = null
+    private var buktiExt: String = "jpg"
+
     private val pickImage = registerForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         if (uri != null) onBuktiSelected(uri, "Galeri")
     }
 
-    // Kamera
     private val takePicture = registerForActivityResult(
         ActivityResultContracts.TakePicture()
     ) { success: Boolean ->
@@ -75,7 +74,6 @@ class SimpananFragment : Fragment() {
         else Toast.makeText(requireContext(), "Gagal mengambil foto", Toast.LENGTH_SHORT).show()
     }
 
-    // Izin kamera
     private val requestCameraPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
@@ -128,7 +126,6 @@ class SimpananFragment : Fragment() {
             }
         }
 
-        // ambil dari API
         loadHistoriSimpanan()
 
         btnSetor.setOnClickListener {
@@ -145,25 +142,36 @@ class SimpananFragment : Fragment() {
                 return@setOnClickListener
             }
 
+            // ✅ WAJIB bukti untuk setor
+            if (buktiBase64.isNullOrBlank()) {
+                Toast.makeText(requireContext(), "Setor simpanan wajib upload bukti pembayaran", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             lifecycleScope.launch {
                 try {
                     val api = ApiClient.apiService
-                    val resp = api.simpananTransaksi(
-                        SimpananTransaksiRequest(
-                            kodePegawai = kodePegawai,
-                            jenisInput = jenis,
-                            jumlah = jumlah, // setor = plus
-                            keterangan = "-"
-                        )
+
+                    // ✅ potongan req yang tadi nyasar → sekarang diletakkan di tempat yang benar
+                    val req = SimpananTransaksiRequest(
+                        kodePegawai = kodePegawai,
+                        jenisInput = jenis,
+                        jumlah = jumlah,
+                        keterangan = "-",
+                        buktiBase64 = buktiBase64,
+                        buktiExt = buktiExt
                     )
+                    val resp = api.simpananTransaksi(req)
 
                     val body = resp.body()
                     if (resp.isSuccessful && body?.success == true) {
                         loadHistoriSimpanan()
                         resetForm()
+                        resetBukti()
+
                         showPopup(
-                            "Setoran Berhasil",
-                            "Setoran $jenis sebesar Rp ${String.format("%,.0f", jumlah).replace(',', '.')} tercatat."
+                            "Setoran Dikirim",
+                            "Setoran $jenis sebesar Rp ${String.format("%,.0f", jumlah).replace(',', '.')} dikirim dan MENUNGGU verifikasi admin."
                         )
                     } else {
                         Toast.makeText(requireContext(), body?.message ?: "Gagal setor simpanan", Toast.LENGTH_SHORT).show()
@@ -195,8 +203,9 @@ class SimpananFragment : Fragment() {
                         SimpananTransaksiRequest(
                             kodePegawai = kodePegawai,
                             jenisInput = jenis,
-                            jumlah = -jumlah, // tarik = minus
+                            jumlah = -jumlah,
                             keterangan = "-"
+                            // tarik tidak wajib bukti
                         )
                     )
 
@@ -245,32 +254,40 @@ class SimpananFragment : Fragment() {
         takePicture.launch(tempPhotoUri)
     }
 
+    private fun uriToBase64(uri: Uri): String? {
+        return try {
+            val input = requireContext().contentResolver.openInputStream(uri) ?: return null
+            val bytes = input.readBytes()
+            input.close()
+            android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+        } catch (e: Exception) { null }
+    }
+
     private fun onBuktiSelected(uri: Uri, source: String) {
         buktiUri = uri
         ivBuktiPreview.visibility = View.VISIBLE
         ivBuktiPreview.setImageURI(uri)
 
-        val kodePegawai = prefManager.getKodePegawai() ?: "EMP001"
+        // ✅ PERUBAHAN: hanya simpan base64 (tidak hit endpoint terpisah)
+        buktiBase64 = uriToBase64(uri)
+        buktiExt = "jpg"
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            try {
-                val api = ApiClient.apiService
-                val resp = api.addBuktiPembayaranAnggota(
-                    BuktiPembayaranAnggotaRequest(
-                        kodePegawai = kodePegawai,
-                        uri = uri.toString()
-                    )
-                )
-                val body = resp.body()
-                if (resp.isSuccessful && body?.success == true) {
-                    showPopup("Bukti Pembayaran", "Bukti berhasil dikirim. Status: menunggu verifikasi admin.")
-                } else {
-                    showPopup("Bukti Pembayaran", body?.message ?: "Gagal kirim bukti ke server")
-                }
-            } catch (e: Exception) {
-                showPopup("Bukti Pembayaran", e.message ?: "Gagal konek ke server")
-            }
+        if (buktiBase64.isNullOrBlank()) {
+            showPopup("Bukti Pembayaran", "Gagal membaca gambar dari $source. Coba ulangi.")
+            resetBukti()
+            return
         }
+
+        showPopup("Bukti Pembayaran", "Bukti dipilih dari $source. Silakan tekan SETOR untuk mengirim.")
+    }
+
+    private fun resetBukti() {
+        buktiUri = null
+        tempPhotoUri = null
+        buktiBase64 = null
+        buktiExt = "jpg"
+        ivBuktiPreview.setImageDrawable(null)
+        ivBuktiPreview.visibility = View.GONE
     }
 
     private fun resetForm() {
@@ -294,17 +311,14 @@ class SimpananFragment : Fragment() {
             try {
                 val api = ApiClient.apiService
 
-                // 1) saldo simpanan
                 val simpananResp = api.getSimpanan(kodePegawai)
                 val simpananBody = simpananResp.body()
 
-                // 2) histori simpanan (filter by kodePegawai)
                 val historiResp = api.getHistoriSimpananByKodePegawai(kodePegawai)
                 val historiBody = historiResp.body()
 
                 dataHistori.clear()
                 if (historiResp.isSuccessful && historiBody?.success == true) {
-                    // ✅ FIX: akses data dari body API, bukan resp.data
                     dataHistori.addAll(historiBody.data.orEmpty())
                 }
                 adapterHistori.notifyDataSetChanged()

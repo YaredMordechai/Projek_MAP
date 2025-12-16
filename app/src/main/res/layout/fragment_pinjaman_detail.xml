@@ -185,6 +185,8 @@
                 android:text="Flat" />
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
+
+
         <!-- Tabel jadwal -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
@@ -239,6 +241,13 @@
                         android:text="Sisa Pokok"
                         android:textStyle="bold" />
                 </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnBayarAngsuranDetail"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Bayar Angsuran"
+                    android:layout_marginTop="12dp" />
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvJadwal"

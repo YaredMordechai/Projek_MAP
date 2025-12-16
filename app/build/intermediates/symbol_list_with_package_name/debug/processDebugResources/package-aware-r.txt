@@ -3867,6 +3867,7 @@ id btnAmbilFoto
 id btnAnuitas
 id btnApprove
 id btnBackDashboard
+id btnBayarAngsuranDetail
 id btnCatatPembayaran
 id btnDeactivate
 id btnDetailAnggota

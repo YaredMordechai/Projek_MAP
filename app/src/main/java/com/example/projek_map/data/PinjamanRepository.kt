@@ -40,7 +40,8 @@ class PinjamanRepository {
         pinjamanId: Int,
         jumlah: Int,
         status: String,
-        buktiUri: String?
+        buktiBase64: String?,
+        buktiExt: String?
     ): ApiResponse<Boolean> {
         return withContext(Dispatchers.IO) {
             try {
@@ -52,7 +53,9 @@ class PinjamanRepository {
                         tanggal = tanggal,
                         jumlah = jumlah,
                         status = status,
-                        buktiPembayaranUri = buktiUri
+                        buktiPembayaranUri = null,  // ✅ jangan pakai uri lokal
+                        buktiBase64 = buktiBase64,
+                        buktiExt = buktiExt ?: "jpg"
                     )
                 )
                 if (resp.isSuccessful) resp.body() ?: ApiResponse(false, "Response kosong", false)
@@ -62,6 +65,7 @@ class PinjamanRepository {
             }
         }
     }
+
     suspend fun getAllPinjamanAdmin(): ApiResponse<List<Pinjaman>> {
         return withContext(Dispatchers.IO) {
             try {
@@ -73,5 +77,24 @@ class PinjamanRepository {
             }
         }
     }
+
+    suspend fun getRincianPinjamanDb(pinjamanId: Int, metode: String): ApiResponse<com.example.projek_map.data.RincianPinjaman> {
+        return try {
+            val resp = ApiClient.apiService.getPinjamanRincian(pinjamanId, metode)
+            resp.body() ?: ApiResponse(false, "Empty response", null)
+        } catch (e: Exception) {
+            ApiResponse(false, "Error: ${e.message}", null)
+        }
+    }
+
+    suspend fun getJadwalPinjamanDb(pinjamanId: Int, metode: String): ApiResponse<List<com.example.projek_map.data.AngsuranItem>> {
+        return try {
+            val resp = ApiClient.apiService.getPinjamanJadwal(pinjamanId, metode)
+            resp.body() ?: ApiResponse(false, "Empty response", null)
+        } catch (e: Exception) {
+            ApiResponse(false, "Error: ${e.message}", null)
+        }
+    }
+
 
 }

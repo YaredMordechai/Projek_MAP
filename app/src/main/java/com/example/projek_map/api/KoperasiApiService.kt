@@ -57,6 +57,15 @@ interface KoperasiApiService {
         @Body req: SimpananTransaksiRequest
     ): Response<ApiResponse<Simpanan?>>
 
+    @GET("simpanan_pending_list.php")
+    suspend fun getSimpananPending(): Response<ApiResponse<List<SimpananPending>>>
+
+    @POST("simpanan_pending_decide.php")
+    suspend fun decideSimpananPending(
+        @Body req: SimpananPendingDecideRequest
+    ): Response<ApiResponse<Boolean>>
+
+
     // =========================
     // HISTORI SIMPANAN
     // =========================
@@ -238,6 +247,18 @@ interface KoperasiApiService {
         @Query("bulan") bulan: Int = 0
     ): Response<com.example.projek_map.api.LabaRugiResponse>
 
+    // ===== PINJAMAN RINCIAN & JADWAL (DB) =====
+    @GET("pinjaman_rincian_get.php")
+    suspend fun getPinjamanRincian(
+        @Query("pinjamanId") pinjamanId: Int,
+        @Query("metode") metode: String // "anuitas" | "flat"
+    ): Response<ApiResponse<com.example.projek_map.data.RincianPinjaman>>
+
+    @GET("pinjaman_jadwal_get.php")
+    suspend fun getPinjamanJadwal(
+        @Query("pinjamanId") pinjamanId: Int,
+        @Query("metode") metode: String // "anuitas" | "flat"
+    ): Response<ApiResponse<List<com.example.projek_map.data.AngsuranItem>>>
 
 
 

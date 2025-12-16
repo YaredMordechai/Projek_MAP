@@ -9,6 +9,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.text.InputType
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -58,7 +61,13 @@ class PinjamanFragment : Fragment() {
     private lateinit var takePictureLauncher: ActivityResultLauncher<Uri>
     private lateinit var requestCameraPermission: ActivityResultLauncher<String>
     private var currentPinjamanForUpload: Int? = null
+    private var pendingJumlahForUpload: Int? = null
+    private var pendingStatusForUpload: String = "Menunggu Verifikasi"
     private var pendingCameraUri: Uri? = null
+
+    // ✅ baru: base64 yang akan dikirim ke backend
+    private var buktiBase64: String? = null
+    private var buktiExt: String = "jpg"
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val view = inflater.inflate(R.layout.fragment_pinjaman, container, false)
@@ -211,29 +220,164 @@ class PinjamanFragment : Fragment() {
     }
 
     private fun showPinjamanDetailDialog(pinjaman: Pinjaman) {
+        lifecycleScope.launch {
+            val rincResp = repo.getRincianPinjamanDb(pinjaman.id, "anuitas")
+            val rinc = if (rincResp.success) rincResp.data else null
 
-        val r = calcRincianAnuitas(pinjaman.jumlah, pinjaman.tenor, pinjaman.bunga)
-        val bungaPersenTahun = (pinjaman.bunga * 100).toInt()
+            val fallback = calcRincianAnuitas(pinjaman.jumlah, pinjaman.tenor, pinjaman.bunga)
 
-        val message = """
-            Pokok Pinjaman  : Rp ${formatRupiah(pinjaman.jumlah.toDouble())}
-            Bunga ($bungaPersenTahun%) : (anuitas)
-            Total Cicilan   : Rp ${formatRupiah(r.totalBayar.toDouble())}
-            Tenor           : ${pinjaman.tenor} bulan
-            Angsuran/Bulan  : Rp ${formatRupiah(r.cicilanPerBulan.toDouble())}
-            Status          : ${pinjaman.status}
-        """.trimIndent()
+            val cicilan = rinc?.cicilanPerBulan ?: fallback.cicilanPerBulan
+            val totalBayar = rinc?.totalBayar ?: fallback.totalBayar
+            val terbayar = rinc?.terbayar ?: 0
+            val sisaBayar = rinc?.sisaBayar ?: (totalBayar - terbayar).coerceAtLeast(0)
+            val sisaAngsuran = if (cicilan > 0) (sisaBayar / cicilan) else 0
 
-        AlertDialog.Builder(requireContext())
-            .setTitle("Rincian Pinjaman #${pinjaman.id}")
-            .setMessage(message)
-            .setPositiveButton("OK", null)
-            .setNeutralButton("Lihat Riwayat Angsuran") { _, _ -> showHistoriPembayaranFromApi(pinjaman.id) }
-            .setNegativeButton("Unggah Bukti") { _, _ ->
-                currentPinjamanForUpload = pinjaman.id
-                showUploadChooser()
+            val bungaPersenTahun = (pinjaman.bunga * 100).toInt()
+
+            val message = """
+                Pokok Pinjaman     : Rp ${formatRupiah(pinjaman.jumlah.toDouble())}
+                Metode             : ANUITAS
+                Bunga Tahunan      : $bungaPersenTahun%
+                Tenor              : ${pinjaman.tenor} bulan
+
+                Angsuran / Bulan   : Rp ${formatRupiah(cicilan.toDouble())}
+                Total Cicilan      : Rp ${formatRupiah(totalBayar.toDouble())}
+
+                Terbayar           : Rp ${formatRupiah(terbayar.toDouble())}
+                Sisa Bayar         : Rp ${formatRupiah(sisaBayar.toDouble())}
+                Est. Sisa Angsuran : ${sisaAngsuran} bulan
+
+                Status             : ${pinjaman.status}
+            """.trimIndent()
+
+            AlertDialog.Builder(requireContext())
+                .setTitle("Rincian Pinjaman #${pinjaman.id}")
+                .setMessage(message)
+                .setPositiveButton("OK", null)
+                .setNeutralButton("Lihat Riwayat Angsuran") { _, _ ->
+                    showHistoriPembayaranFromApi(pinjaman.id)
+                }
+                .setNegativeButton("Bayar Angsuran") { _, _ ->
+                    showBayarAngsuranDialog(pinjaman)
+                }
+                .show()
+        }
+    }
+
+    private fun showBayarAngsuranDialog(pinjaman: Pinjaman) {
+        val pref = PrefManager(requireContext())
+        val kodePegawai = pref.getKodePegawai().orEmpty()
+        if (kodePegawai.isBlank()) {
+            toast("Kode pegawai kosong. Silakan login ulang."); return
+        }
+
+        lifecycleScope.launch {
+            val rincResp = repo.getRincianPinjamanDb(pinjaman.id, "anuitas")
+            val rinc = if (rincResp.success) rincResp.data else null
+
+            val fallback = calcRincianAnuitas(pinjaman.jumlah, pinjaman.tenor, pinjaman.bunga)
+            val defaultJumlah = (rinc?.cicilanPerBulan ?: fallback.cicilanPerBulan).coerceAtLeast(0)
+
+            val info = buildString {
+                append("Rekomendasi cicilan/bulan: Rp ${formatRupiah(defaultJumlah.toDouble())}\n")
+                if (rinc != null) append("Sisa bayar: Rp ${formatRupiah(rinc.sisaBayar.toDouble())}\n")
+                append("\nIsi nominal pembayaran (Rp):")
             }
-            .show()
+
+            val container = LinearLayout(requireContext()).apply {
+                orientation = LinearLayout.VERTICAL
+                setPadding(48, 24, 48, 0)
+            }
+
+            val tv = TextView(requireContext()).apply { text = info }
+
+            val edtJumlah = EditText(requireContext()).apply {
+                inputType = InputType.TYPE_CLASS_NUMBER
+                hint = "Contoh: $defaultJumlah"
+                setText(defaultJumlah.toString())
+            }
+
+            container.addView(tv)
+            container.addView(edtJumlah)
+
+            AlertDialog.Builder(requireContext())
+                .setTitle("Bayar Angsuran #${pinjaman.id}")
+                .setView(container)
+                // Bayar tanpa bukti
+                .setPositiveButton("Bayar") { _, _ ->
+                    val jumlah = edtJumlah.text?.toString()?.trim()
+                        ?.replace(".", "")?.replace(",", "")?.toIntOrNull()
+                    if (jumlah == null || jumlah <= 0) {
+                        toast("Nominal tidak valid.")
+                        return@setPositiveButton
+                    }
+                    buktiBase64 = null
+                    buktiExt = "jpg"
+                    submitPembayaranAngsuran(
+                        kodePegawai = kodePegawai,
+                        pinjamanId = pinjaman.id,
+                        jumlah = jumlah
+                    )
+                }
+                // Pilih bukti + bayar
+                .setNeutralButton("Pilih Bukti & Bayar") { _, _ ->
+                    val jumlah = edtJumlah.text?.toString()?.trim()
+                        ?.replace(".", "")?.replace(",", "")?.toIntOrNull()
+                    if (jumlah == null || jumlah <= 0) {
+                        toast("Nominal tidak valid.")
+                        return@setNeutralButton
+                    }
+                    currentPinjamanForUpload = pinjaman.id
+                    pendingJumlahForUpload = jumlah
+                    pendingStatusForUpload = "Menunggu Verifikasi"
+                    showUploadChooser()
+                }
+                .setNegativeButton("Batal", null)
+                .show()
+        }
+    }
+
+    private fun uriToBase64(uri: Uri): String? {
+        return try {
+            val input = requireContext().contentResolver.openInputStream(uri) ?: return null
+            val bytes = input.readBytes()
+            input.close()
+            android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+        } catch (e: Exception) { null }
+    }
+
+    private fun submitPembayaranAngsuran(
+        kodePegawai: String,
+        pinjamanId: Int,
+        jumlah: Int
+    ) {
+        lifecycleScope.launch {
+            val status = if (buktiBase64.isNullOrBlank()) "Dibayar (User)" else pendingStatusForUpload
+
+            // ✅ PERUBAHAN: kirim base64 ke backend (bukan uri lokal)
+            val res = repo.addHistoriBukti(
+                kodePegawai = kodePegawai,
+                pinjamanId = pinjamanId,
+                jumlah = jumlah,
+                status = status,
+                buktiBase64 = buktiBase64,
+                buktiExt = buktiExt
+            )
+
+            // reset state upload/payment
+            currentPinjamanForUpload = null
+            pendingJumlahForUpload = null
+            pendingStatusForUpload = "Menunggu Verifikasi"
+            buktiBase64 = null
+            buktiExt = "jpg"
+
+            if (res.success) {
+                toast("Pembayaran tercatat.")
+                refreshAllListsFromApi()
+            } else {
+                toast(res.message ?: "Gagal mencatat pembayaran")
+            }
+        }
     }
 
     private fun showHistoriPembayaranFromApi(pinjamanId: Int) {
@@ -315,20 +459,27 @@ class PinjamanFragment : Fragment() {
             toast("Kode pegawai kosong. Silakan login ulang."); return
         }
 
-        lifecycleScope.launch {
-            val res = repo.addHistoriBukti(
-                kodePegawai = kodePegawai,
-                pinjamanId = pinjamanId,
-                jumlah = 0,
-                status = "Bukti Diupload",
-                buktiUri = uri.toString()
-            )
-            if (res.success) toast("Bukti pembayaran tersimpan.")
-            else toast(res.message ?: "Gagal menyimpan bukti")
+        val jumlah = pendingJumlahForUpload
+        if (jumlah == null || jumlah <= 0) {
+            toast("Nominal pembayaran belum diisi. Silakan ulangi dari tombol 'Bayar Angsuran'.")
+            return
         }
+
+        // ✅ PERUBAHAN: ubah uri → base64, lalu submit
+        buktiBase64 = uriToBase64(uri)
+        buktiExt = "jpg"
+
+        if (buktiBase64.isNullOrBlank()) {
+            toast("Gagal membaca file bukti. Coba ulangi."); return
+        }
+
+        submitPembayaranAngsuran(
+            kodePegawai = kodePegawai,
+            pinjamanId = pinjamanId,
+            jumlah = jumlah
+        )
     }
 
-    // ====== Kalkulator anuitas sederhana ======
     private data class Rincian(val cicilanPerBulan: Int, val totalBayar: Int)
 
     private fun calcRincianAnuitas(pokok: Int, tenorBulan: Int, bungaTahunan: Double): Rincian {

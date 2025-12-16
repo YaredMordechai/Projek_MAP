@@ -3866,6 +3866,7 @@ int id btnAmbilFoto 0x7f09006c
 int id btnAnuitas 0x7f09006d
 int id btnApprove 0x7f09006e
 int id btnBackDashboard 0x7f09006f
+int id btnBayarAngsuranDetail 0x7f0902cf
 int id btnCatatPembayaran 0x7f090070
 int id btnDeactivate 0x7f090071
 int id btnDetailAnggota 0x7f090072

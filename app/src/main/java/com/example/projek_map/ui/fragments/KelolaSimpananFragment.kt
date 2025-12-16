@@ -1,6 +1,8 @@
 package com.example.projek_map.ui.fragments
 
 import android.app.AlertDialog
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,6 +14,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
 import com.example.projek_map.api.ApiClient
+import com.example.projek_map.api.SimpananPending
+import com.example.projek_map.api.SimpananPendingDecideRequest
 import com.example.projek_map.api.SimpananTransaksiRequest
 import com.example.projek_map.data.HistoriSimpanan
 import com.example.projek_map.data.Simpanan
@@ -36,9 +40,8 @@ class KelolaSimpananFragment : Fragment() {
     private lateinit var tvEmptyState: TextView
 
     private val displayList = mutableListOf<TransaksiSimpanan>()
-    private val serverSourceList = mutableListOf<TransaksiSimpanan>() // ✅ LIST BAWAH: dari histori_simpanan
+    private val serverSourceList = mutableListOf<TransaksiSimpanan>()
 
-    // ✅ untuk isi dropdown pegawai di dialog admin (diambil dari tabel simpanan)
     private val kodePegawaiOptions = mutableListOf<String>()
 
     private val rupiah by lazy {
@@ -46,6 +49,9 @@ class KelolaSimpananFragment : Fragment() {
     }
 
     private val api by lazy { ApiClient.apiService }
+
+    // ✅ simpan mapping pendingId -> data pending (untuk approve/reject)
+    private val pendingMap = mutableMapOf<Int, SimpananPending>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -66,11 +72,25 @@ class KelolaSimpananFragment : Fragment() {
 
         adapter = TransaksiSimpananAdapter(
             displayList,
-            onEdit = { _, _ ->
-                Toast.makeText(requireContext(), "Edit belum tersedia", Toast.LENGTH_SHORT).show()
+            onEdit = { item, _ ->
+                // ✅ onEdit dipakai untuk APPROVE kalau item pending
+                if (item.id < 0) {
+                    val pendingId = -item.id
+                    val p = pendingMap[pendingId]
+                    if (p != null) showPendingDecideDialog(pendingId, p)
+                    else Toast.makeText(requireContext(), "Data pending tidak ditemukan", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(requireContext(), "Edit belum tersedia", Toast.LENGTH_SHORT).show()
+                }
             },
-            onDelete = { _, _ ->
-                Toast.makeText(requireContext(), "Hapus belum tersedia", Toast.LENGTH_SHORT).show()
+            onDelete = { item, _ ->
+                // ✅ onDelete dipakai untuk REJECT kalau item pending
+                if (item.id < 0) {
+                    val pendingId = -item.id
+                    confirmRejectPending(pendingId)
+                } else {
+                    Toast.makeText(requireContext(), "Hapus belum tersedia", Toast.LENGTH_SHORT).show()
+                }
             }
         )
         rvTransaksi.adapter = adapter
@@ -90,12 +110,9 @@ class KelolaSimpananFragment : Fragment() {
 
         btnTambah.setOnClickListener { showAddDialogAdmin() }
 
-        // ✅ ADMIN:
-        // 1) Header total + dropdown pegawai dari tabel simpanan (ALL)
         loadAllSimpananFromServer()
-
-        // 2) List bawah dari histori_simpanan (ALL)
         loadAllHistoriSimpananForList()
+        loadPendingSimpananForAdmin() // ✅ tambahan
 
         return view
     }
@@ -104,11 +121,9 @@ class KelolaSimpananFragment : Fragment() {
         super.onResume()
         loadAllSimpananFromServer()
         loadAllHistoriSimpananForList()
+        loadPendingSimpananForAdmin() // ✅ tambahan
     }
 
-    // =========================
-    // ✅ ADMIN: LOAD ALL SIMPANAN (TOTAL HEADER + DROPDOWN PEGAWAI)
-    // =========================
     private fun loadAllSimpananFromServer() {
         lifecycleScope.launch {
             try {
@@ -126,11 +141,9 @@ class KelolaSimpananFragment : Fragment() {
 
                 val list: List<Simpanan> = body.data.orEmpty()
 
-                // ✅ isi dropdown pegawai dari tabel simpanan
                 kodePegawaiOptions.clear()
                 kodePegawaiOptions.addAll(list.map { it.kodePegawai }.distinct().sorted())
 
-                // ✅ HEADER TOTAL = SUM tabel simpanan (bukan histori)
                 val totalPokokAll = list.sumOf { it.simpananPokok }
                 val totalWajibAll = list.sumOf { it.simpananWajib }
                 val totalSukarelaAll = list.sumOf { it.simpananSukarela }
@@ -145,9 +158,6 @@ class KelolaSimpananFragment : Fragment() {
         }
     }
 
-    // =========================
-    // ✅ ADMIN: LIST BAWAH DARI histori_simpanan (ALL)
-    // =========================
     private fun loadAllHistoriSimpananForList() {
         lifecycleScope.launch {
             try {
@@ -175,7 +185,8 @@ class KelolaSimpananFragment : Fragment() {
                     )
                 }
 
-                serverSourceList.clear()
+                // jangan clear displayList langsung; simpan di source
+                serverSourceList.removeAll { it.id > 0 } // ✅ bersihkan histori lama, tanpa hapus pending
                 serverSourceList.addAll(mapped)
 
                 applyFilterAndRefresh()
@@ -186,9 +197,104 @@ class KelolaSimpananFragment : Fragment() {
         }
     }
 
-    // =========================
-    // ✅ ADMIN: TAMBAH TRANSAKSI UNTUK EMPLOYEE PILIHAN
-    // =========================
+    // ✅ tambahan: load pending simpanan (menunggu verifikasi)
+    private fun loadPendingSimpananForAdmin() {
+        lifecycleScope.launch {
+            try {
+                val resp = api.getSimpananPending()
+                val body = resp.body()
+                if (!resp.isSuccessful || body?.success != true) return@launch
+
+                val pending = body.data.orEmpty()
+
+                pendingMap.clear()
+                pending.forEach { p -> pendingMap[p.id] = p }
+
+                // map pending jadi TransaksiSimpanan pakai ID NEGATIF supaya kebedain
+                val mappedPending = pending.map { p ->
+                    TransaksiSimpanan(
+                        id = -p.id,
+                        kodePegawai = p.kodePegawai,
+                        jenis = extractJenis(p.jenisInput) + " (Pending)",
+                        jumlah = abs(p.jumlah),
+                        tanggal = p.tanggal ?: ""
+                    )
+                }
+
+                // hapus pending lama lalu add lagi
+                serverSourceList.removeAll { it.id < 0 }
+                serverSourceList.addAll(mappedPending)
+
+                applyFilterAndRefresh()
+
+            } catch (_: Exception) { }
+        }
+    }
+
+    private fun showPendingDecideDialog(pendingId: Int, p: SimpananPending) {
+        val msg = buildString {
+            append("Kode: ${p.kodePegawai}\n")
+            append("Jenis: ${p.jenisInput}\n")
+            append("Jumlah: ${rupiah.format(p.jumlah)}\n")
+            append("Tanggal: ${p.tanggal ?: "-"}\n")
+            append("Status: ${p.statusVerifikasi ?: "-"}\n\n")
+            append("Bukti: ${p.buktiUrl ?: "-"}\n")
+            append("\nKlik OK untuk buka bukti, lalu pilih Verifikasi.")
+        }
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Verifikasi Simpanan Pending #$pendingId")
+            .setMessage(msg)
+            .setPositiveButton("OK (Buka Bukti)") { _, _ ->
+                val url = p.buktiUrl
+                if (!url.isNullOrBlank()) {
+                    try {
+                        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                    } catch (_: Exception) { }
+                }
+                confirmApprovePending(pendingId)
+            }
+            .setNegativeButton("Batal", null)
+            .show()
+    }
+
+    private fun confirmApprovePending(pendingId: Int) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Approve?")
+            .setMessage("Setujui transaksi pending #$pendingId?")
+            .setPositiveButton("Approve") { _, _ -> decidePending(pendingId, "approve") }
+            .setNegativeButton("Batal", null)
+            .show()
+    }
+
+    private fun confirmRejectPending(pendingId: Int) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Reject?")
+            .setMessage("Tolak transaksi pending #$pendingId?")
+            .setPositiveButton("Reject") { _, _ -> decidePending(pendingId, "reject") }
+            .setNegativeButton("Batal", null)
+            .show()
+    }
+
+    private fun decidePending(pendingId: Int, action: String) {
+        lifecycleScope.launch {
+            try {
+                val resp = api.decideSimpananPending(SimpananPendingDecideRequest(id = pendingId, action = action))
+                val body = resp.body()
+                if (resp.isSuccessful && body?.success == true) {
+                    Toast.makeText(requireContext(), "Berhasil: $action", Toast.LENGTH_SHORT).show()
+                    loadAllSimpananFromServer()
+                    loadAllHistoriSimpananForList()
+                    loadPendingSimpananForAdmin()
+                } else {
+                    Toast.makeText(requireContext(), body?.message ?: "Gagal: $action", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     private fun showAddDialogAdmin() {
         val dialogView = layoutInflater.inflate(R.layout.dialog_add_simpanan, null)
 
@@ -250,10 +356,9 @@ class KelolaSimpananFragment : Fragment() {
                         val body = resp.body()
                         if (resp.isSuccessful && body?.success == true) {
                             Toast.makeText(requireContext(), "Berhasil", Toast.LENGTH_SHORT).show()
-
-                            // refresh total (simpanan) + list bawah (histori)
                             loadAllSimpananFromServer()
                             loadAllHistoriSimpananForList()
+                            loadPendingSimpananForAdmin()
                         } else {
                             Toast.makeText(requireContext(), body?.message ?: "Gagal", Toast.LENGTH_SHORT).show()
                         }
@@ -266,9 +371,6 @@ class KelolaSimpananFragment : Fragment() {
             .show()
     }
 
-    // =========================
-    // FILTER & UI
-    // =========================
     private fun applyFilterAndRefresh() {
         val selected = spinnerFilterJenis.selectedItem?.toString() ?: "Semua"
 
