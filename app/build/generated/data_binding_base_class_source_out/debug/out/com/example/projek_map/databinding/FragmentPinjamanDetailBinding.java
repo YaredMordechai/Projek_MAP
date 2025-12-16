@@ -26,6 +26,9 @@ public final class FragmentPinjamanDetailBinding implements ViewBinding {
   public final MaterialButton btnAnuitas;
 
   @NonNull
+  public final MaterialButton btnBayarAngsuranDetail;
+
+  @NonNull
   public final MaterialButton btnFlat;
 
   @NonNull
@@ -56,13 +59,15 @@ public final class FragmentPinjamanDetailBinding implements ViewBinding {
   public final TextView tvTotalPokok;
 
   private FragmentPinjamanDetailBinding(@NonNull ScrollView rootView,
-      @NonNull MaterialButton btnAnuitas, @NonNull MaterialButton btnFlat,
-      @NonNull RecyclerView rvJadwal, @NonNull MaterialButtonToggleGroup toggleMetode,
-      @NonNull TextView tvCicilan, @NonNull TextView tvSisaBayar, @NonNull TextView tvSisaPokok,
-      @NonNull TextView tvTerbayar, @NonNull TextView tvTotalBayar, @NonNull TextView tvTotalBunga,
+      @NonNull MaterialButton btnAnuitas, @NonNull MaterialButton btnBayarAngsuranDetail,
+      @NonNull MaterialButton btnFlat, @NonNull RecyclerView rvJadwal,
+      @NonNull MaterialButtonToggleGroup toggleMetode, @NonNull TextView tvCicilan,
+      @NonNull TextView tvSisaBayar, @NonNull TextView tvSisaPokok, @NonNull TextView tvTerbayar,
+      @NonNull TextView tvTotalBayar, @NonNull TextView tvTotalBunga,
       @NonNull TextView tvTotalPokok) {
     this.rootView = rootView;
     this.btnAnuitas = btnAnuitas;
+    this.btnBayarAngsuranDetail = btnBayarAngsuranDetail;
     this.btnFlat = btnFlat;
     this.rvJadwal = rvJadwal;
     this.toggleMetode = toggleMetode;
@@ -105,6 +110,12 @@ public final class FragmentPinjamanDetailBinding implements ViewBinding {
       id = R.id.btnAnuitas;
       MaterialButton btnAnuitas = ViewBindings.findChildViewById(rootView, id);
       if (btnAnuitas == null) {
+        break missingId;
+      }
+
+      id = R.id.btnBayarAngsuranDetail;
+      MaterialButton btnBayarAngsuranDetail = ViewBindings.findChildViewById(rootView, id);
+      if (btnBayarAngsuranDetail == null) {
         break missingId;
       }
 
@@ -168,9 +179,9 @@ public final class FragmentPinjamanDetailBinding implements ViewBinding {
         break missingId;
       }
 
-      return new FragmentPinjamanDetailBinding((ScrollView) rootView, btnAnuitas, btnFlat, rvJadwal,
-          toggleMetode, tvCicilan, tvSisaBayar, tvSisaPokok, tvTerbayar, tvTotalBayar, tvTotalBunga,
-          tvTotalPokok);
+      return new FragmentPinjamanDetailBinding((ScrollView) rootView, btnAnuitas,
+          btnBayarAngsuranDetail, btnFlat, rvJadwal, toggleMetode, tvCicilan, tvSisaBayar,
+          tvSisaPokok, tvTerbayar, tvTotalBayar, tvTotalBunga, tvTotalPokok);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

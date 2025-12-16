@@ -6,6 +6,11 @@ error_reporting(E_ALL);
 header("Content-Type: application/json; charset=UTF-8");
 require_once "config.php";
 
+if (!isset($pdo) || !($pdo instanceof PDO)) {
+  echo json_encode(["success"=>false, "message"=>"PDO tidak terbentuk", "data"=>[]]);
+  exit;
+}
+
 $pinjamanId  = isset($_GET["pinjamanId"]) ? intval($_GET["pinjamanId"]) : null;
 $kodePegawai = isset($_GET["kodePegawai"]) ? trim($_GET["kodePegawai"]) : null;
 
@@ -25,7 +30,6 @@ try {
 
   $params = [];
 
-  // filter opsional
   if ($pinjamanId !== null && $pinjamanId > 0) {
     $sql .= " AND pinjamanId = ?";
     $params[] = $pinjamanId;
@@ -41,11 +45,7 @@ try {
   $stmt->execute($params);
   $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-  echo json_encode([
-    "success" => true,
-    "message" => "OK",
-    "data" => $rows
-  ]);
+  echo json_encode(["success" => true, "message" => "OK", "data" => $rows]);
 } catch (Exception $e) {
   echo json_encode(["success" => false, "message" => $e->getMessage(), "data" => []]);
 }
