@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
 import com.example.projek_map.api.ApiClient
-import com.example.projek_map.data.User
+import com.example.projek_map.api.User
 import com.example.projek_map.ui.adapters.LaporanAdminAdapter
 import kotlinx.coroutines.launch
 import java.text.NumberFormat

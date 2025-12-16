@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+@Suppress("DEPRECATION")
 class HistoriPembayaranAdminRepository(
     private val api: KoperasiApiService = ApiClient.apiService
 ) {

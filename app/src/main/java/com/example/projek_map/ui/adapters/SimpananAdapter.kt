@@ -3,7 +3,7 @@ package com.example.projek_map.ui.adapters
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.projek_map.data.Simpanan
+import com.example.projek_map.api.Simpanan
 import com.example.projek_map.databinding.ItemSimpananBinding
 
 class SimpananAdapter(private val listSimpanan: List<Simpanan>) :

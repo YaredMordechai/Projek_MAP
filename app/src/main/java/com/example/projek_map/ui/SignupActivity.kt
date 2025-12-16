@@ -4,18 +4,18 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.EditText
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
 import com.example.projek_map.R
-import com.example.projek_map.data.AuthRepository
+import com.example.projek_map.ui.viewmodels.SignupUiState
+import com.example.projek_map.ui.viewmodels.SignupViewModel
 import com.example.projek_map.utils.PrefManager
 import com.google.android.material.button.MaterialButton
-import kotlinx.coroutines.launch
 
 class SignupActivity : AppCompatActivity() {
 
     private lateinit var pref: PrefManager
-    private val authRepository = AuthRepository()
+    private val vm: SignupViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,7 +31,8 @@ class SignupActivity : AppCompatActivity() {
         val etPassword: EditText = findViewById(R.id.etPassword)
         val etNama: EditText = findViewById(R.id.etNama)
 
-        // Tombol ke Login
+        observeVm(btnSignup)
+
         btnToLogin.setOnClickListener {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
@@ -48,23 +49,26 @@ class SignupActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            lifecycleScope.launch {
-                btnSignup.isEnabled = false
+            vm.register(kodePegawai, email, password, nama)
+        }
+    }
 
-                val result = authRepository.register(kodePegawai, email, password, nama)
-
-                btnSignup.isEnabled = true
-
-                if (result?.success == true && result.data != null) {
-                    val user = result.data
+    private fun observeVm(btnSignup: MaterialButton) {
+        vm.state.observe(this) { state ->
+            when (state) {
+                is SignupUiState.Idle -> {
+                    btnSignup.isEnabled = true
+                }
+                is SignupUiState.Loading -> {
+                    btnSignup.isEnabled = false
+                }
+                is SignupUiState.Success -> {
+                    val user = state.user
 
                     pref.saveLogin(user.nama, user.email, user.kodePegawai)
+                    pref.setIsAdmin(false)
 
-                    Toast.makeText(
-                        this@SignupActivity,
-                        "Pendaftaran berhasil!",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(this@SignupActivity, "Pendaftaran berhasil!", Toast.LENGTH_SHORT).show()
 
                     val intent = Intent(this@SignupActivity, MainActivity::class.java)
                     intent.putExtra("userName", user.nama)
@@ -74,10 +78,12 @@ class SignupActivity : AppCompatActivity() {
                     intent.putExtra("isAdmin", false)
                     startActivity(intent)
                     finish()
-                } else {
+                }
+                is SignupUiState.Error -> {
+                    btnSignup.isEnabled = true
                     Toast.makeText(
                         this@SignupActivity,
-                        result?.message ?: "Pendaftaran gagal",
+                        state.message.ifBlank { "Pendaftaran gagal" },
                         Toast.LENGTH_SHORT
                     ).show()
                 }

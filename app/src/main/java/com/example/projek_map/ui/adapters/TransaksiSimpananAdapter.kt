@@ -7,10 +7,11 @@ import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
-import com.example.projek_map.data.TransaksiSimpanan
+import com.example.projek_map.api.TransaksiSimpanan
 import java.text.NumberFormat
 import java.util.Locale
 
+@Suppress("DEPRECATION")
 class TransaksiSimpananAdapter(
     private val transaksiList: MutableList<TransaksiSimpanan>,
     private val onEdit: (TransaksiSimpanan, Int) -> Unit = { _, _ -> },

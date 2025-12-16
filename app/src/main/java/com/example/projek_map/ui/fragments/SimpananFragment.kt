@@ -23,7 +23,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
 import com.example.projek_map.api.ApiClient
 import com.example.projek_map.api.SimpananTransaksiRequest
-import com.example.projek_map.data.HistoriSimpanan
+import com.example.projek_map.api.HistoriSimpanan
 import com.example.projek_map.ui.adapters.HistoriSimpananAdapter
 import com.example.projek_map.utils.PrefManager
 import com.google.android.material.button.MaterialButton

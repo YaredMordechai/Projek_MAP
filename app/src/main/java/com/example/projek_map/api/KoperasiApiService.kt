@@ -1,6 +1,5 @@
 package com.example.projek_map.api
 
-import com.example.projek_map.data.*
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -233,7 +232,7 @@ interface KoperasiApiService {
     ): Response<ApiResponse<LaporanUserData>>
 
     @GET("laporan_admin.php")
-    suspend fun getLaporanAdmin(): Response<com.example.projek_map.api.LaporanAdminResponse>
+    suspend fun getLaporanAdmin(): Response<LaporanAdminResponse>
 
     // =========================
 // LABA (ADMIN)
@@ -245,20 +244,20 @@ interface KoperasiApiService {
     suspend fun getLabaRugi(
         @Query("year") year: Int,
         @Query("bulan") bulan: Int = 0
-    ): Response<com.example.projek_map.api.LabaRugiResponse>
+    ): Response<LabaRugiResponse>
 
     // ===== PINJAMAN RINCIAN & JADWAL (DB) =====
     @GET("pinjaman_rincian_get.php")
     suspend fun getPinjamanRincian(
         @Query("pinjamanId") pinjamanId: Int,
         @Query("metode") metode: String // "anuitas" | "flat"
-    ): Response<ApiResponse<com.example.projek_map.data.RincianPinjaman>>
+    ): Response<ApiResponse<RincianPinjaman>>
 
     @GET("pinjaman_jadwal_get.php")
     suspend fun getPinjamanJadwal(
         @Query("pinjamanId") pinjamanId: Int,
         @Query("metode") metode: String // "anuitas" | "flat"
-    ): Response<ApiResponse<List<com.example.projek_map.data.AngsuranItem>>>
+    ): Response<ApiResponse<List<AngsuranItem>>>
 
 
 

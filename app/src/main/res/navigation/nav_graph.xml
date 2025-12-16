@@ -5,21 +5,21 @@
 
     <fragment
         android:id="@+id/dashboardFragment"
-        android:name="com.example.koperasi.ui.DashboardFragment"
+        android:name="com.example.projek_map.ui.fragments.DashboardFragment"
         android:label="Dashboard" />
 
     <fragment
         android:id="@+id/simpananFragment"
-        android:name="com.example.koperasi.ui.SimpananFragment"
+        android:name="com.example.projek_map.ui.fragments.SimpananFragment"
         android:label="Simpanan" />
 
     <fragment
         android:id="@+id/pinjamanFragment"
-        android:name="com.example.koperasi.ui.PinjamanFragment"
+        android:name="com.example.projek_map.ui.fragments.PinjamanFragment"
         android:label="Pinjaman" />
 
     <fragment
         android:id="@+id/profilFragment"
-        android:name="com.example.koperasi.ui.ProfilFragment"
+        android:name="com.example.projek_map.ui.fragments.ProfileFragment"
         android:label="Profil" />
 </navigation>

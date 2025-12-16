@@ -6,9 +6,10 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
-import com.example.projek_map.data.AngsuranItem
+import com.example.projek_map.api.AngsuranItem
 import java.util.Locale
 
+@Suppress("DEPRECATION")
 class AngsuranAdapter(
     private val items: MutableList<AngsuranItem> = mutableListOf()
 ) : RecyclerView.Adapter<AngsuranAdapter.VH>() {

@@ -25,6 +25,7 @@ import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.utils.ColorTemplate
 import kotlinx.coroutines.launch
 import java.util.Calendar
+import android.view.ViewGroup as AndroidViewGroup
 
 class DashboardFragment : Fragment() {
 
@@ -57,8 +58,9 @@ class DashboardFragment : Fragment() {
 
         val pref = PrefManager(requireContext())
         val kodePegawai = pref.getKodePegawai().orEmpty()
-        val nama = pref.getUserName().orEmpty()
+        val nama = pref.getUserName().orEmpty()   // ✅ BUKAN getNama()
 
+        // ====== Header greeting ======
         if (isAdmin) {
             tvWelcome.text = "Halo, Admin"
             tvUserId.text = ""
@@ -161,7 +163,7 @@ class DashboardFragment : Fragment() {
             cardLaporanAdmin.visibility = View.GONE
         }
 
-        // 🔔 Jadwal notifikasi jatuh tempo
+        // 🔔 Jadwal notifikasi jatuh tempo (fitur lama tetap dipertahankan)
         scheduleDailyJatuhTempo(requireContext(), 9, 0)
 
         // === Grafik Keuangan (ambil dari API) ===
@@ -172,8 +174,10 @@ class DashboardFragment : Fragment() {
         }
     }
 
+    // ========== CHART ==========
+
     private fun setupChartAdminPlaceholder() {
-        // sementara (kalau admin belum ada endpoint agregasi)
+        // Placeholder kalau belum ada endpoint agregasi admin
         val entries = (0..11).map { i -> Entry(i.toFloat(), 0f) }
         val ds = LineDataSet(entries, "Admin Chart").apply {
             color = ColorTemplate.MATERIAL_COLORS[0]
@@ -199,18 +203,20 @@ class DashboardFragment : Fragment() {
 
                 val totalSimpanan =
                     simpananResp.body()?.data?.let { s ->
-                        (s.simpananPokok ?: 0.0) + (s.simpananWajib ?: 0.0) + (s.simpananSukarela ?: 0.0)
+                        (s.simpananPokok ?: 0.0) +
+                                (s.simpananWajib ?: 0.0) +
+                                (s.simpananSukarela ?: 0.0)
                     } ?: 0.0
 
                 val totalPinjaman =
                     pinjamanResp.body()?.data?.sumOf { it.jumlah.toDouble() } ?: 0.0
 
-                // bikin 12 bulan, nilai flat biar keliatan “narik dari API”
+                // Contoh: 12 bulan, nilainya flat dari total, biar kelihatan grafiknya
                 val entriesSimpanan = (0..11).map { i -> Entry(i.toFloat(), totalSimpanan.toFloat()) }
                 val entriesPinjaman = (0..11).map { i -> Entry(i.toFloat(), totalPinjaman.toFloat()) }
 
                 val dsSimpanan = LineDataSet(entriesSimpanan, "Total Simpanan").apply {
-                    color = ColorTemplate.MATERIAL_COLORS[0]
+                    color = ColorTemplate.MATERIAL_COLORS[0]   // ✅ nggak pakai gray/blue/orange
                     setCircleColor(ColorTemplate.MATERIAL_COLORS[0])
                 }
 
@@ -240,13 +246,15 @@ class DashboardFragment : Fragment() {
         chartKeuangan.invalidate()
     }
 
+    // ========== UTIL VIEW ==========
+
     private fun setCardTitle(card: CardView, title: String) {
         findFirstTextView(card)?.text = title
     }
 
     private fun findFirstTextView(view: View): TextView? {
         if (view is TextView) return view
-        if (view is ViewGroup) {
+        if (view is AndroidViewGroup) {
             for (i in 0 until view.childCount) {
                 val found = findFirstTextView(view.getChildAt(i))
                 if (found != null) return found
@@ -257,7 +265,7 @@ class DashboardFragment : Fragment() {
 
     private fun findFirstImageView(view: View): ImageView? {
         if (view is ImageView) return view
-        if (view is ViewGroup) {
+        if (view is AndroidViewGroup) {
             for (i in 0 until view.childCount) {
                 val found = findFirstImageView(view.getChildAt(i))
                 if (found != null) return found
@@ -265,6 +273,8 @@ class DashboardFragment : Fragment() {
         }
         return null
     }
+
+    // ========== ALARM JATUH TEMPO ==========
 
     private fun scheduleDailyJatuhTempo(context: Context, hour: Int, minute: Int) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager

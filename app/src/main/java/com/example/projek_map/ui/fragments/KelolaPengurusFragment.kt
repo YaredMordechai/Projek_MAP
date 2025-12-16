@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
 import com.example.projek_map.api.ApiClient
 import com.example.projek_map.api.SettingsUpdateRequest
-import com.example.projek_map.data.Pinjaman
+import com.example.projek_map.api.Pinjaman
 import com.example.projek_map.ui.adapters.PinjamanAdapter
 import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.launch

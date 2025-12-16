@@ -20,7 +20,7 @@ import com.example.projek_map.api.ApiClient
 import com.example.projek_map.api.PengumumanAddRequest
 import com.example.projek_map.api.PengumumanDeleteRequest
 import com.example.projek_map.api.PengumumanUpdateRequest
-import com.example.projek_map.data.Pengumuman
+import com.example.projek_map.api.Pengumuman
 import com.example.projek_map.utils.AlarmReceiver
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.launch

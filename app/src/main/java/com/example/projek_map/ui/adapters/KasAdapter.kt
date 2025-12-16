@@ -12,6 +12,7 @@ import com.example.projek_map.api.KasTransaksi
 import java.text.NumberFormat
 import java.util.Locale
 
+@Suppress("DEPRECATION")
 class KasAdapter(
     private val data: MutableList<KasTransaksi>,
     private val onEdit: (KasTransaksi, Int) -> Unit = { _, _ -> },

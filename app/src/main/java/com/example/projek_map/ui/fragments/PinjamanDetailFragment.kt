@@ -16,8 +16,8 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
-import com.example.projek_map.data.RincianPinjaman
-import com.example.projek_map.data.AngsuranItem
+import com.example.projek_map.api.RincianPinjaman
+import com.example.projek_map.api.AngsuranItem
 import com.example.projek_map.data.PinjamanRepository
 import com.example.projek_map.utils.PrefManager
 import com.google.android.material.button.MaterialButton

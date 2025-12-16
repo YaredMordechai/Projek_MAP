@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
-import com.example.projek_map.data.Pengumuman
+import com.example.projek_map.api.Pengumuman
 
 private class PengumumanAdapter(
     private val items: List<Pengumuman>,

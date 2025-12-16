@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
-import com.example.projek_map.data.HistoriPembayaran
+import com.example.projek_map.api.HistoriPembayaran
 
 class HistoriBulananAdapter(
     private val historiList: List<HistoriPembayaran>

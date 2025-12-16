@@ -1,5 +1,6 @@
 package com.example.projek_map.api
 
+
 data class ApiResponse<T>(
     val success: Boolean,
     val message: String? = null,
@@ -252,3 +253,112 @@ data class SimpananPendingDecideRequest(
     val id: Int,
     val action: String // "approve" / "reject"
 )
+
+data class User(
+    val kodePegawai: String,
+    var email: String,
+    var password: String,
+    var nama: String,
+    var statusKeanggotaan: String
+)
+
+
+data class Admin(
+    val kodePegawai: String,
+    val email: String,
+    val password: String,
+    val nama: String,
+    val role: String = "Admin"
+)
+
+data class Pinjaman(
+    val id: Int,
+    val kodePegawai: String,
+    val jumlah: Int,          // pokok pinjaman
+    val tenor: Int,           // bulan
+    var status: String,       // Proses / Disetujui / Ditolak / Lunas
+    val bunga: Double = 0.1,  //)
+    val angsuranTerbayar: Int = 0,
+)
+
+data class Simpanan(
+    val kodePegawai: String,
+    var simpananPokok: Double,
+    var simpananWajib: Double,
+    var simpananSukarela: Double
+)
+
+
+// 🔹 histori SIMPANAN
+data class HistoriSimpanan(
+    val id: Int,
+    val kodePegawai: String,
+    val tanggal: String,
+    val jenis: String,   // Contoh: "Setoran Wajib", "Penarikan Sukarela"
+    val jumlah: Double,  // +setor, -tarik
+    val keterangan: String
+)
+
+// ✅ Bukti pembayaran per-anggota (tanpa pinjamanId) — dipakai SimpananFragment
+data class BuktiPembayaranAnggota(
+    val id: Int,
+    val kodePegawai: String,
+    val uri: String,
+    val tanggal: String
+)
+
+data class AngsuranItem(
+    val periode: Int,          // 1..tenor
+    val pokok: Int,            // porsi pokok bulan ini
+    val bunga: Int,            // porsi bunga bulan ini
+    val total: Int,            // cicilan bulan ini
+    val sisaPokok: Int         // sisa pokok setelah bayar bulan ini
+)
+
+data class RincianPinjaman(
+    val cicilanPerBulan: Int,
+    val totalBunga: Int,
+    val totalBayar: Int,
+    val totalPokok: Int,
+    val terbayar: Int,
+    val sisaBayar: Int,
+    val sisaPokok: Int,
+    val angsuranDibayar: Int   // sudah berapa kali angsuran (pembulatan ke bawah)
+)
+
+data class DueReminder(
+    val pinjamanId: Int,
+    val kodePegawai: String,
+    val dueDate: String,  // yyyy-MM-dd
+    val nominalCicilan: Int
+)
+
+data class Pengumuman(
+    val id: Int,
+    val judul: String,
+    val isi: String,
+    val tanggal: String  // yyyy-MM-dd
+)
+
+data class TransaksiSimpanan(
+    val id: Int,
+    val kodePegawai: String,
+    val jenis: String,      // "Pokok", "Wajib", atau "Sukarela"
+    val jumlah: Double,
+    val tanggal: String
+)
+
+data class DecisionNotification(
+    val id: Int,
+    val kodePegawai: String,
+    val pinjamanId: Int,
+    val decision: String,  // "disetujui" / "ditolak"
+    val jumlah: Int,
+    val tanggal: String
+)
+
+
+// =====================
+// Dummy store & helpers
+// =====================
+

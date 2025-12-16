@@ -78,7 +78,7 @@ class PinjamanRepository {
         }
     }
 
-    suspend fun getRincianPinjamanDb(pinjamanId: Int, metode: String): ApiResponse<com.example.projek_map.data.RincianPinjaman> {
+    suspend fun getRincianPinjamanDb(pinjamanId: Int, metode: String): ApiResponse<RincianPinjaman> {
         return try {
             val resp = ApiClient.apiService.getPinjamanRincian(pinjamanId, metode)
             resp.body() ?: ApiResponse(false, "Empty response", null)
@@ -87,7 +87,7 @@ class PinjamanRepository {
         }
     }
 
-    suspend fun getJadwalPinjamanDb(pinjamanId: Int, metode: String): ApiResponse<List<com.example.projek_map.data.AngsuranItem>> {
+    suspend fun getJadwalPinjamanDb(pinjamanId: Int, metode: String): ApiResponse<List<AngsuranItem>> {
         return try {
             val resp = ApiClient.apiService.getPinjamanJadwal(pinjamanId, metode)
             resp.body() ?: ApiResponse(false, "Empty response", null)

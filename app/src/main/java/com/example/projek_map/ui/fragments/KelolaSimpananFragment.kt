@@ -17,9 +17,9 @@ import com.example.projek_map.api.ApiClient
 import com.example.projek_map.api.SimpananPending
 import com.example.projek_map.api.SimpananPendingDecideRequest
 import com.example.projek_map.api.SimpananTransaksiRequest
-import com.example.projek_map.data.HistoriSimpanan
-import com.example.projek_map.data.Simpanan
-import com.example.projek_map.data.TransaksiSimpanan
+import com.example.projek_map.api.HistoriSimpanan
+import com.example.projek_map.api.Simpanan
+import com.example.projek_map.api.TransaksiSimpanan
 import com.example.projek_map.ui.adapters.TransaksiSimpananAdapter
 import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.launch

@@ -19,7 +19,7 @@ import com.example.projek_map.api.ApiClient
 import com.example.projek_map.api.DecidePinjamanRequest
 import com.example.projek_map.api.HistoriPembayaran
 import com.example.projek_map.data.HistoriPembayaranAdminRepository
-import com.example.projek_map.data.Pinjaman
+import com.example.projek_map.api.Pinjaman
 import com.example.projek_map.data.PinjamanRepository
 import com.example.projek_map.ui.adapters.HistoriPembayaranAdapter
 import com.example.projek_map.ui.adapters.KelolaPinjamanAdapter

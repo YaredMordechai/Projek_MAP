@@ -7,7 +7,7 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
-import com.example.projek_map.data.Pinjaman
+import com.example.projek_map.api.Pinjaman
 
 class PinjamanAdapter(
     private val pinjamanList: List<Pinjaman>,

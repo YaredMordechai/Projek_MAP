@@ -16,6 +16,7 @@ class LaporanAdminAdapter(
     private val onItemClick: (LaporanAdminFragment.UserSummary) -> Unit
 ) : RecyclerView.Adapter<LaporanAdminAdapter.VH>() {
 
+    @Suppress("DEPRECATION")
     private val rupiah = NumberFormat.getCurrencyInstance(Locale("in","ID"))
 
     inner class VH(v: View) : RecyclerView.ViewHolder(v) {

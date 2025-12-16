@@ -3,18 +3,19 @@ package com.example.projek_map.ui
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
-import com.example.projek_map.data.AuthRepository
 import com.example.projek_map.databinding.ActivityLoginBinding
+import com.example.projek_map.ui.viewmodels.LoginUiState
+import com.example.projek_map.ui.viewmodels.LoginViewModel
 import com.example.projek_map.utils.PrefManager
-import kotlinx.coroutines.launch
 
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
     private lateinit var pref: PrefManager
-    private val authRepository = AuthRepository()
+
+    private val vm: LoginViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,6 +23,8 @@ class LoginActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         pref = PrefManager(this)
+
+        observeVm()
 
         binding.btnLogin.setOnClickListener {
             val email = binding.etEmail.text.toString().trim()
@@ -32,17 +35,27 @@ class LoginActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            lifecycleScope.launch {
-                binding.btnLogin.isEnabled = false
+            vm.login(email, password)
+        }
 
-                // =========================
-                // 1️⃣ COBA LOGIN ADMIN DULU
-                // =========================
-                val adminResult = authRepository.loginAdmin(email, password)
-                if (adminResult?.success == true && adminResult.data != null) {
-                    val admin = adminResult.data
+        binding.tvSignup.setOnClickListener {
+            startActivity(Intent(this, SignupActivity::class.java))
+        }
+    }
 
-                    pref.logout() // 🔒 PENTING: bersihkan session lama
+    private fun observeVm() {
+        vm.state.observe(this) { state ->
+            when (state) {
+                is LoginUiState.Idle -> {
+                    binding.btnLogin.isEnabled = true
+                }
+                is LoginUiState.Loading -> {
+                    binding.btnLogin.isEnabled = false
+                }
+                is LoginUiState.SuccessAdmin -> {
+                    val admin = state.admin
+
+                    pref.logout() // bersihkan session lama
                     pref.saveLogin(admin.nama, admin.email, admin.kodePegawai)
                     pref.setIsAdmin(true)
 
@@ -54,17 +67,11 @@ class LoginActivity : AppCompatActivity() {
 
                     startActivity(Intent(this@LoginActivity, MainActivity::class.java))
                     finish()
-                    return@launch
                 }
+                is LoginUiState.SuccessUser -> {
+                    val user = state.user
 
-                // =========================
-                // 2️⃣ BARU COBA LOGIN USER
-                // =========================
-                val userResult = authRepository.login(email, password)
-                if (userResult?.success == true && userResult.data != null) {
-                    val user = userResult.data
-
-                    pref.logout() // 🔒 bersihkan session lama
+                    pref.logout() // bersihkan session lama
                     pref.saveLogin(user.nama, user.email, user.kodePegawai)
                     pref.setIsAdmin(false)
 
@@ -76,23 +83,16 @@ class LoginActivity : AppCompatActivity() {
 
                     startActivity(Intent(this@LoginActivity, MainActivity::class.java))
                     finish()
-                    return@launch
                 }
-
-                binding.btnLogin.isEnabled = true
-                Toast.makeText(
-                    this@LoginActivity,
-                    adminResult?.message
-                        ?: userResult?.message
-                        ?: "Email / password salah",
-                    Toast.LENGTH_SHORT
-                ).show()
+                is LoginUiState.Error -> {
+                    binding.btnLogin.isEnabled = true
+                    Toast.makeText(
+                        this@LoginActivity,
+                        state.message.ifBlank { "Email / password salah" },
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
-
-        }
-
-        binding.tvSignup.setOnClickListener {
-            startActivity(Intent(this, SignupActivity::class.java))
         }
     }
 }

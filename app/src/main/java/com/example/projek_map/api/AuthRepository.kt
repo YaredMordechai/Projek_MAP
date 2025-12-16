@@ -1,9 +1,11 @@
-package com.example.projek_map.data
+package com.example.projek_map.api
 
 import com.example.projek_map.api.ApiClient
 import com.example.projek_map.api.ApiResponse
 import com.example.projek_map.api.LoginRequest
 import com.example.projek_map.api.RegisterRequest
+import com.example.projek_map.api.User
+import com.example.projek_map.api.Admin
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -26,7 +28,7 @@ class AuthRepository {
         }
     }
 
-    suspend fun loginAdmin(email: String, password: String): ApiResponse<com.example.projek_map.data.Admin> {
+    suspend fun loginAdmin(email: String, password: String): ApiResponse<Admin> {
         return withContext(Dispatchers.IO) {
             try {
                 val resp = api.loginAdmin(LoginRequest(email, password))

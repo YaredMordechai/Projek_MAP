@@ -7,8 +7,9 @@ import android.widget.ImageButton
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
-import com.example.projek_map.data.User
+import com.example.projek_map.api.User
 
+@Suppress("DEPRECATION")
 class AnggotaAdapter(
     private val anggotaList: MutableList<User>,
     private val onEdit: (User) -> Unit,

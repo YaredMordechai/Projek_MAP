@@ -17,7 +17,7 @@ import com.example.projek_map.api.AddUserRequest
 import com.example.projek_map.api.UpdateUserRequest
 import com.example.projek_map.api.SetUserStatusRequest
 import com.example.projek_map.api.DeleteUserRequest
-import com.example.projek_map.data.User
+import com.example.projek_map.api.User
 import com.example.projek_map.ui.adapters.AnggotaAdapter
 import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.launch

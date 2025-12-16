@@ -23,7 +23,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
 import com.example.projek_map.api.HistoriPembayaran
-import com.example.projek_map.data.Pinjaman
+import com.example.projek_map.api.Pinjaman
 import com.example.projek_map.data.PinjamanRepository
 import com.example.projek_map.ui.adapters.PinjamanAdapter
 import com.example.projek_map.utils.PrefManager
