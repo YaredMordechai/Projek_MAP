@@ -6,14 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
-import com.example.projek_map.api.ApiClient
 import com.example.projek_map.api.User
 import com.example.projek_map.ui.adapters.LaporanAdminAdapter
-import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -35,10 +33,8 @@ class LaporanAdminFragment : Fragment() {
 
     private val rupiah: NumberFormat = NumberFormat.getCurrencyInstance(Locale("in", "ID"))
 
-    // cache data dari API (supaya filter tidak hit API terus)
-    private val anggotaCache = mutableListOf<UserSummary>()
-
-    private var isLoading = false
+    // ViewModel (MVVM)
+    private val vm: LaporanAdminViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -86,120 +82,86 @@ class LaporanAdminFragment : Fragment() {
         spStatus.adapter =
             ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, statusItems)
 
-        btnFilter.setOnClickListener { applyFilterFromCache() }
+        // Filter / Reset (tetap sama fiturnya, tapi memanggil ViewModel)
+        btnFilter.setOnClickListener {
+            vm.setFilter(
+                query = etCari.text?.toString()?.trim().orElse(""),
+                status = spStatus.selectedItem?.toString().orElse("Semua")
+            )
+        }
+
         btnReset.setOnClickListener {
             spStatus.setSelection(0)
             etCari.setText("")
-            applyFilterFromCache()
+            vm.setFilter(query = "", status = "Semua")
         }
 
-        // Load awal (100% API)
-        loadAllFromApi()
+        // Observers (render UI dari ViewModel)
+        observeViewModel()
+
+        // Load awal (100% API) -> sekarang lewat ViewModel
+        vm.loadAll()
 
         return v
     }
 
-    private fun loadAllFromApi() {
-        if (isLoading) return
-        isLoading = true
-
-        showLoadingState()
-
-        lifecycleScope.launch {
-            try {
-                val resp = ApiClient.apiService.getLaporanAdmin()
-                val body = resp.body()
-
-                if (resp.isSuccessful && body?.success == true && body.data != null) {
-                    val d = body.data
-
-                    // render summary
-                    tvSaldoKas.text = rupiah.format(d.saldoKas)
-                    tvTotalSimpananAll.text = rupiah.format(d.totalSimpananAll)
-                    tvTotalPinjamanAll.text = rupiah.format(d.totalPinjamanAll)
-                    tvJumlahAnggota.text = d.jumlahAnggota.toString()
-
-                    // cache anggota
-                    anggotaCache.clear()
-                    anggotaCache.addAll(
-                        d.users.map { r ->
-                            UserSummary(
-                                user = User(
-                                    kodePegawai = r.kodePegawai,
-                                    email = r.email,
-                                    password = "", // server sengaja kosong
-                                    nama = r.nama,
-                                    statusKeanggotaan = normalizeStatus(r.statusKeanggotaan)
-                                ),
-                                totalSimpanan = r.totalSimpanan,
-                                totalPinjamanAktif = r.totalPinjamanAktif
-                            )
-                        }
-                    )
-
-                    // apply filter dari cache
-                    applyFilterFromCache()
-
-                    isLoading = false
-                } else {
-                    isLoading = false
-                    showErrorState(
-                        msg = body?.message?.takeIf { it.isNotBlank() }
-                            ?: "Gagal memuat data laporan admin (response tidak valid)."
-                    )
-                }
-            } catch (e: Exception) {
-                isLoading = false
-                showErrorState(msg = "Gagal terhubung ke server: ${e.message ?: "Unknown error"}")
+    private fun observeViewModel() {
+        vm.summary.observe(viewLifecycleOwner) { s ->
+            if (s == null) {
+                tvSaldoKas.text = "-"
+                tvTotalSimpananAll.text = "-"
+                tvTotalPinjamanAll.text = "-"
+                tvJumlahAnggota.text = "-"
+            } else {
+                tvSaldoKas.text = rupiah.format(s.saldoKas)
+                tvTotalSimpananAll.text = rupiah.format(s.totalSimpananAll)
+                tvTotalPinjamanAll.text = rupiah.format(s.totalPinjamanAll)
+                tvJumlahAnggota.text = s.jumlahAnggota.toString()
             }
         }
-    }
 
-    private fun applyFilterFromCache() {
-        val q = etCari.text?.toString()?.trim()?.lowercase().orElse("")
-        val status = spStatus.selectedItem?.toString().orElse("Semua")
-
-        val list = anggotaCache
-            .filter { row ->
-                val user = row.user
-                val okStatus = when (status) {
-                    "Aktif" -> user.statusKeanggotaan.equals("Aktif", true)
-                    "Nonaktif" -> user.statusKeanggotaan.equals("Nonaktif", true)
-                    else -> true
-                }
-                if (!okStatus) return@filter false
-                if (q.isBlank()) return@filter true
-                "${user.nama} ${user.kodePegawai} ${user.email}".lowercase().contains(q)
+        vm.isLoading.observe(viewLifecycleOwner) { loading ->
+            if (loading == true) {
+                showLoadingState()
             }
-            .sortedBy { it.user.nama.lowercase() }
+        }
 
-        adapter.replaceAll(list)
+        vm.errorMessage.observe(viewLifecycleOwner) { msg ->
+            if (!msg.isNullOrBlank()) {
+                showErrorState(msg)
+            }
+        }
 
-        if (list.isEmpty()) {
-            tvEmpty.text = "Tidak ada anggota sesuai filter."
-            tvEmpty.visibility = View.VISIBLE
-            rvAnggota.visibility = View.GONE
-        } else {
-            tvEmpty.visibility = View.GONE
-            rvAnggota.visibility = View.VISIBLE
+        vm.filteredList.observe(viewLifecycleOwner) { list ->
+            val safe = list ?: emptyList()
+            adapter.replaceAll(safe)
+
+            if (safe.isEmpty()) {
+                tvEmpty.text = "Tidak ada anggota sesuai filter."
+                tvEmpty.visibility = View.VISIBLE
+                rvAnggota.visibility = View.GONE
+            } else {
+                tvEmpty.visibility = View.GONE
+                rvAnggota.visibility = View.VISIBLE
+            }
         }
     }
 
     private fun showLoadingState() {
-        // Ringkasan bisa dikosongin / placeholder
+        // Ringkasan placeholder
         tvSaldoKas.text = "-"
         tvTotalSimpananAll.text = "-"
         tvTotalPinjamanAll.text = "-"
         tvJumlahAnggota.text = "-"
 
-        tvEmpty.text = "Memuat data..."
+        tvEmpty.text = "Memuat data."
         tvEmpty.visibility = View.VISIBLE
         rvAnggota.visibility = View.GONE
         adapter.replaceAll(emptyList())
     }
 
     private fun showErrorState(msg: String) {
-        // Ringkasan tetap placeholder
+        // Ringkasan placeholder
         tvSaldoKas.text = "-"
         tvTotalSimpananAll.text = "-"
         tvTotalPinjamanAll.text = "-"
@@ -209,28 +171,22 @@ class LaporanAdminFragment : Fragment() {
         tvEmpty.visibility = View.VISIBLE
         rvAnggota.visibility = View.GONE
         adapter.replaceAll(emptyList())
-        anggotaCache.clear()
     }
 
     private fun String?.orElse(def: String) = this ?: def
 
-    // Normalisasi semua variasi jadi cuma: "Aktif" / "Nonaktif"
+    // Tetap dipakai (di ViewModel juga ada normalisasi), aman kalau suatu saat perlu di Fragment
     private fun normalizeStatus(raw: String?): String {
         val s = raw?.trim().orEmpty().lowercase()
-
         return when {
-            // nonaktif variants
             s.contains("nonaktif") -> "Nonaktif"
             s.contains("non-aktif") -> "Nonaktif"
             s.contains("tidak aktif") -> "Nonaktif"
             s.contains("inactive") -> "Nonaktif"
             s == "0" -> "Nonaktif"
-
-            // aktif variants (pastikan tidak ketabrak "tidak aktif")
             s.contains("aktif") -> "Aktif"
             s.contains("active") -> "Aktif"
             s == "1" -> "Aktif"
-
             else -> if (s.isBlank()) "Nonaktif" else raw!!.trim()
         }
     }

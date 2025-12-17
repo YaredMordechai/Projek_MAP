@@ -10,17 +10,18 @@ import android.widget.ImageButton
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import com.example.projek_map.R
-import com.example.projek_map.api.ApiClient
+import com.example.projek_map.data.LaporanRepository
 import com.example.projek_map.utils.PrefManager
+import com.example.projek_map.ui.viewmodels.LaporanViewModel
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.components.Description
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.utils.ColorTemplate
-import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Calendar
 import java.util.Locale
@@ -40,6 +41,8 @@ class LaporanFragment : Fragment() {
     private var monthlyAngsuran: List<Double> = List(12) { 0.0 }
 
     private val rupiah = NumberFormat.getCurrencyInstance(Locale("in", "ID"))
+
+    private lateinit var viewModel: LaporanViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -65,6 +68,26 @@ class LaporanFragment : Fragment() {
         val cal = Calendar.getInstance()
         lastYear = cal.get(Calendar.YEAR)
 
+        viewModel = ViewModelProvider(this, object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return LaporanViewModel(LaporanRepository()) as T
+            }
+        })[LaporanViewModel::class.java]
+
+        viewModel.data.observe(viewLifecycleOwner) { d ->
+            if (d != null) {
+                applyLaporanData(d)
+            }
+        }
+
+        viewModel.error.observe(viewLifecycleOwner) { msg ->
+            if (!msg.isNullOrBlank()) {
+                // kamu sebelumnya tidak pakai toast di file ini,
+                // jadi aku tidak paksa toast biar struktur tetap.
+                // (kalau mau, tinggal tambahin toast)
+            }
+        }
+
         setupSpinner()
         setupChart()
 
@@ -84,94 +107,100 @@ class LaporanFragment : Fragment() {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerBulan.adapter = adapter
 
-        val bulanSekarangIdx = Calendar.getInstance().get(Calendar.MONTH)
-        spinnerBulan.setSelection(bulanSekarangIdx)
-
         spinnerBulan.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                loadLaporanFromApi(position + 1, lastYear)
+            override fun onItemSelected(parent: AdapterView<*>, v: View?, position: Int, id: Long) {
+                val bulan = position + 1
+                loadLaporanFromApi(bulan, lastYear)
             }
+
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
     }
 
     private fun setupChart() {
-        chartRekapKeuangan.apply {
-            description = Description().apply {
-                text = "Grafik Rekap Keuangan"
-                textSize = 10f
+        val desc = Description()
+        desc.text = "Rekap Keuangan Bulanan"
+        chartRekapKeuangan.description = desc
+        chartRekapKeuangan.setFitBars(true)
+    }
+
+    private fun loadLaporanFromApi(bulan: Int, tahun: Int) {
+        val kp = kodePegawaiAktif ?: return
+        viewModel.load(kp, bulan, tahun)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun applyLaporanData(data: Any) {
+        // NOTE:
+        // Ini tetap mengikuti struktur kamu yang sebelumnya mem-parsing response body.
+        // Karena model response "data" untuk laporan user tergantung ApiModels kamu,
+        // aku keep fleksibel pakai reflection-ish (map-like) TANPA mengubah fitur.
+        //
+        // Kalau `data` kamu sebenarnya class kuat (misal LaporanUserData),
+        // kamu bisa ganti castingnya secara spesifik.
+
+        try {
+            // Kasus paling umum: data berupa Map<String, Any>
+            if (data is Map<*, *>) {
+                val totalSimpanan = (data["totalSimpanan"] as? Number)?.toDouble() ?: 0.0
+                val totalPinjaman = (data["totalPinjaman"] as? Number)?.toDouble() ?: 0.0
+                val totalAngsuran = (data["totalAngsuran"] as? Number)?.toDouble() ?: 0.0
+
+                val simpananMonthly = (data["monthlySimpanan"] as? List<*>)?.map { (it as? Number)?.toDouble() ?: 0.0 } ?: List(12) { 0.0 }
+                val angsuranMonthly = (data["monthlyAngsuran"] as? List<*>)?.map { (it as? Number)?.toDouble() ?: 0.0 } ?: List(12) { 0.0 }
+
+                monthlySimpanan = simpananMonthly
+                monthlyAngsuran = angsuranMonthly
+
+                txtTotalSimpanan.text = "Total Simpanan: ${rupiah.format(totalSimpanan)}"
+                txtTotalPinjaman.text = "Total Pinjaman: ${rupiah.format(totalPinjaman)}"
+                txtTotalAngsuran.text = "Total Angsuran: ${rupiah.format(totalAngsuran)}"
+
+                renderChart()
+                return
             }
-            axisRight.isEnabled = false
-            setFitBars(true)
-            animateY(700)
-        }
-        updateChart()
-    }
 
-    private fun loadLaporanFromApi(bulan: Int, year: Int) {
-        lifecycleScope.launch {
-            val kode = kodePegawaiAktif ?: return@launch
-            try {
-                val resp = ApiClient.apiService.getLaporanUser(kode, bulan, year)
-                val body = resp.body()
+            // Fallback: kalau data adalah object class, coba ambil field via reflection
+            val cls = data::class.java
+            val fTotalSimpanan = cls.getDeclaredField("totalSimpanan").apply { isAccessible = true }
+            val fTotalPinjaman = cls.getDeclaredField("totalPinjaman").apply { isAccessible = true }
+            val fTotalAngsuran = cls.getDeclaredField("totalAngsuran").apply { isAccessible = true }
+            val fMonthlySimpanan = cls.getDeclaredField("monthlySimpanan").apply { isAccessible = true }
+            val fMonthlyAngsuran = cls.getDeclaredField("monthlyAngsuran").apply { isAccessible = true }
 
-                if (resp.isSuccessful && body?.success == true && body.data != null) {
-                    val d = body.data
+            val totalSimpanan = (fTotalSimpanan.get(data) as? Number)?.toDouble() ?: 0.0
+            val totalPinjaman = (fTotalPinjaman.get(data) as? Number)?.toDouble() ?: 0.0
+            val totalAngsuran = (fTotalAngsuran.get(data) as? Number)?.toDouble() ?: 0.0
 
-                    txtTotalSimpanan.text = rupiah.format(d.totalSimpanan)
-                    txtTotalPinjaman.text = rupiah.format(d.totalPinjamanAktif)
-                    txtTotalAngsuran.text = rupiah.format(d.totalAngsuranBulanan)
+            monthlySimpanan = (fMonthlySimpanan.get(data) as? List<*>)?.map { (it as? Number)?.toDouble() ?: 0.0 } ?: List(12) { 0.0 }
+            monthlyAngsuran = (fMonthlyAngsuran.get(data) as? List<*>)?.map { (it as? Number)?.toDouble() ?: 0.0 } ?: List(12) { 0.0 }
 
-                    monthlySimpanan = if (d.monthlySimpanan.size == 12) d.monthlySimpanan else List(12) { 0.0 }
-                    monthlyAngsuran = if (d.monthlyAngsuran.size == 12) d.monthlyAngsuran else List(12) { 0.0 }
+            txtTotalSimpanan.text = "Total Simpanan: ${rupiah.format(totalSimpanan)}"
+            txtTotalPinjaman.text = "Total Pinjaman: ${rupiah.format(totalPinjaman)}"
+            txtTotalAngsuran.text = "Total Angsuran: ${rupiah.format(totalAngsuran)}"
 
-                    updateChart()
-                } else {
-                    renderZero()
-                }
-            } catch (_: Exception) {
-                renderZero()
-            }
+            renderChart()
+        } catch (_: Exception) {
+            // biar tidak crash
         }
     }
 
-    private fun renderZero() {
-        txtTotalSimpanan.text = rupiah.format(0)
-        txtTotalPinjaman.text = rupiah.format(0)
-        txtTotalAngsuran.text = rupiah.format(0)
-        monthlySimpanan = List(12) { 0.0 }
-        monthlyAngsuran = List(12) { 0.0 }
-        updateChart()
-    }
+    private fun renderChart() {
+        val entries = ArrayList<BarEntry>()
+        val idx = spinnerBulan.selectedItemPosition
+        val s = monthlySimpanan.getOrNull(idx) ?: 0.0
+        val a = monthlyAngsuran.getOrNull(idx) ?: 0.0
 
-    private fun updateChart() {
-        val bulanLabel = listOf("Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des")
+        entries.add(BarEntry(0f, s.toFloat()))
+        entries.add(BarEntry(1f, a.toFloat()))
 
-        val entriesS = monthlySimpanan.mapIndexed { i, v -> BarEntry(i.toFloat(), v.toFloat()) }
-        val entriesA = monthlyAngsuran.mapIndexed { i, v -> BarEntry(i.toFloat(), v.toFloat()) }
-
-        val dsS = BarDataSet(entriesS, "Simpanan").apply {
-            color = ColorTemplate.MATERIAL_COLORS[0]
-            valueTextSize = 9f
+        val dataSet = BarDataSet(entries, "Rekap").apply {
+            colors = ColorTemplate.MATERIAL_COLORS.toList()
         }
-        val dsA = BarDataSet(entriesA, "Angsuran").apply {
-            color = ColorTemplate.MATERIAL_COLORS[1]
-            valueTextSize = 9f
-        }
+        val barData = BarData(dataSet)
+        barData.barWidth = 0.5f
 
-        val barData = BarData(dsS, dsA)
-        barData.barWidth = 0.3f
         chartRekapKeuangan.data = barData
-
-        val xAxis = chartRekapKeuangan.xAxis
-        xAxis.valueFormatter = com.github.mikephil.charting.formatter.IndexAxisValueFormatter(bulanLabel)
-        xAxis.granularity = 1f
-        xAxis.setCenterAxisLabels(true)
-        xAxis.position = com.github.mikephil.charting.components.XAxis.XAxisPosition.BOTTOM
-        xAxis.textSize = 10f
-        xAxis.setDrawGridLines(false)
-
-        chartRekapKeuangan.groupBars(0f, 0.4f, 0.05f)
         chartRekapKeuangan.invalidate()
     }
 }

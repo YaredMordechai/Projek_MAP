@@ -53,6 +53,8 @@ class SimpananViewModel(
                     historiBody.data.orEmpty()
                 } else emptyList()
 
+
+
                 _state.value = _state.value?.copy(
                     loading = false,
                     totalSaldo = total,

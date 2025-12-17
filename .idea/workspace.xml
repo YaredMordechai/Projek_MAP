@@ -331,15 +331,35 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5824b786-6475-4c17-b6c2-ddb4b105cc34" name="Changes" comment="Update Pembayaran Simpanan dan Pinjaman">
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/data/SimpananRepository.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/viewmodels/KelolaSimpananViewModel.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/viewmodels/SimpananViewModel.kt" afterDir="false" />
+    <list default="true" id="5824b786-6475-4c17-b6c2-ddb4b105cc34" name="Changes" comment="Implements MVVM in SimpananFragment.kt, KelolaSimpananFragment.kt">
+      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/data/LaporanRepository.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/data/PengumumanRepository.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/data/ProfileRepository.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/viewmodels/LaporanViewModel.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/viewmodels/PengumumanViewModel.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/viewmodels/ProfileViewModel.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build/intermediates/apk/debug/app-debug.apk" beforeDir="false" afterPath="$PROJECT_DIR$/app/build/intermediates/apk/debug/app-debug.apk" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build/intermediates/dex/debug/mergeProjectDexDebug/12/classes.dex" beforeDir="false" afterPath="$PROJECT_DIR$/app/build/intermediates/dex/debug/mergeProjectDexDebug/12/classes.dex" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build/intermediates/dex/debug/mergeProjectDexDebug/15/classes.dex" beforeDir="false" afterPath="$PROJECT_DIR$/app/build/intermediates/dex/debug/mergeProjectDexDebug/15/classes.dex" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build/intermediates/dex/debug/mergeProjectDexDebug/3/classes.dex" beforeDir="false" afterPath="$PROJECT_DIR$/app/build/intermediates/dex/debug/mergeProjectDexDebug/3/classes.dex" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build/intermediates/incremental/packageDebug/tmp/debug/dex-renamer-state.txt" beforeDir="false" afterPath="$PROJECT_DIR$/app/build/intermediates/incremental/packageDebug/tmp/debug/dex-renamer-state.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build/intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/projek_map/api/KoperasiApiService.dex" beforeDir="false" afterPath="$PROJECT_DIR$/app/build/intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/projek_map/api/KoperasiApiService.dex" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build/intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/projek_map/ui/adapters/PengumumanAdapter.dex" beforeDir="false" afterPath="$PROJECT_DIR$/app/build/intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/projek_map/ui/adapters/PengumumanAdapter.dex" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build/intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/projek_map/ui/fragments/KelolaSimpananFragment$onCreateView$3.dex" beforeDir="false" afterPath="$PROJECT_DIR$/app/build/intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/projek_map/ui/fragments/KelolaSimpananFragment$onCreateView$3.dex" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build/intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/projek_map/ui/fragments/KelolaSimpananFragment.dex" beforeDir="false" afterPath="$PROJECT_DIR$/app/build/intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/projek_map/ui/fragments/KelolaSimpananFragment.dex" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build/intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/projek_map/ui/fragments/SimpananFragment.dex" beforeDir="false" afterPath="$PROJECT_DIR$/app/build/intermediates/project_dex_archive/debug/dexBuilderDebug/out/com/example/projek_map/ui/fragments/SimpananFragment.dex" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build/kotlin/compileDebugKotlin/local-state/build-history.bin" beforeDir="false" afterPath="$PROJECT_DIR$/app/build/kotlin/compileDebugKotlin/local-state/build-history.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/api/ApiModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/api/ApiModels.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/adapters/PengumumanAdapter.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/adapters/PengumumanAdapter.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/fragments/KelolaSimpananFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/fragments/KelolaSimpananFragment.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/fragments/SimpananFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/fragments/SimpananFragment.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/data/SimpananRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/data/SimpananRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/fragments/LaporanAdminFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/fragments/LaporanAdminFragment.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/fragments/LaporanFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/fragments/LaporanFragment.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/fragments/PengumumanFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/fragments/PengumumanFragment.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/fragments/ProfileFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/fragments/ProfileFragment.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/viewmodels/KelolaSimpananViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/viewmodels/KelolaSimpananViewModel.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/viewmodels/SimpananViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/projek_map/ui/viewmodels/SimpananViewModel.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/item_pengumuman.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/item_pengumuman.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -807,7 +827,15 @@
       <option name="project" value="LOCAL" />
       <updated>1765900672757</updated>
     </task>
-    <option name="localTasksCounter" value="36" />
+    <task id="LOCAL-00036" summary="Implements MVVM in SimpananFragment.kt, KelolaSimpananFragment.kt">
+      <option name="closed" value="true" />
+      <created>1765953394810</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1765953394810</updated>
+    </task>
+    <option name="localTasksCounter" value="37" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -822,7 +850,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Update DashboardFragment.kt (BLOM SELESAI)" />
     <MESSAGE value="Edit Dashboard, UI/UX dikit" />
     <MESSAGE value="NOTIFIKASI" />
     <MESSAGE value="Edit Notifikasi Dikit" />
@@ -847,19 +874,20 @@
     <MESSAGE value="Refactor PengumumanFragment.kt" />
     <MESSAGE value="Migrate PengumumanFragment.kt Database" />
     <MESSAGE value="Update Pembayaran Simpanan dan Pinjaman" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update Pembayaran Simpanan dan Pinjaman" />
+    <MESSAGE value="Implements MVVM in SimpananFragment.kt, KelolaSimpananFragment.kt" />
+    <option name="LAST_COMMIT_MESSAGE" value="Implements MVVM in SimpananFragment.kt, KelolaSimpananFragment.kt" />
   </component>
   <component name="play_dynamic_filters_status">
     <option name="appIdToCheckInfo">
       <map>
         <entry key="com.example.projek_map">
           <value>
-            <CheckInfo lastCheckTimestamp="1765865624148" />
+            <CheckInfo lastCheckTimestamp="1765954968342" />
           </value>
         </entry>
         <entry key="com.example.projek_map.test">
           <value>
-            <CheckInfo lastCheckTimestamp="1765865624123" />
+            <CheckInfo lastCheckTimestamp="1765954968340" />
           </value>
         </entry>
       </map>

@@ -57,9 +57,11 @@ class KelolaSimpananViewModel(
                 // 2) histori list
                 val historiResp = repo.getAllHistori()
                 val historiBody = historiResp.body()
-                val historiList: List<HistoriSimpanan> =
+
+                val historiList =
                     if (historiResp.isSuccessful && historiBody?.success == true) historiBody.data.orEmpty()
                     else emptyList()
+
 
                 val mappedHistori = historiList.map { h ->
                     TransaksiSimpanan(
@@ -106,6 +108,33 @@ class KelolaSimpananViewModel(
             }
         }
     }
+
+    fun loadHistoriByKode(kodePegawai: String) {
+        viewModelScope.launch {
+            try {
+                val resp = repo.getHistoriByKodePegawai(kodePegawai) // ini pakai getHistoriSimpanan(kodePegawai)
+                val body = resp.body()
+                val historiList = if (resp.isSuccessful && body?.success == true) body.data.orEmpty() else emptyList()
+
+                val mapped = historiList.map { h ->
+                    TransaksiSimpanan(
+                        id = h.id,
+                        kodePegawai = h.kodePegawai,
+                        jenis = extractJenis(h.jenis),
+                        jumlah = kotlin.math.abs(h.jumlah),
+                        tanggal = h.tanggal ?: ""
+                    )
+                }
+
+                // misalnya override list (tanpa pending)
+                _state.value = _state.value?.copy(list = mapped)
+
+            } catch (e: Exception) {
+                _state.value = _state.value?.copy(message = e.message ?: "Gagal load histori")
+            }
+        }
+    }
+
 
     fun decidePending(pendingId: Int, action: String) {
         viewModelScope.launch {
