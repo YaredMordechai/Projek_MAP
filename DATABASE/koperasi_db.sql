@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Dec 16, 2025 at 07:37 PM
+-- Generation Time: Dec 17, 2025 at 11:47 AM
 -- Server version: 8.0.30
 -- PHP Version: 8.1.10
 
@@ -56,6 +56,13 @@ CREATE TABLE `bukti_pembayaran_anggota` (
   `tanggal` date NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `bukti_pembayaran_anggota`
+--
+
+INSERT INTO `bukti_pembayaran_anggota` (`id`, `kodePegawai`, `uri`, `tanggal`) VALUES
+(1, 'EMP002', 'content://com.example.projek_map.fileprovider/cache_images/bukti_6519085491984063085.jpg', '2025-12-17');
+
 -- --------------------------------------------------------
 
 --
@@ -85,7 +92,13 @@ INSERT INTO `decision_notifications` (`id`, `kodePegawai`, `pinjamanId`, `decisi
 (6, 'EMP001', 9, 'disetujui', 410000, '2025-12-15', 1),
 (7, 'EMP003', 5, 'ditolak', 1000000, '2025-12-15', 1),
 (8, 'EMP003', 10, 'disetujui', 5000000, '2025-12-15', 1),
-(9, 'EMP003', 11, 'disetujui', 1000000000, '2025-12-16', 1);
+(9, 'EMP003', 11, 'disetujui', 1000000000, '2025-12-16', 1),
+(10, 'EMP002', 15, 'disetujui', 1400000, '2025-12-17', 0),
+(11, 'EMP003', 14, 'ditolak', 1100000, '2025-12-17', 0),
+(12, 'EMP003', 13, 'disetujui', 11000000, '2025-12-17', 0),
+(13, 'EMP001', 19, 'disetujui', 100000, '2025-12-17', 1),
+(14, 'EMP001', 18, 'disetujui', 5000000, '2025-12-17', 1),
+(15, 'EMP001', 17, 'ditolak', 10000000, '2025-12-17', 1);
 
 -- --------------------------------------------------------
 
@@ -128,7 +141,8 @@ INSERT INTO `histori_pembayaran` (`id`, `kodePegawai`, `pinjamanId`, `tanggal`, 
 (3, 'EMP001', 3, '2025-09-10', 200000, 'Belum Lunas', NULL),
 (4, 'EMP002', 2, '2025-07-05', 250000, 'Belum Lunas', NULL),
 (5, 'EMP001', 3, '2025-12-15', 120000, 'Dibayar (Admin)', NULL),
-(6, 'EMP001', 9, '2025-12-16', 70340, 'Menunggu Verifikasi', 'content://com.example.projek_map.fileprovider/pictures/IMG_BUKTI_20251216_211842.jpg');
+(6, 'EMP001', 9, '2025-12-16', 70340, 'Menunggu Verifikasi', 'content://com.example.projek_map.fileprovider/pictures/IMG_BUKTI_20251216_211842.jpg'),
+(7, 'EMP003', 10, '2025-12-17', 15000, 'Dibayar (User)', NULL);
 
 -- --------------------------------------------------------
 
@@ -252,8 +266,16 @@ INSERT INTO `pinjaman` (`id`, `kodePegawai`, `jumlah`, `tenor`, `status`, `appro
 (7, 'EMP001', 123456, 0, 'Ditolak', 'ADM001', '2025-12-15 05:02:47', NULL, 0.1000, 0),
 (8, 'EMP001', 123456, 0, 'Disetujui', 'ADM001', '2025-12-15 05:02:45', NULL, 0.1000, 0),
 (9, 'EMP001', 410000, 6, 'Disetujui', 'ADM001', '2025-12-15 13:45:07', NULL, 0.1000, 70340),
-(10, 'EMP003', 5000000, 12, 'Disetujui', 'ADM001', '2025-12-15 14:47:19', NULL, 0.1000, 0),
-(11, 'EMP003', 1000000000, 12, 'Disetujui', 'ADM001', '2025-12-16 10:01:11', NULL, 0.1000, 0);
+(10, 'EMP003', 5000000, 12, 'Disetujui', 'ADM001', '2025-12-15 14:47:19', NULL, 0.1000, 15000),
+(11, 'EMP003', 1000000000, 12, 'Disetujui', 'ADM001', '2025-12-16 10:01:11', NULL, 0.1000, 0),
+(12, 'EMP002', 1100000, 3, 'Disetujui', 'ADM001', '2025-12-17 08:16:25', NULL, 0.1000, 0),
+(13, 'EMP003', 11000000, 2, 'Disetujui', 'ADM001', '2025-12-17 11:19:01', NULL, 0.1000, 0),
+(14, 'EMP003', 1100000, 6, 'Ditolak', 'ADM001', '2025-12-17 11:18:48', NULL, 0.1000, 0),
+(15, 'EMP002', 1400000, 7, 'Disetujui', 'ADM001', '2025-12-17 11:18:44', NULL, 0.1000, 0),
+(16, 'EMP001', 1999000, 3, 'Ditolak', 'ADM001', '2025-12-17 11:01:46', NULL, 0.1000, 0),
+(17, 'EMP001', 10000000, 2, 'Ditolak', 'ADM001', '2025-12-17 11:43:12', NULL, 0.1000, 0),
+(18, 'EMP001', 5000000, 4, 'Disetujui', 'ADM001', '2025-12-17 11:43:09', NULL, 0.1000, 0),
+(19, 'EMP001', 100000, 7, 'Disetujui', 'ADM001', '2025-12-17 11:43:04', NULL, 0.1000, 0);
 
 -- --------------------------------------------------------
 
@@ -306,6 +328,14 @@ CREATE TABLE `pinjaman_rincian` (
   `angsuranDibayar` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `pinjaman_rincian`
+--
+
+INSERT INTO `pinjaman_rincian` (`pinjamanId`, `cicilanPerBulan`, `totalBunga`, `totalBayar`, `totalPokok`, `terbayar`, `sisaBayar`, `sisaPokok`, `angsuranDibayar`) VALUES
+(12, 403333, 110000, 1210000, 1100000, 0, 1210000, 1100000, 0),
+(16, 732967, 199900, 2198900, 1999000, 0, 2198900, 1999000, 0);
+
 -- --------------------------------------------------------
 
 --
@@ -347,8 +377,7 @@ INSERT INTO `simpanan` (`kodePegawai`, `simpananPokok`, `simpananWajib`, `simpan
 ('EMP001', 600000.00, 200000.00, 415000.00),
 ('EMP002', 500000.00, 250000.00, 471123.00),
 ('EMP003', 0.00, 0.00, 0.00),
-('EMP004', 100000.00, 0.00, 0.00),
-('EMP006', 0.00, 0.00, 0.00);
+('EMP004', 100000.00, 0.00, 0.00);
 
 -- --------------------------------------------------------
 
@@ -423,8 +452,7 @@ INSERT INTO `users` (`kodePegawai`, `email`, `password`, `nama`, `statusKeanggot
 ('EMP002', 'pegawai2@koperasi.com', '1234', 'Siti Aminah', 'Anggota Aktif'),
 ('EMP003', 'tommy@example.com', '1234', 'Tommy Viriya Irawan', 'Anggota Aktif'),
 ('EMP004', 'david@example.com', '1234', 'David Lin', 'Anggota Aktif'),
-('EMP005', 'kevynsus@gmail.com', '1234', 'Kevyn Susanto', 'Anggota Aktif'),
-('EMP006', 'kev@gmail.com', '1234', 'Kevyn Susanto Irawan', 'Anggota Aktif');
+('EMP005', 'kevynsus@gmail.com', '1234', 'Kevyn Susanto', 'Anggota Aktif');
 
 --
 -- Indexes for dumped tables
@@ -563,13 +591,13 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `bukti_pembayaran_anggota`
 --
 ALTER TABLE `bukti_pembayaran_anggota`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `decision_notifications`
 --
 ALTER TABLE `decision_notifications`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `due_reminders`
@@ -581,7 +609,7 @@ ALTER TABLE `due_reminders`
 -- AUTO_INCREMENT for table `histori_pembayaran`
 --
 ALTER TABLE `histori_pembayaran`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `histori_simpanan`
@@ -605,7 +633,7 @@ ALTER TABLE `pengumuman`
 -- AUTO_INCREMENT for table `pinjaman`
 --
 ALTER TABLE `pinjaman`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `pinjaman_angsuran_jadwal`

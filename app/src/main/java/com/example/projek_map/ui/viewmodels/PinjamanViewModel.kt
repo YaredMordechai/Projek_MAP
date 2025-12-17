@@ -22,6 +22,10 @@ class PinjamanViewModel : ViewModel() {
     private val _selesai = MutableLiveData<List<Pinjaman>>(emptyList())
     val selesai: LiveData<List<Pinjaman>> = _selesai
 
+    // ✅ tambahan: biar Fragment bisa cek perubahan status untuk notifikasi keputusan
+    private val _allPinjaman = MutableLiveData<List<Pinjaman>>(emptyList())
+    val allPinjaman: LiveData<List<Pinjaman>> = _allPinjaman
+
     private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> = _loading
 
@@ -48,6 +52,9 @@ class PinjamanViewModel : ViewModel() {
             }
 
             val list = res.data ?: emptyList()
+
+            // ✅ set list lengkap untuk kebutuhan notifikasi keputusan
+            _allPinjaman.value = list
 
             val p = mutableListOf<Pinjaman>()
             val a = mutableListOf<Pinjaman>()
