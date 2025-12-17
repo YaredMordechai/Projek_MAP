@@ -56,13 +56,16 @@ interface KoperasiApiService {
         @Body req: SimpananTransaksiRequest
     ): Response<ApiResponse<Simpanan?>>
 
+    // =========================
+// SIMPANAN PENDING (ADMIN VERIF)
+// =========================
     @GET("simpanan_pending_list.php")
     suspend fun getSimpananPending(): Response<ApiResponse<List<SimpananPending>>>
 
     @POST("simpanan_pending_decide.php")
     suspend fun decideSimpananPending(
         @Body req: SimpananPendingDecideRequest
-    ): Response<ApiResponse<Boolean>>
+    ): Response<ApiResponse<Any>>
 
 
     // =========================

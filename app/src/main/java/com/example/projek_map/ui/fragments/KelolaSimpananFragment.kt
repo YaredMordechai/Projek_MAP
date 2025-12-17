@@ -9,23 +9,21 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
-import com.example.projek_map.api.ApiClient
 import com.example.projek_map.api.SimpananPending
-import com.example.projek_map.api.SimpananPendingDecideRequest
 import com.example.projek_map.api.SimpananTransaksiRequest
-import com.example.projek_map.api.HistoriSimpanan
-import com.example.projek_map.api.Simpanan
+import com.example.projek_map.data.SimpananRepository
 import com.example.projek_map.api.TransaksiSimpanan
 import com.example.projek_map.ui.adapters.TransaksiSimpananAdapter
+import com.example.projek_map.ui.viewmodels.KelolaSimpananViewModel
 import com.google.android.material.button.MaterialButton
-import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
-import kotlin.math.abs
+import androidx.lifecycle.lifecycleScope
+
 
 class KelolaSimpananFragment : Fragment() {
 
@@ -45,13 +43,17 @@ class KelolaSimpananFragment : Fragment() {
     private val kodePegawaiOptions = mutableListOf<String>()
 
     private val rupiah by lazy {
-        NumberFormat.getCurrencyInstance(Locale("in", "ID"))
+        // ✅ fix deprecated Locale("in","ID")
+        NumberFormat.getCurrencyInstance(Locale("id", "ID"))
     }
-
-    private val api by lazy { ApiClient.apiService }
 
     // ✅ simpan mapping pendingId -> data pending (untuk approve/reject)
     private val pendingMap = mutableMapOf<Int, SimpananPending>()
+
+    // ===== MVVM =====
+    private val viewModel: KelolaSimpananViewModel by viewModels {
+        KelolaSimpananViewModel.Factory(SimpananRepository())
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -110,124 +112,40 @@ class KelolaSimpananFragment : Fragment() {
 
         btnTambah.setOnClickListener { showAddDialogAdmin() }
 
-        loadAllSimpananFromServer()
-        loadAllHistoriSimpananForList()
-        loadPendingSimpananForAdmin() // ✅ tambahan
+        observeVm()
+
+        // load awal
+        viewModel.loadAll()
 
         return view
     }
 
     override fun onResume() {
         super.onResume()
-        loadAllSimpananFromServer()
-        loadAllHistoriSimpananForList()
-        loadPendingSimpananForAdmin() // ✅ tambahan
+        viewModel.loadAll()
     }
 
-    private fun loadAllSimpananFromServer() {
-        lifecycleScope.launch {
-            try {
-                val resp = api.getAllSimpanan()
-                if (!resp.isSuccessful) {
-                    Toast.makeText(requireContext(), "HTTP ${resp.code()}", Toast.LENGTH_SHORT).show()
-                    return@launch
-                }
+    private fun observeVm() {
+        viewModel.state.observe(viewLifecycleOwner) { st ->
+            st.message?.let { Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show() }
 
-                val body = resp.body()
-                if (body?.success != true) {
-                    Toast.makeText(requireContext(), body?.message ?: "Gagal load simpanan", Toast.LENGTH_SHORT).show()
-                    return@launch
-                }
+            // header
+            tvTotalPokok.text = rupiah.format(st.header.totalPokok)
+            tvTotalWajib.text = rupiah.format(st.header.totalWajib)
+            tvTotalSukarela.text = rupiah.format(st.header.totalSukarela)
 
-                val list: List<Simpanan> = body.data.orEmpty()
+            kodePegawaiOptions.clear()
+            kodePegawaiOptions.addAll(st.header.kodePegawaiOptions)
 
-                kodePegawaiOptions.clear()
-                kodePegawaiOptions.addAll(list.map { it.kodePegawai }.distinct().sorted())
+            // pending map
+            pendingMap.clear()
+            pendingMap.putAll(st.pendingMap)
 
-                val totalPokokAll = list.sumOf { it.simpananPokok }
-                val totalWajibAll = list.sumOf { it.simpananWajib }
-                val totalSukarelaAll = list.sumOf { it.simpananSukarela }
+            // list
+            serverSourceList.clear()
+            serverSourceList.addAll(st.list)
 
-                tvTotalPokok.text = rupiah.format(totalPokokAll)
-                tvTotalWajib.text = rupiah.format(totalWajibAll)
-                tvTotalSukarela.text = rupiah.format(totalSukarelaAll)
-
-            } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    private fun loadAllHistoriSimpananForList() {
-        lifecycleScope.launch {
-            try {
-                val resp = api.getAllHistoriSimpanan()
-                if (!resp.isSuccessful) {
-                    Toast.makeText(requireContext(), "HTTP ${resp.code()}", Toast.LENGTH_SHORT).show()
-                    return@launch
-                }
-
-                val body = resp.body()
-                if (body?.success != true) {
-                    Toast.makeText(requireContext(), body?.message ?: "Gagal load histori", Toast.LENGTH_SHORT).show()
-                    return@launch
-                }
-
-                val list: List<HistoriSimpanan> = body.data.orEmpty()
-
-                val mapped = list.map { h ->
-                    TransaksiSimpanan(
-                        id = h.id,
-                        kodePegawai = h.kodePegawai,
-                        jenis = extractJenis(h.jenis),
-                        jumlah = abs(h.jumlah),
-                        tanggal = h.tanggal ?: ""
-                    )
-                }
-
-                // jangan clear displayList langsung; simpan di source
-                serverSourceList.removeAll { it.id > 0 } // ✅ bersihkan histori lama, tanpa hapus pending
-                serverSourceList.addAll(mapped)
-
-                applyFilterAndRefresh()
-
-            } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    // ✅ tambahan: load pending simpanan (menunggu verifikasi)
-    private fun loadPendingSimpananForAdmin() {
-        lifecycleScope.launch {
-            try {
-                val resp = api.getSimpananPending()
-                val body = resp.body()
-                if (!resp.isSuccessful || body?.success != true) return@launch
-
-                val pending = body.data.orEmpty()
-
-                pendingMap.clear()
-                pending.forEach { p -> pendingMap[p.id] = p }
-
-                // map pending jadi TransaksiSimpanan pakai ID NEGATIF supaya kebedain
-                val mappedPending = pending.map { p ->
-                    TransaksiSimpanan(
-                        id = -p.id,
-                        kodePegawai = p.kodePegawai,
-                        jenis = extractJenis(p.jenisInput) + " (Pending)",
-                        jumlah = abs(p.jumlah),
-                        tanggal = p.tanggal ?: ""
-                    )
-                }
-
-                // hapus pending lama lalu add lagi
-                serverSourceList.removeAll { it.id < 0 }
-                serverSourceList.addAll(mappedPending)
-
-                applyFilterAndRefresh()
-
-            } catch (_: Exception) { }
+            applyFilterAndRefresh()
         }
     }
 
@@ -262,7 +180,7 @@ class KelolaSimpananFragment : Fragment() {
         AlertDialog.Builder(requireContext())
             .setTitle("Approve?")
             .setMessage("Setujui transaksi pending #$pendingId?")
-            .setPositiveButton("Approve") { _, _ -> decidePending(pendingId, "approve") }
+            .setPositiveButton("Approve") { _, _ -> viewModel.decidePending(pendingId, "approve") }
             .setNegativeButton("Batal", null)
             .show()
     }
@@ -271,28 +189,9 @@ class KelolaSimpananFragment : Fragment() {
         AlertDialog.Builder(requireContext())
             .setTitle("Reject?")
             .setMessage("Tolak transaksi pending #$pendingId?")
-            .setPositiveButton("Reject") { _, _ -> decidePending(pendingId, "reject") }
+            .setPositiveButton("Reject") { _, _ -> viewModel.decidePending(pendingId, "reject") }
             .setNegativeButton("Batal", null)
             .show()
-    }
-
-    private fun decidePending(pendingId: Int, action: String) {
-        lifecycleScope.launch {
-            try {
-                val resp = api.decideSimpananPending(SimpananPendingDecideRequest(id = pendingId, action = action))
-                val body = resp.body()
-                if (resp.isSuccessful && body?.success == true) {
-                    Toast.makeText(requireContext(), "Berhasil: $action", Toast.LENGTH_SHORT).show()
-                    loadAllSimpananFromServer()
-                    loadAllHistoriSimpananForList()
-                    loadPendingSimpananForAdmin()
-                } else {
-                    Toast.makeText(requireContext(), body?.message ?: "Gagal: $action", Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
-        }
     }
 
     private fun showAddDialogAdmin() {
@@ -343,6 +242,8 @@ class KelolaSimpananFragment : Fragment() {
                     return@setPositiveButton
                 }
 
+                // NOTE: transaksi admin tetap pakai endpoint transaksi existing (fitur tidak berubah)
+                val repo = SimpananRepository()
                 val req = SimpananTransaksiRequest(
                     kodePegawai = kode,
                     jenisInput = "Simpanan $jenis",
@@ -350,15 +251,14 @@ class KelolaSimpananFragment : Fragment() {
                     keterangan = "-"
                 )
 
-                lifecycleScope.launch {
+                // tetap jalan seperti sebelumnya, lalu reload via VM
+                viewLifecycleOwner.lifecycleScope.launchWhenStarted {
                     try {
-                        val resp = api.simpananTransaksi(req)
+                        val resp = repo.transaksi(req)
                         val body = resp.body()
                         if (resp.isSuccessful && body?.success == true) {
                             Toast.makeText(requireContext(), "Berhasil", Toast.LENGTH_SHORT).show()
-                            loadAllSimpananFromServer()
-                            loadAllHistoriSimpananForList()
-                            loadPendingSimpananForAdmin()
+                            viewModel.loadAll()
                         } else {
                             Toast.makeText(requireContext(), body?.message ?: "Gagal", Toast.LENGTH_SHORT).show()
                         }
@@ -377,7 +277,10 @@ class KelolaSimpananFragment : Fragment() {
         val filtered = if (selected == "Semua") {
             serverSourceList
         } else {
-            serverSourceList.filter { it.jenis.equals(selected, true) }
+            serverSourceList.filter {
+                // pending punya "Pokok (Pending)" dll, jadi pakai contains supaya filter tetap jalan
+                it.jenis.contains(selected, ignoreCase = true)
+            }
         }
 
         displayList.clear()
@@ -386,14 +289,5 @@ class KelolaSimpananFragment : Fragment() {
 
         tvEmptyState.visibility = if (displayList.isEmpty()) View.VISIBLE else View.GONE
         rvTransaksi.visibility = if (displayList.isEmpty()) View.GONE else View.VISIBLE
-    }
-
-    private fun extractJenis(jenisHistori: String): String {
-        val s = jenisHistori.lowercase()
-        return when {
-            "pokok" in s -> "Pokok"
-            "wajib" in s -> "Wajib"
-            else -> "Sukarela"
-        }
     }
 }

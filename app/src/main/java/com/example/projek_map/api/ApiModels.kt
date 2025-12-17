@@ -238,21 +238,24 @@ data class LabaRugiResponse(
     val data: LabaRugiData?
 )
 
+// =========================
+// SIMPANAN PENDING (ADMIN VERIF)
+// =========================
 data class SimpananPending(
     val id: Int,
     val kodePegawai: String,
     val jenisInput: String,
     val jumlah: Double,
-    val keterangan: String?,
-    val tanggal: String?,
-    val statusVerifikasi: String?,
-    val buktiUrl: String?
+    val tanggal: String? = null,
+    val statusVerifikasi: String? = null,
+    val buktiUrl: String? = null
 )
 
 data class SimpananPendingDecideRequest(
     val id: Int,
-    val action: String // "approve" / "reject"
+    val action: String // "approve" | "reject"
 )
+
 
 data class User(
     val kodePegawai: String,

@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
 import com.example.projek_map.api.Pengumuman
 
-private class PengumumanAdapter(
+class PengumumanAdapter(
     private val items: List<Pengumuman>,
     private val isAdmin: Boolean,
     private val onEdit: (Pengumuman) -> Unit,
