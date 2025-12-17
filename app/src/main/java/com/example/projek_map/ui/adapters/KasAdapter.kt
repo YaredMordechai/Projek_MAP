@@ -8,7 +8,7 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
 import com.example.projek_map.api.KasTransaksi
- // <-- ini akan resolve karena typealias
+// <-- ini akan resolve karena typealias
 import java.text.NumberFormat
 import java.util.Locale
 

@@ -9,19 +9,15 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
-import com.example.projek_map.api.AddHistoriPembayaranRequest
-import com.example.projek_map.api.ApiClient
 import com.example.projek_map.api.HistoriPembayaran
 import com.example.projek_map.ui.adapters.HistoriPembayaranAdapter
+import com.example.projek_map.ui.viewmodels.KelolaPembayaranAngsuranViewModel
 import com.google.android.material.button.MaterialButton
-import kotlinx.coroutines.launch
 import java.text.NumberFormat
-import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 
 class KelolaPembayaranAngsuranFragment : Fragment() {
@@ -34,6 +30,8 @@ class KelolaPembayaranAngsuranFragment : Fragment() {
     // List tampilan (bisa dimodifikasi lalu notifyDataSetChanged)
     private val display = mutableListOf<HistoriPembayaran>()
     private val rupiah = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
+
+    private val viewModel: KelolaPembayaranAngsuranViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -52,7 +50,9 @@ class KelolaPembayaranAngsuranFragment : Fragment() {
 
         btnCatat.setOnClickListener { showCatatDialog() }
 
+        setupObservers()
         refresh()
+
         return v
     }
 
@@ -61,33 +61,28 @@ class KelolaPembayaranAngsuranFragment : Fragment() {
         refresh()
     }
 
-    private fun refresh() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            try {
-                // ambil semua histori pembayaran (admin)
-                val resp = ApiClient.apiService.getHistoriPembayaranAdmin()
+    private fun setupObservers() {
+        viewModel.historiList.observe(viewLifecycleOwner) { list ->
+            val sorted = (list ?: emptyList()).sortedByDescending { it.tanggal }
 
-                if (resp.isSuccessful && resp.body()?.success == true) {
-                    val list = (resp.body()?.data ?: emptyList())
-                        .sortedByDescending { it.tanggal }
+            display.clear()
+            display.addAll(sorted)
+            adapter.notifyDataSetChanged()
 
-                    display.clear()
-                    display.addAll(list)
-                    adapter.notifyDataSetChanged()
+            tvEmpty.visibility = if (display.isEmpty()) View.VISIBLE else View.GONE
+            rvHistori.visibility = if (display.isEmpty()) View.GONE else View.VISIBLE
+        }
 
-                    tvEmpty.visibility = if (display.isEmpty()) View.VISIBLE else View.GONE
-                    rvHistori.visibility = if (display.isEmpty()) View.GONE else View.VISIBLE
-                } else {
-                    Toast.makeText(
-                        requireContext(),
-                        resp.body()?.message ?: "Gagal ambil histori pembayaran",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Server error: ${e.message}", Toast.LENGTH_SHORT).show()
+        viewModel.toast.observe(viewLifecycleOwner) { msg ->
+            if (!msg.isNullOrBlank()) {
+                Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+                viewModel.clearToast()
             }
         }
+    }
+
+    private fun refresh() {
+        viewModel.refresh()
     }
 
     private fun showCatatDialog() {
@@ -111,35 +106,11 @@ class KelolaPembayaranAngsuranFragment : Fragment() {
                     return@setPositiveButton
                 }
 
-                viewLifecycleOwner.lifecycleScope.launch {
-                    try {
-                        val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
-
-                        val resp = ApiClient.apiService.addHistoriPembayaran(
-                            AddHistoriPembayaranRequest(
-                                kodePegawai = kode,
-                                pinjamanId = pinjamanId,
-                                tanggal = today,
-                                jumlah = jumlah,
-                                status = "Dibayar (Admin)",
-                                buktiPembayaranUri = null
-                            )
-                        )
-
-                        if (resp.isSuccessful && resp.body()?.success == true) {
-                            refresh()
-                            Toast.makeText(requireContext(), "Pembayaran dicatat.", Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(
-                                requireContext(),
-                                resp.body()?.message ?: "Gagal menyimpan pembayaran",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    } catch (e: Exception) {
-                        Toast.makeText(requireContext(), "Server error: ${e.message}", Toast.LENGTH_SHORT).show()
-                    }
-                }
+                viewModel.catatPembayaranAdmin(
+                    kodePegawai = kode,
+                    pinjamanId = pinjamanId,
+                    jumlah = jumlah
+                )
             }
             .setNegativeButton("Batal", null)
             .show()

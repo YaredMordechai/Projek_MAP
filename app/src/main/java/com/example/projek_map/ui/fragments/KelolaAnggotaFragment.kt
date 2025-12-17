@@ -8,19 +8,22 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
 import com.example.projek_map.api.ApiClient
 import com.example.projek_map.api.AddUserRequest
-import com.example.projek_map.api.UpdateUserRequest
-import com.example.projek_map.api.SetUserStatusRequest
 import com.example.projek_map.api.DeleteUserRequest
+import com.example.projek_map.api.SetUserStatusRequest
+import com.example.projek_map.api.UpdateUserRequest
 import com.example.projek_map.api.User
+import com.example.projek_map.data.AnggotaRepository
 import com.example.projek_map.ui.adapters.AnggotaAdapter
+import com.example.projek_map.ui.viewmodels.AnggotaAction
+import com.example.projek_map.ui.viewmodels.KelolaAnggotaViewModel
 import com.google.android.material.button.MaterialButton
-import kotlinx.coroutines.launch
 
 class KelolaAnggotaFragment : Fragment() {
 
@@ -28,8 +31,15 @@ class KelolaAnggotaFragment : Fragment() {
     private lateinit var btnTambahAnggota: MaterialButton
     private lateinit var adapter: AnggotaAdapter
 
-    private val api = ApiClient.apiService
+    // MVVM: data list tetap ada di Fragment biar struktur kamu sama,
+    // tapi sumber kebenarannya dari ViewModel (observer).
     private val anggotaList = mutableListOf<User>()
+
+    private lateinit var viewModel: KelolaAnggotaViewModel
+
+    // buat dismiss dialog hanya saat sukses (sesuai perilaku kamu sebelumnya)
+    private var pendingDialog: AlertDialog? = null
+    private var pendingDialogAction: AnggotaAction? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -49,6 +59,24 @@ class KelolaAnggotaFragment : Fragment() {
         )
         rvAnggota.adapter = adapter
 
+        // init ViewModel (tanpa “framework injection”, biar simpel dan nggak drama)
+        val api = ApiClient.apiService
+        val repo = AnggotaRepository(api)
+        viewModel = ViewModelProvider(
+            this,
+            object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    if (modelClass.isAssignableFrom(KelolaAnggotaViewModel::class.java)) {
+                        @Suppress("UNCHECKED_CAST")
+                        return KelolaAnggotaViewModel(repo) as T
+                    }
+                    throw IllegalArgumentException("Unknown ViewModel class")
+                }
+            }
+        )[KelolaAnggotaViewModel::class.java]
+
+        setupObservers()
+
         btnTambahAnggota.setOnClickListener { showAddDialog() }
 
         return view
@@ -59,22 +87,28 @@ class KelolaAnggotaFragment : Fragment() {
         loadAnggota()
     }
 
-    private fun loadAnggota() {
-        lifecycleScope.launch {
-            try {
-                val res = api.getAllUsers()
-                if (res.isSuccessful && res.body()?.success == true) {
-                    val data = res.body()?.data.orEmpty()
-                    anggotaList.clear()
-                    anggotaList.addAll(data)
-                    adapter.refreshData(anggotaList)
-                } else {
-                    Toast.makeText(requireContext(), res.body()?.message ?: "Gagal memuat anggota", Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+    private fun setupObservers() {
+        viewModel.anggotaList.observe(viewLifecycleOwner) { data ->
+            anggotaList.clear()
+            anggotaList.addAll(data.orEmpty())
+            adapter.refreshData(anggotaList)
+        }
+
+        viewModel.actionResult.observe(viewLifecycleOwner) { event ->
+            val result = event.getContentIfNotHandled() ?: return@observe
+            Toast.makeText(requireContext(), result.message, Toast.LENGTH_SHORT).show()
+
+            // kalau sedang ada dialog add/edit, dismiss hanya kalau sukses dan aksinya match
+            if (result.success && pendingDialog != null && pendingDialogAction == result.action) {
+                pendingDialog?.dismiss()
+                pendingDialog = null
+                pendingDialogAction = null
             }
         }
+    }
+
+    private fun loadAnggota() {
+        viewModel.loadAnggota()
     }
 
     private fun showAddDialog() {
@@ -100,28 +134,20 @@ class KelolaAnggotaFragment : Fragment() {
                         }
 
                         val nextKode = generateNextKode(anggotaList)
-                        lifecycleScope.launch {
-                            try {
-                                val res = api.addUser(
-                                    AddUserRequest(
-                                        kodePegawai = nextKode,
-                                        nama = nama,
-                                        email = email,
-                                        password = "1234",
-                                        statusKeanggotaan = "Anggota Aktif"
-                                    )
-                                )
-                                if (res.isSuccessful && res.body()?.success == true) {
-                                    Toast.makeText(requireContext(), "Anggota ditambahkan", Toast.LENGTH_SHORT).show()
-                                    dialog.dismiss()
-                                    loadAnggota()
-                                } else {
-                                    Toast.makeText(requireContext(), res.body()?.message ?: "Gagal tambah anggota", Toast.LENGTH_SHORT).show()
-                                }
-                            } catch (e: Exception) {
-                                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-                            }
-                        }
+
+                        // tandai dialog ini untuk di-dismiss kalau sukses ADD
+                        pendingDialog = dialog
+                        pendingDialogAction = AnggotaAction.ADD
+
+                        viewModel.addUser(
+                            AddUserRequest(
+                                kodePegawai = nextKode,
+                                nama = nama,
+                                email = email,
+                                password = "1234",
+                                statusKeanggotaan = "Anggota Aktif"
+                            )
+                        )
                     }
                 }
                 dialog.show()
@@ -153,26 +179,16 @@ class KelolaAnggotaFragment : Fragment() {
                             return@setOnClickListener
                         }
 
-                        lifecycleScope.launch {
-                            try {
-                                val res = api.updateUser(
-                                    UpdateUserRequest(
-                                        kodePegawai = user.kodePegawai,
-                                        nama = newNama,
-                                        email = newEmail
-                                    )
-                                )
-                                if (res.isSuccessful && res.body()?.success == true) {
-                                    Toast.makeText(requireContext(), "Data diperbarui", Toast.LENGTH_SHORT).show()
-                                    dialog.dismiss()
-                                    loadAnggota()
-                                } else {
-                                    Toast.makeText(requireContext(), res.body()?.message ?: "Gagal update", Toast.LENGTH_SHORT).show()
-                                }
-                            } catch (e: Exception) {
-                                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-                            }
-                        }
+                        pendingDialog = dialog
+                        pendingDialogAction = AnggotaAction.UPDATE
+
+                        viewModel.updateUser(
+                            UpdateUserRequest(
+                                kodePegawai = user.kodePegawai,
+                                nama = newNama,
+                                email = newEmail
+                            )
+                        )
                     }
                 }
                 dialog.show()
@@ -196,43 +212,19 @@ class KelolaAnggotaFragment : Fragment() {
     }
 
     private fun setStatusUser(user: User, status: String) {
-        lifecycleScope.launch {
-            try {
-                val res = api.setUserStatus(
-                    SetUserStatusRequest(
-                        kodePegawai = user.kodePegawai,
-                        statusKeanggotaan = status
-                    )
-                )
-                if (res.isSuccessful && res.body()?.success == true) {
-                    Toast.makeText(requireContext(), "Status diubah: $status", Toast.LENGTH_SHORT).show()
-                    loadAnggota()
-                } else {
-                    Toast.makeText(requireContext(), res.body()?.message ?: "Gagal ubah status", Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
-        }
+        viewModel.setStatusUser(
+            SetUserStatusRequest(
+                kodePegawai = user.kodePegawai,
+                statusKeanggotaan = status
+            )
+        )
     }
 
     private fun deleteUser(user: User) {
-        lifecycleScope.launch {
-            try {
-                val res = api.deleteUser(DeleteUserRequest(kodePegawai = user.kodePegawai))
-                if (res.isSuccessful && res.body()?.success == true) {
-                    Toast.makeText(requireContext(), "Anggota dihapus", Toast.LENGTH_SHORT).show()
-                    loadAnggota()
-                } else {
-                    Toast.makeText(requireContext(), res.body()?.message ?: "Gagal hapus", Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
-        }
+        viewModel.deleteUser(DeleteUserRequest(kodePegawai = user.kodePegawai))
     }
 
-    // bikin kode EMPxxx berdasarkan max existing
+    // bikin kode EMPxxx berdasarkan max existing (tetap kamu punya di Fragment)
     private fun generateNextKode(list: List<User>): String {
         var maxNum = 0
         for (u in list) {

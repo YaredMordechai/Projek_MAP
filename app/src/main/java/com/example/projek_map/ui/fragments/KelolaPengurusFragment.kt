@@ -7,18 +7,16 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
-import com.example.projek_map.api.ApiClient
-import com.example.projek_map.api.SettingsUpdateRequest
 import com.example.projek_map.api.Pinjaman
 import com.example.projek_map.ui.adapters.PinjamanAdapter
+import com.example.projek_map.ui.viewmodels.KelolaPengurusViewModel
 import com.google.android.material.button.MaterialButton
-import kotlinx.coroutines.launch
 
-class   KelolaPengurusFragment : Fragment() {
+class KelolaPengurusFragment : Fragment() {
 
     private lateinit var inputBunga: EditText
     private lateinit var inputDenda: EditText
@@ -31,6 +29,8 @@ class   KelolaPengurusFragment : Fragment() {
 
     private val listAktif = mutableListOf<Pinjaman>()
     private val listLunas = mutableListOf<Pinjaman>()
+
+    private val viewModel: KelolaPengurusViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -55,7 +55,9 @@ class   KelolaPengurusFragment : Fragment() {
 
         btnSimpanBunga.setOnClickListener { simpanPengaturan() }
 
-        // load awal
+        setupObservers()
+
+        // load awal (struktur tetap)
         refreshSettings()
         refreshPinjaman()
 
@@ -68,60 +70,41 @@ class   KelolaPengurusFragment : Fragment() {
         refreshSettings()
     }
 
-    private fun refreshPinjaman() {
-        lifecycleScope.launch {
-            try {
-                val resp = ApiClient.apiService.getAllPinjaman()
-                val body = resp.body()
+    private fun setupObservers() {
+        viewModel.pinjamanAktif.observe(viewLifecycleOwner) { data ->
+            listAktif.clear()
+            listAktif.addAll(data ?: emptyList())
+            adapterAktif.notifyDataSetChanged()
+        }
 
-                if (!resp.isSuccessful || body?.success != true) {
-                    toast(body?.message ?: "Gagal memuat pinjaman")
-                    return@launch
-                }
+        viewModel.pinjamanLunas.observe(viewLifecycleOwner) { data ->
+            listLunas.clear()
+            listLunas.addAll(data ?: emptyList())
+            adapterLunas.notifyDataSetChanged()
+        }
 
-                val all = body.data ?: emptyList()
-
-                listAktif.clear()
-                listLunas.clear()
-
-                all.forEach { p ->
-                    when (p.status.lowercase()) {
-                        "disetujui", "aktif", "proses", "menunggu" -> listAktif.add(p)
-                        "lunas", "selesai" -> listLunas.add(p)
-                        else -> listAktif.add(p)
-                    }
-                }
-
-                adapterAktif.notifyDataSetChanged()
-                adapterLunas.notifyDataSetChanged()
-
-            } catch (e: Exception) {
-                toast("Error: ${e.message}")
+        viewModel.settingsPair.observe(viewLifecycleOwner) { pair ->
+            if (pair != null) {
+                inputBunga.setText(pair.first.toString())
+                inputDenda.setText(pair.second.toString())
             }
+        }
+
+        viewModel.isSaving.observe(viewLifecycleOwner) { saving ->
+            btnSimpanBunga.isEnabled = !saving
+        }
+
+        viewModel.toast.observe(viewLifecycleOwner) { msg ->
+            if (!msg.isNullOrBlank()) toast(msg)
         }
     }
 
+    private fun refreshPinjaman() {
+        viewModel.refreshPinjaman()
+    }
+
     private fun refreshSettings() {
-        lifecycleScope.launch {
-            try {
-                val resp = ApiClient.apiService.getSettings()
-                val body = resp.body()
-
-                if (!resp.isSuccessful || body?.success != true) {
-                    // gak usah toast terus2an kalau endpoint belum ada
-                    return@launch
-                }
-
-                val s = body.data
-                if (s != null) {
-                    inputBunga.setText(s.bungaPersen.toString())
-                    inputDenda.setText(s.dendaPersenPerHari.toString())
-                }
-
-            } catch (_: Exception) {
-                // silent biar gak spam
-            }
-        }
+        viewModel.refreshSettings()
     }
 
     private fun simpanPengaturan() {
@@ -133,32 +116,7 @@ class   KelolaPengurusFragment : Fragment() {
             return
         }
 
-        lifecycleScope.launch {
-            try {
-                btnSimpanBunga.isEnabled = false
-
-                val resp = ApiClient.apiService.updateSettings(
-                    SettingsUpdateRequest(
-                        bungaPersen = bunga,
-                        dendaPersenPerHari = denda
-                    )
-                )
-                val body = resp.body()
-
-                btnSimpanBunga.isEnabled = true
-
-                if (!resp.isSuccessful || body?.success != true) {
-                    toast(body?.message ?: "Gagal simpan pengaturan")
-                    return@launch
-                }
-
-                toast("Suku bunga & denda berhasil diperbarui.")
-
-            } catch (e: Exception) {
-                btnSimpanBunga.isEnabled = true
-                toast("Error: ${e.message}")
-            }
-        }
+        viewModel.simpanPengaturan(bunga = bunga, denda = denda)
     }
 
     private fun toast(msg: String) {
