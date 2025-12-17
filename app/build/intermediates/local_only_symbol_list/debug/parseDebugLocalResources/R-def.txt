@@ -82,6 +82,7 @@ id btnLabaBersih
 id btnLabaRugi
 id btnLogin
 id btnLogout
+id btnPredict
 id btnReject
 id btnReset
 id btnSetor
@@ -99,6 +100,7 @@ id cardGrafikRekap
 id cardKas
 id cardLaporan
 id cardLaporanAdmin
+id cardML
 id cardPinjaman
 id cardProfil
 id cardSimpanan
@@ -115,6 +117,7 @@ id etEmail
 id etFilterCari
 id etFilterDari
 id etFilterSampai
+id etInput
 id etIsi
 id etJudul
 id etJumlah
@@ -209,6 +212,7 @@ id tvNama
 id tvNamaAnggota
 id tvNamaPemohon
 id tvNamaUser
+id tvOutput
 id tvPeriode
 id tvPokok
 id tvSaldoKas
@@ -275,6 +279,7 @@ layout fragment_pinjaman
 layout fragment_pinjaman_detail
 layout fragment_profil
 layout fragment_simpanan
+layout fragment_smart_ml
 layout item_anggota
 layout item_anggota_summary
 layout item_angsuran

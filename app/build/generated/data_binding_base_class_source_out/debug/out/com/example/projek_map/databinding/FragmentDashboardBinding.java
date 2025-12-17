@@ -40,6 +40,9 @@ public final class FragmentDashboardBinding implements ViewBinding {
   public final CardView cardLaporanAdmin;
 
   @NonNull
+  public final CardView cardML;
+
+  @NonNull
   public final CardView cardPinjaman;
 
   @NonNull
@@ -69,15 +72,17 @@ public final class FragmentDashboardBinding implements ViewBinding {
   private FragmentDashboardBinding(@NonNull ScrollView rootView,
       @NonNull MaterialButton btnKirimPengumuman, @NonNull CardView cardGrafikKeuangan,
       @NonNull CardView cardKas, @NonNull CardView cardLaporan, @NonNull CardView cardLaporanAdmin,
-      @NonNull CardView cardPinjaman, @NonNull CardView cardProfil, @NonNull CardView cardSimpanan,
-      @NonNull LineChart chartKeuangan, @NonNull GridLayout gridMenu, @NonNull ImageView imgProfile,
-      @NonNull TextView tvKasTitle, @NonNull TextView tvUserId, @NonNull TextView tvWelcome) {
+      @NonNull CardView cardML, @NonNull CardView cardPinjaman, @NonNull CardView cardProfil,
+      @NonNull CardView cardSimpanan, @NonNull LineChart chartKeuangan,
+      @NonNull GridLayout gridMenu, @NonNull ImageView imgProfile, @NonNull TextView tvKasTitle,
+      @NonNull TextView tvUserId, @NonNull TextView tvWelcome) {
     this.rootView = rootView;
     this.btnKirimPengumuman = btnKirimPengumuman;
     this.cardGrafikKeuangan = cardGrafikKeuangan;
     this.cardKas = cardKas;
     this.cardLaporan = cardLaporan;
     this.cardLaporanAdmin = cardLaporanAdmin;
+    this.cardML = cardML;
     this.cardPinjaman = cardPinjaman;
     this.cardProfil = cardProfil;
     this.cardSimpanan = cardSimpanan;
@@ -146,6 +151,12 @@ public final class FragmentDashboardBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.cardML;
+      CardView cardML = ViewBindings.findChildViewById(rootView, id);
+      if (cardML == null) {
+        break missingId;
+      }
+
       id = R.id.cardPinjaman;
       CardView cardPinjaman = ViewBindings.findChildViewById(rootView, id);
       if (cardPinjaman == null) {
@@ -201,8 +212,9 @@ public final class FragmentDashboardBinding implements ViewBinding {
       }
 
       return new FragmentDashboardBinding((ScrollView) rootView, btnKirimPengumuman,
-          cardGrafikKeuangan, cardKas, cardLaporan, cardLaporanAdmin, cardPinjaman, cardProfil,
-          cardSimpanan, chartKeuangan, gridMenu, imgProfile, tvKasTitle, tvUserId, tvWelcome);
+          cardGrafikKeuangan, cardKas, cardLaporan, cardLaporanAdmin, cardML, cardPinjaman,
+          cardProfil, cardSimpanan, chartKeuangan, gridMenu, imgProfile, tvKasTitle, tvUserId,
+          tvWelcome);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

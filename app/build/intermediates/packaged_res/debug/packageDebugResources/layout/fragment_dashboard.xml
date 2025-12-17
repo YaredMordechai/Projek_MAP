@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!-- Foto Profil -->
+        <!-- Foto Profil (atas). Kamu boleh biarin ini tetap profil/ikon -->
         <ImageView
             android:id="@+id/imgProfile"
             android:layout_width="130dp"
@@ -43,7 +43,7 @@
             android:textSize="14sp"
             android:layout_marginBottom="24dp" />
 
-        <!-- 🔽 Grafik Perkembangan Simpanan & Pinjaman -->
+        <!-- Grafik -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cardGrafikKeuangan"
             android:layout_width="match_parent"
@@ -73,6 +73,16 @@
                     android:id="@+id/chartKeuangan"
                     android:layout_width="match_parent"
                     android:layout_height="220dp"/>
+
+                <!-- Ini sebelumnya "Profil Pengguna" di bawah chart, aku ubah biar nyambung -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Ringkasan"
+                    android:textColor="@color/green_900"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -123,7 +133,7 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Item 2 -->
+            <!-- Item 2: Profil (USER akan diganti ML, ADMIN tetap kelola pengguna) -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardProfil"
                 android:layout_width="0dp"
@@ -226,8 +236,7 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Item 5 — Kelola Kas -->
-          <!--  VERSI B: SETENGAH LEBAR (1 kolom) — jika kamu ingin sejajar dengan kartu lain-->
+            <!-- Item 5: Kelola Kas (admin) -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardKas"
                 android:layout_width="0dp"
@@ -263,8 +272,7 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Item 6 -->
-            <!-- Card: Laporan Koperasi (khusus Admin) -->
+            <!-- Item 6: Laporan Koperasi (admin) -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardLaporanAdmin"
                 android:layout_width="0dp"
@@ -299,6 +307,40 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
+            <!-- Item 7: Smart ML (BARU) - hanya ADMIN tampil -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardML"
+                android:layout_width="0dp"
+                android:layout_height="140dp"
+                android:layout_margin="8dp"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="6dp"
+                app:cardBackgroundColor="@color/green_100">
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <ImageView
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:src="@drawable/ic_laporan"
+                        app:tint="@color/green_800" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Smart ML"
+                        android:textColor="@color/green_900"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="8dp" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
 
         </GridLayout>
 

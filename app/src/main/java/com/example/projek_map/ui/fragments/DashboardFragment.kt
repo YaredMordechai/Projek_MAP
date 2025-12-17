@@ -25,7 +25,6 @@ import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.utils.ColorTemplate
 import kotlinx.coroutines.launch
 import java.util.Calendar
-import android.view.ViewGroup as AndroidViewGroup
 
 class DashboardFragment : Fragment() {
 
@@ -52,15 +51,16 @@ class DashboardFragment : Fragment() {
         val cardPinjaman = view.findViewById<CardView>(R.id.cardPinjaman)
         val cardLaporan = view.findViewById<CardView>(R.id.cardLaporan)
         val cardProfil = view.findViewById<CardView>(R.id.cardProfil)
-        chartKeuangan = view.findViewById(R.id.chartKeuangan)
         val cardKas = view.findViewById<CardView>(R.id.cardKas)
         val cardLaporanAdmin = view.findViewById<CardView>(R.id.cardLaporanAdmin)
+        val cardML = view.findViewById<CardView>(R.id.cardML)
+
+        chartKeuangan = view.findViewById(R.id.chartKeuangan)
 
         val pref = PrefManager(requireContext())
         val kodePegawai = pref.getKodePegawai().orEmpty()
-        val nama = pref.getUserName().orEmpty()   // ✅ BUKAN getNama()
+        val nama = pref.getUserName().orEmpty()
 
-        // ====== Header greeting ======
         if (isAdmin) {
             tvWelcome.text = "Halo, Admin"
             tvUserId.text = ""
@@ -114,8 +114,11 @@ class DashboardFragment : Fragment() {
                 .commit()
         }
 
+        // ====== PROFIL / ML sesuai role ======
         val profilTitleView = findFirstTextView(cardProfil)
+
         if (isAdmin) {
+            // ADMIN: cardProfil tetap Kelola Pengguna/Anggota
             profilTitleView?.text = "Kelola Pengguna"
             cardProfil.setOnClickListener {
                 val fragment = KelolaAnggotaFragment().apply {
@@ -126,17 +129,28 @@ class DashboardFragment : Fragment() {
                     .addToBackStack(null)
                     .commit()
             }
-        } else {
-            profilTitleView?.text = "Profil Pengguna"
-            cardProfil.setOnClickListener {
-                val fragment = ProfileFragment().apply {
-                    arguments = (arguments ?: Bundle()).apply { putBoolean("isAdmin", false) }
-                }
+
+            // ADMIN: cardML tampil untuk Smart ML
+            cardML.visibility = View.VISIBLE
+            setCardTitle(cardML, "Smart ML")
+            cardML.setOnClickListener {
                 parentFragmentManager.beginTransaction()
-                    .replace(R.id.fragmentContainer, fragment)
+                    .replace(R.id.fragmentContainer, SmartMlFragment())
                     .addToBackStack(null)
                     .commit()
             }
+        } else {
+            // USER: cardProfil diganti jadi Smart ML
+            profilTitleView?.text = "Smart ML"
+            cardProfil.setOnClickListener {
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragmentContainer, SmartMlFragment())
+                    .addToBackStack(null)
+                    .commit()
+            }
+
+            // USER: cardML disembunyikan
+            cardML.visibility = View.GONE
         }
 
         // ====== Card admin khusus ======
@@ -163,7 +177,7 @@ class DashboardFragment : Fragment() {
             cardLaporanAdmin.visibility = View.GONE
         }
 
-        // 🔔 Jadwal notifikasi jatuh tempo (fitur lama tetap dipertahankan)
+        // 🔔 Jadwal notifikasi jatuh tempo
         scheduleDailyJatuhTempo(requireContext(), 9, 0)
 
         // === Grafik Keuangan (ambil dari API) ===
@@ -174,10 +188,7 @@ class DashboardFragment : Fragment() {
         }
     }
 
-    // ========== CHART ==========
-
     private fun setupChartAdminPlaceholder() {
-        // Placeholder kalau belum ada endpoint agregasi admin
         val entries = (0..11).map { i -> Entry(i.toFloat(), 0f) }
         val ds = LineDataSet(entries, "Admin Chart").apply {
             color = ColorTemplate.MATERIAL_COLORS[0]
@@ -203,20 +214,17 @@ class DashboardFragment : Fragment() {
 
                 val totalSimpanan =
                     simpananResp.body()?.data?.let { s ->
-                        (s.simpananPokok ?: 0.0) +
-                                (s.simpananWajib ?: 0.0) +
-                                (s.simpananSukarela ?: 0.0)
+                        (s.simpananPokok ?: 0.0) + (s.simpananWajib ?: 0.0) + (s.simpananSukarela ?: 0.0)
                     } ?: 0.0
 
                 val totalPinjaman =
                     pinjamanResp.body()?.data?.sumOf { it.jumlah.toDouble() } ?: 0.0
 
-                // Contoh: 12 bulan, nilainya flat dari total, biar kelihatan grafiknya
                 val entriesSimpanan = (0..11).map { i -> Entry(i.toFloat(), totalSimpanan.toFloat()) }
                 val entriesPinjaman = (0..11).map { i -> Entry(i.toFloat(), totalPinjaman.toFloat()) }
 
                 val dsSimpanan = LineDataSet(entriesSimpanan, "Total Simpanan").apply {
-                    color = ColorTemplate.MATERIAL_COLORS[0]   // ✅ nggak pakai gray/blue/orange
+                    color = ColorTemplate.MATERIAL_COLORS[0]
                     setCircleColor(ColorTemplate.MATERIAL_COLORS[0])
                 }
 
@@ -246,15 +254,13 @@ class DashboardFragment : Fragment() {
         chartKeuangan.invalidate()
     }
 
-    // ========== UTIL VIEW ==========
-
     private fun setCardTitle(card: CardView, title: String) {
         findFirstTextView(card)?.text = title
     }
 
     private fun findFirstTextView(view: View): TextView? {
         if (view is TextView) return view
-        if (view is AndroidViewGroup) {
+        if (view is ViewGroup) {
             for (i in 0 until view.childCount) {
                 val found = findFirstTextView(view.getChildAt(i))
                 if (found != null) return found
@@ -265,7 +271,7 @@ class DashboardFragment : Fragment() {
 
     private fun findFirstImageView(view: View): ImageView? {
         if (view is ImageView) return view
-        if (view is AndroidViewGroup) {
+        if (view is ViewGroup) {
             for (i in 0 until view.childCount) {
                 val found = findFirstImageView(view.getChildAt(i))
                 if (found != null) return found
@@ -273,8 +279,6 @@ class DashboardFragment : Fragment() {
         }
         return null
     }
-
-    // ========== ALARM JATUH TEMPO ==========
 
     private fun scheduleDailyJatuhTempo(context: Context, hour: Int, minute: Int) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
