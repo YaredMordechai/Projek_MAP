@@ -130,60 +130,56 @@ class LaporanFragment : Fragment() {
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun applyLaporanData(data: Any) {
-        // NOTE:
-        // Ini tetap mengikuti struktur kamu yang sebelumnya mem-parsing response body.
-        // Karena model response "data" untuk laporan user tergantung ApiModels kamu,
-        // aku keep fleksibel pakai reflection-ish (map-like) TANPA mengubah fitur.
-        //
-        // Kalau `data` kamu sebenarnya class kuat (misal LaporanUserData),
-        // kamu bisa ganti castingnya secara spesifik.
-
+    private fun applyLaporanData(raw: Any) {
         try {
-            // Kasus paling umum: data berupa Map<String, Any>
-            if (data is Map<*, *>) {
-                val totalSimpanan = (data["totalSimpanan"] as? Number)?.toDouble() ?: 0.0
-                val totalPinjaman = (data["totalPinjaman"] as? Number)?.toDouble() ?: 0.0
-                val totalAngsuran = (data["totalAngsuran"] as? Number)?.toDouble() ?: 0.0
-
-                val simpananMonthly = (data["monthlySimpanan"] as? List<*>)?.map { (it as? Number)?.toDouble() ?: 0.0 } ?: List(12) { 0.0 }
-                val angsuranMonthly = (data["monthlyAngsuran"] as? List<*>)?.map { (it as? Number)?.toDouble() ?: 0.0 } ?: List(12) { 0.0 }
-
-                monthlySimpanan = simpananMonthly
-                monthlyAngsuran = angsuranMonthly
-
-                txtTotalSimpanan.text = "Total Simpanan: ${rupiah.format(totalSimpanan)}"
-                txtTotalPinjaman.text = "Total Pinjaman: ${rupiah.format(totalPinjaman)}"
-                txtTotalAngsuran.text = "Total Angsuran: ${rupiah.format(totalAngsuran)}"
-
-                renderChart()
-                return
+            // 1) Ubah raw jadi Map kalau bisa
+            val mapRaw: Map<String, Any?>? = when (raw) {
+                is Map<*, *> -> raw.entries.associate { it.key.toString() to it.value }
+                else -> null
             }
 
-            // Fallback: kalau data adalah object class, coba ambil field via reflection
-            val cls = data::class.java
-            val fTotalSimpanan = cls.getDeclaredField("totalSimpanan").apply { isAccessible = true }
-            val fTotalPinjaman = cls.getDeclaredField("totalPinjaman").apply { isAccessible = true }
-            val fTotalAngsuran = cls.getDeclaredField("totalAngsuran").apply { isAccessible = true }
-            val fMonthlySimpanan = cls.getDeclaredField("monthlySimpanan").apply { isAccessible = true }
-            val fMonthlyAngsuran = cls.getDeclaredField("monthlyAngsuran").apply { isAccessible = true }
+            // 2) Kalau response wrapper punya key "data", ambil isinya
+            val payload: Any = mapRaw?.get("data") ?: raw
 
-            val totalSimpanan = (fTotalSimpanan.get(data) as? Number)?.toDouble() ?: 0.0
-            val totalPinjaman = (fTotalPinjaman.get(data) as? Number)?.toDouble() ?: 0.0
-            val totalAngsuran = (fTotalAngsuran.get(data) as? Number)?.toDouble() ?: 0.0
+            // 3) Normalisasi payload jadi Map juga (kalau payload object, coba ambil via reflection)
+            val dataMap: Map<String, Any?> = when (payload) {
+                is Map<*, *> -> payload.entries.associate { it.key.toString() to it.value }
+                else -> {
+                    val cls = payload::class.java
+                    cls.declaredFields.associate { f ->
+                        f.isAccessible = true
+                        f.name to f.get(payload)
+                    }
+                }
+            }
 
-            monthlySimpanan = (fMonthlySimpanan.get(data) as? List<*>)?.map { (it as? Number)?.toDouble() ?: 0.0 } ?: List(12) { 0.0 }
-            monthlyAngsuran = (fMonthlyAngsuran.get(data) as? List<*>)?.map { (it as? Number)?.toDouble() ?: 0.0 } ?: List(12) { 0.0 }
+            // 4) Ambil nilai dengan NAMA FIELD YANG SESUAI API KAMU
+            val totalSimpanan = (dataMap["totalSimpanan"] as? Number)?.toDouble() ?: 0.0
+            val totalPinjaman = ((dataMap["totalPinjamanAktif"] ?: dataMap["totalPinjaman"]) as? Number)?.toDouble() ?: 0.0
+            val totalAngsuran = ((dataMap["totalAngsuranBulanan"] ?: dataMap["totalAngsuran"]) as? Number)?.toDouble() ?: 0.0
 
+            val simpananMonthly =
+                (dataMap["monthlySimpanan"] as? List<*>)?.map { (it as? Number)?.toDouble() ?: 0.0 }
+                    ?: List(12) { 0.0 }
+
+            val angsuranMonthly =
+                (dataMap["monthlyAngsuran"] as? List<*>)?.map { (it as? Number)?.toDouble() ?: 0.0 }
+                    ?: List(12) { 0.0 }
+
+            monthlySimpanan = simpananMonthly
+            monthlyAngsuran = angsuranMonthly
+
+            // 5) Update UI (label bebas, ini aku samain sama maksud tampilan kamu)
             txtTotalSimpanan.text = "Total Simpanan: ${rupiah.format(totalSimpanan)}"
-            txtTotalPinjaman.text = "Total Pinjaman: ${rupiah.format(totalPinjaman)}"
-            txtTotalAngsuran.text = "Total Angsuran: ${rupiah.format(totalAngsuran)}"
+            txtTotalPinjaman.text = "Total Pinjaman Aktif: ${rupiah.format(totalPinjaman)}"
+            txtTotalAngsuran.text = "Total Angsuran Dibayar: ${rupiah.format(totalAngsuran)}"
 
             renderChart()
         } catch (_: Exception) {
             // biar tidak crash
         }
     }
+
 
     private fun renderChart() {
         val entries = ArrayList<BarEntry>()
