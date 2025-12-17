@@ -1,6 +1,5 @@
 package com.example.projek_map.ui.fragments
 
-import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
@@ -18,11 +17,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
-import com.example.projek_map.api.Pengumuman
 import com.example.projek_map.api.PengumumanAddRequest
 import com.example.projek_map.api.PengumumanDeleteRequest
 import com.example.projek_map.api.PengumumanUpdateRequest
+import com.example.projek_map.api.Pengumuman
 import com.example.projek_map.data.PengumumanRepository
+import com.example.projek_map.ui.adapters.PengumumanAdapter
 import com.example.projek_map.ui.viewmodels.PengumumanViewModel
 import com.example.projek_map.utils.AlarmReceiver
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -39,7 +39,6 @@ class PengumumanFragment : Fragment() {
 
     private lateinit var viewModel: PengumumanViewModel
 
-    @SuppressLint("NotifyDataSetChanged")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -65,7 +64,6 @@ class PengumumanFragment : Fragment() {
         fab?.setOnClickListener { showAddAnnouncementDialog() }
 
         viewModel = ViewModelProvider(this, object : ViewModelProvider.Factory {
-            @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return PengumumanViewModel(PengumumanRepository()) as T
             }
@@ -133,12 +131,10 @@ class PengumumanFragment : Fragment() {
                     return@setPositiveButton
                 }
 
-                // ✅ FIX ERROR DI FOTO
+                // ✅ FIX DI SINI
                 val req = PengumumanAddRequest(judul = judul, isi = isi)
                 viewModel.add(req)
 
-                // Optional: kalau kamu memang pakai AlarmReceiver untuk notif pengumuman
-                // (Tetap dibiarkan agar fitur tidak hilang)
                 try {
                     val intent = Intent(konteks, AlarmReceiver::class.java)
                     konteks.sendBroadcast(intent)
@@ -208,39 +204,4 @@ class PengumumanFragment : Fragment() {
     private fun loadPengumumanFromApi() {
         viewModel.load()
     }
-}
-
-/** ====== Adapter tetap (biar fitur & struktur tetap sama) ====== */
-class PengumumanAdapter(
-    private val items: List<Pengumuman>,
-    private val isAdmin: Boolean,
-    private val onEdit: (Pengumuman) -> Unit,
-    private val onDelete: (Pengumuman) -> Unit
-) : RecyclerView.Adapter<PengumumanAdapter.VH>() {
-
-    inner class VH(v: View) : RecyclerView.ViewHolder(v) {
-        val tvJudul: TextView = v.findViewById(R.id.tvJudul)
-        val tvIsi: TextView = v.findViewById(R.id.tvIsi)
-        val btnEdit: View = v.findViewById(R.id.btnEdit)
-        val btnDelete: View = v.findViewById(R.id.btnDelete)
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-        val v = LayoutInflater.from(parent.context).inflate(R.layout.item_pengumuman, parent, false)
-        return VH(v)
-    }
-
-    override fun onBindViewHolder(holder: VH, position: Int) {
-        val item = items[position]
-        holder.tvJudul.text = item.judul ?: "-"
-        holder.tvIsi.text = item.isi ?: "-"
-
-        holder.btnEdit.visibility = if (isAdmin) View.VISIBLE else View.GONE
-        holder.btnDelete.visibility = if (isAdmin) View.VISIBLE else View.GONE
-
-        holder.btnEdit.setOnClickListener { onEdit(item) }
-        holder.btnDelete.setOnClickListener { onDelete(item) }
-    }
-
-    override fun getItemCount(): Int = items.size
 }

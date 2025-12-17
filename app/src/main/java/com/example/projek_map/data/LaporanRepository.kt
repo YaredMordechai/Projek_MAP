@@ -8,12 +8,8 @@ class LaporanRepository {
 
     suspend fun getLaporanUser(kodePegawai: String, bulan: Int, tahun: Int): Result<Any> {
         return try {
-            val resp = api.getLaporanUser(
-                kodePegawai = kodePegawai,
-                bulan = bulan,
-                year = tahun
-            )
-
+            // ✅ FIX: pakai year = tahun (sesuai nama param di interface Retrofit)
+            val resp = api.getLaporanUser(kodePegawai = kodePegawai, bulan = bulan, year = tahun)
             val body = resp.body()
             if (resp.isSuccessful && body?.success == true && body.data != null) {
                 Result.success(body.data)

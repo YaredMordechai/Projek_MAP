@@ -277,12 +277,18 @@ data class Admin(
 data class Pinjaman(
     val id: Int,
     val kodePegawai: String,
-    val jumlah: Int,          // pokok pinjaman
-    val tenor: Int,           // bulan
-    var status: String,       // Proses / Disetujui / Ditolak / Lunas
-    val bunga: Double = 0.1,  //)
-    val angsuranTerbayar: Int = 0,
+    val jumlah: Int,
+    val tenor: Int,
+    var status: String,
+    val bunga: Double = 0.1,
+
+    // ✅ tambahan supaya error "metode" & "cicilanPerBulan" hilang
+    val metode: String? = "anuitas",        // "flat" / "anuitas"
+    val cicilanPerBulan: Int? = null,       // opsional dari backend
+
+    val angsuranTerbayar: Int = 0
 )
+
 
 data class Simpanan(
     val kodePegawai: String,

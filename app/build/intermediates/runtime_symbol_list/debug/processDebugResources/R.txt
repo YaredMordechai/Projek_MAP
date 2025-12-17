@@ -3869,6 +3869,7 @@ int id btnBackDashboard 0x7f09006f
 int id btnBayarAngsuranDetail 0x7f090070
 int id btnCatatPembayaran 0x7f090071
 int id btnDeactivate 0x7f090072
+int id btnDelete 0x7f0902d0
 int id btnDetailAnggota 0x7f090073
 int id btnEdit 0x7f090074
 int id btnFilter 0x7f090075

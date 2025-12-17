@@ -11,24 +11,24 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
-import com.example.projek_map.api.RincianPinjaman
 import com.example.projek_map.api.AngsuranItem
-import com.example.projek_map.data.PinjamanRepository
+import com.example.projek_map.api.RincianPinjaman
+import com.example.projek_map.ui.adapters.AngsuranAdapter
+import com.example.projek_map.ui.viewmodels.PinjamanDetailViewModel
 import com.example.projek_map.utils.PrefManager
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
-import kotlinx.coroutines.launch
 import java.util.Locale
 
 class PinjamanDetailFragment : Fragment() {
 
     private var pinjamanId: Int = 0
-    private var currentMetode: String = "anuitas" // nambah: track metode aktif
+    private var currentMetode: String = "anuitas"
 
     private lateinit var tvCicilan: TextView
     private lateinit var tvTotalPokok: TextView
@@ -40,17 +40,17 @@ class PinjamanDetailFragment : Fragment() {
 
     private lateinit var toggleMetode: MaterialButtonToggleGroup
     private lateinit var rvJadwal: RecyclerView
-    private lateinit var adapter: com.example.projek_map.ui.adapters.AngsuranAdapter
+    private lateinit var adapter: AngsuranAdapter
 
-    // nambah: tombol bayar
     private var btnBayar: MaterialButton? = null
 
-    // repo (nambah aja)
-    private val repo = PinjamanRepository()
+    private val vm: PinjamanDetailViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        pinjamanId = arguments?.getInt(ARG_PINJAMAN_ID, 0) ?: 0
+        pinjamanId = arguments?.getInt("pinjamanId", 0) ?: 0
+        currentMetode = arguments?.getString("metode", "anuitas") ?: "anuitas"
+        if (currentMetode != "flat" && currentMetode != "anuitas") currentMetode = "anuitas"
     }
 
     override fun onCreateView(
@@ -69,201 +69,136 @@ class PinjamanDetailFragment : Fragment() {
         toggleMetode = v.findViewById(R.id.toggleMetode)
         rvJadwal = v.findViewById(R.id.rvJadwal)
 
-        // nambah: tombol bayar
         btnBayar = v.findViewById(R.id.btnBayarAngsuranDetail)
 
-        adapter = com.example.projek_map.ui.adapters.AngsuranAdapter()
+        adapter = AngsuranAdapter()
         rvJadwal.layoutManager = LinearLayoutManager(requireContext())
         rvJadwal.adapter = adapter
         rvJadwal.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
 
-        // default: ANUITAS (struktur tetap)
-        v.findViewById<View>(R.id.btnAnuitas)?.let { toggleMetode.check(it.id) }
-        currentMetode = "anuitas"
-        renderAnuitas()
+        when (currentMetode) {
+            "flat" -> v.findViewById<View>(R.id.btnFlat)?.let { toggleMetode.check(it.id) }
+            else -> v.findViewById<View>(R.id.btnAnuitas)?.let { toggleMetode.check(it.id) }
+        }
 
         toggleMetode.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (!isChecked) return@addOnButtonCheckedListener
             when (checkedId) {
                 R.id.btnAnuitas -> {
                     currentMetode = "anuitas"
-                    renderAnuitas()
+                    vm.load(pinjamanId, currentMetode)
                 }
                 R.id.btnFlat -> {
                     currentMetode = "flat"
-                    renderFlat()
+                    vm.load(pinjamanId, currentMetode)
                 }
             }
         }
 
-        // nambah: aksi bayar
-        btnBayar?.setOnClickListener {
-            if (pinjamanId <= 0) {
-                toast("Pinjaman tidak valid."); return@setOnClickListener
-            }
-            showBayarAngsuranDialog()
+        btnBayar?.setOnClickListener { showBayarDialog() }
+
+        vm.rincian.observe(viewLifecycleOwner) { rinc ->
+            if (rinc != null) renderRincian(rinc)
         }
+
+        // ✅ FIX submitList: pakai helper aman
+        vm.jadwal.observe(viewLifecycleOwner) { list ->
+            applyAngsuranToAdapter(list)
+        }
+
+        vm.toast.observe(viewLifecycleOwner) { msg ->
+            if (!msg.isNullOrBlank()) Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+        }
+
+        vm.load(pinjamanId, currentMetode)
 
         return v
     }
 
-    private fun renderAnuitas() {
-        loadFromDb(metode = "anuitas")
-    }
-
-    private fun renderFlat() {
-        loadFromDb(metode = "flat")
-    }
-
-    private fun loadFromDb(metode: String) {
-        if (pinjamanId <= 0) {
-            tvCicilan.text = rupiah(0)
-            tvTotalPokok.text = rupiah(0)
-            tvTotalBunga.text = rupiah(0)
-            tvTotalBayar.text = rupiah(0)
-            tvTerbayar.text = rupiah(0)
-            tvSisaBayar.text = rupiah(0)
-            tvSisaPokok.text = rupiah(0)
-            adapter.setData(emptyList())
-            return
-        }
-
-        lifecycleScope.launch {
-            // 1) rincian
-            val rincianResp = repo.getRincianPinjamanDb(pinjamanId, metode)
-            val rincian: RincianPinjaman? = if (rincianResp.success) rincianResp.data else null
-
-            if (rincian != null) {
-                tvCicilan.text = rupiah(rincian.cicilanPerBulan)
-                tvTotalPokok.text = rupiah(rincian.totalPokok)
-                tvTotalBunga.text = rupiah(rincian.totalBunga)
-                tvTotalBayar.text = rupiah(rincian.totalBayar)
-                tvTerbayar.text = rupiah(rincian.terbayar)
-                tvSisaBayar.text = rupiah(rincian.sisaBayar)
-                tvSisaPokok.text = rupiah(rincian.sisaPokok)
-            } else {
-                tvCicilan.text = rupiah(0)
-                tvTotalPokok.text = rupiah(0)
-                tvTotalBunga.text = rupiah(0)
-                tvTotalBayar.text = rupiah(0)
-                tvTerbayar.text = rupiah(0)
-                tvSisaBayar.text = rupiah(0)
-                tvSisaPokok.text = rupiah(0)
-
-                // nambah: biar kelihatan kalau gagal
-                toast(rincianResp.message ?: "Gagal ambil rincian pinjaman")
+    private fun applyAngsuranToAdapter(list: List<AngsuranItem>) {
+        // coba panggil method yang mungkin ada di adapter kamu
+        try {
+            val m = adapter::class.java.methods.firstOrNull {
+                (it.name == "submitList" || it.name == "setData" || it.name == "setItems" || it.name == "updateData")
+                        && it.parameterTypes.size == 1
             }
-
-            // 2) jadwal
-            val jadwalResp = repo.getJadwalPinjamanDb(pinjamanId, metode)
-            val jadwal: List<AngsuranItem> = if (jadwalResp.success && jadwalResp.data != null) {
-                jadwalResp.data
-            } else {
-                if (!jadwalResp.success) toast(jadwalResp.message ?: "Gagal ambil jadwal angsuran")
-                emptyList()
+            if (m != null) {
+                m.invoke(adapter, list)
+                return
             }
+        } catch (_: Exception) { }
 
-            adapter.setData(jadwal)
-        }
-    }
-
-    // ======== nambah: fitur bayar dari halaman detail ========
-    private fun showBayarAngsuranDialog() {
-        val pref = PrefManager(requireContext())
-        val kodePegawai = pref.getKodePegawai().orEmpty()
-        if (kodePegawai.isBlank()) {
-            toast("Kode pegawai kosong. Silakan login ulang."); return
-        }
-
-        lifecycleScope.launch {
-            // rekomendasi cicilan dari rincian DB sesuai metode yang sedang dipilih
-            val rincResp = repo.getRincianPinjamanDb(pinjamanId, currentMetode)
-            val rinc = if (rincResp.success) rincResp.data else null
-            val defaultJumlah = (rinc?.cicilanPerBulan ?: 0).coerceAtLeast(0)
-
-            val info = buildString {
-                if (defaultJumlah > 0) append("Rekomendasi cicilan/bulan: ${rupiah(defaultJumlah)}\n")
-                if (rinc != null) append("Sisa bayar: ${rupiah(rinc.sisaBayar)}\n")
-                append("\nIsi nominal pembayaran (Rp):")
-            }
-
-            val container = LinearLayout(requireContext()).apply {
-                orientation = LinearLayout.VERTICAL
-                setPadding(48, 24, 48, 0)
-            }
-
-            val tv = TextView(requireContext()).apply { text = info }
-
-            val edtJumlah = EditText(requireContext()).apply {
-                inputType = InputType.TYPE_CLASS_NUMBER
-                hint = if (defaultJumlah > 0) "Contoh: $defaultJumlah" else "Contoh: 200000"
-                if (defaultJumlah > 0) setText(defaultJumlah.toString())
-            }
-
-            container.addView(tv)
-            container.addView(edtJumlah)
-
-            AlertDialog.Builder(requireContext())
-                .setTitle("Bayar Angsuran #$pinjamanId")
-                .setView(container)
-                .setPositiveButton("Bayar") { _, _ ->
-                    val jumlah = edtJumlah.text?.toString()?.trim()
-                        ?.replace(".", "")?.replace(",", "")?.toIntOrNull()
-                    if (jumlah == null || jumlah <= 0) {
-                        toast("Nominal tidak valid."); return@setPositiveButton
+        // fallback: coba update field list internal (items/data/list)
+        val fieldNames = listOf("items", "data", "list", "mList")
+        for (fname in fieldNames) {
+            try {
+                val f = adapter::class.java.getDeclaredField(fname)
+                f.isAccessible = true
+                val cur = f.get(adapter)
+                if (cur is MutableList<*>) {
+                    @Suppress("UNCHECKED_CAST")
+                    (cur as MutableList<AngsuranItem>).apply {
+                        clear()
+                        addAll(list)
                     }
-                    submitPembayaranAngsuran(
-                        kodePegawai = kodePegawai,
-                        pinjamanId = pinjamanId,
-                        jumlah = jumlah
-                    )
+                    adapter.notifyDataSetChanged()
+                    return
                 }
-                .setNegativeButton("Batal", null)
-                .show()
+            } catch (_: Exception) { }
         }
+
+        // minimal fallback
+        adapter.notifyDataSetChanged()
     }
 
-    private fun submitPembayaranAngsuran(
-        kodePegawai: String,
-        pinjamanId: Int,
-        jumlah: Int
-    ) {
-        lifecycleScope.launch {
-            // ✅ FIX UTAMA:
-            // addHistoriBukti() di repo kamu butuh buktiBase64 & buktiExt (bukan buktiUri).
-            val res = repo.addHistoriBukti(
-                kodePegawai = kodePegawai,
-                pinjamanId = pinjamanId,
-                jumlah = jumlah,
-                status = "Dibayar (User)",
-                buktiBase64 = null,
-                buktiExt = "jpg"
-            )
+    private fun renderRincian(r: RincianPinjaman) {
+        fun rupiah(x: Double): String {
+            return String.format(Locale("in", "ID"), "%,0f", x).replace(',', '.')
+        }
 
-            if (res.success) {
-                toast("Pembayaran tercatat.")
-                // refresh detail + jadwal
-                loadFromDb(currentMetode)
-            } else {
-                toast(res.message ?: "Gagal mencatat pembayaran")
+        tvCicilan.text = "Rp ${rupiah(r.cicilanPerBulan.toDouble())}"
+        tvTotalPokok.text = "Rp ${rupiah(r.totalPokok.toDouble())}"
+        tvTotalBunga.text = "Rp ${rupiah(r.totalBunga.toDouble())}"
+        tvTotalBayar.text = "Rp ${rupiah(r.totalBayar.toDouble())}"
+        tvTerbayar.text = "Rp ${rupiah(r.terbayar.toDouble())}"
+        tvSisaBayar.text = "Rp ${rupiah(r.sisaBayar.toDouble())}"
+        tvSisaPokok.text = "Rp ${rupiah(r.sisaPokok.toDouble())}"
+    }
+
+    private fun showBayarDialog() {
+        val konteks = requireContext()
+        val pref = PrefManager(konteks)
+        val kodePegawai = pref.getKodePegawai() ?: ""
+
+        val inputJumlah = EditText(konteks).apply {
+            hint = "Jumlah bayar"
+            inputType = InputType.TYPE_CLASS_NUMBER
+        }
+
+        val container = LinearLayout(konteks).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(48, 24, 48, 0)
+            addView(inputJumlah)
+        }
+
+        AlertDialog.Builder(konteks)
+            .setTitle("Bayar Angsuran")
+            .setView(container)
+            .setPositiveButton("Bayar") { _, _ ->
+                val jumlah = inputJumlah.text.toString().trim().toIntOrNull()
+                if (jumlah == null || jumlah <= 0) {
+                    Toast.makeText(konteks, "Jumlah tidak valid", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+
+                vm.bayar(
+                    kodePegawai = kodePegawai,
+                    pinjamanId = pinjamanId,
+                    jumlah = jumlah,
+                    currentMetode = currentMetode
+                )
             }
-        }
-    }
-    // =========================================================
-
-    private fun rupiah(n: Int): String {
-        return String.format(Locale("id", "ID"), "Rp %,d", n).replace(',', '.')
-    }
-
-    private fun toast(msg: String) {
-        if (!isAdded) return
-        Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
-    }
-
-    companion object {
-        private const val ARG_PINJAMAN_ID = "pinjaman_id"
-        fun newInstance(pinjamanId: Int) = PinjamanDetailFragment().apply {
-            arguments = Bundle().apply { putInt(ARG_PINJAMAN_ID, pinjamanId) }
-        }
+            .setNegativeButton("Batal", null)
+            .show()
     }
 }

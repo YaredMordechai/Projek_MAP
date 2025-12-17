@@ -69,6 +69,7 @@ id btnBackDashboard
 id btnBayarAngsuranDetail
 id btnCatatPembayaran
 id btnDeactivate
+id btnDelete
 id btnDetailAnggota
 id btnEdit
 id btnFilter

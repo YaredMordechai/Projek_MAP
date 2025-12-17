@@ -66,6 +66,21 @@ class PinjamanRepository {
         }
     }
 
+    suspend fun bayarAngsuranDb(
+        kodePegawai: String,
+        pinjamanId: Int,
+        jumlah: Int
+    ): ApiResponse<Boolean> {
+        return addHistoriBukti(
+            kodePegawai = kodePegawai,
+            pinjamanId = pinjamanId,
+            jumlah = jumlah,
+            status = "Dibayar (User)",
+            buktiBase64 = null,
+            buktiExt = "jpg"
+        )
+    }
+
     suspend fun getAllPinjamanAdmin(): ApiResponse<List<Pinjaman>> {
         return withContext(Dispatchers.IO) {
             try {

@@ -5,31 +5,28 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import android.widget.EditText
 import android.widget.LinearLayout
-import android.text.InputType
-import android.widget.Toast
+import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
-import com.example.projek_map.api.HistoriPembayaran
 import com.example.projek_map.api.Pinjaman
-import com.example.projek_map.data.PinjamanRepository
 import com.example.projek_map.ui.adapters.PinjamanAdapter
+import com.example.projek_map.ui.viewmodels.PinjamanViewModel
 import com.example.projek_map.utils.PrefManager
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
-import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -54,7 +51,8 @@ class PinjamanFragment : Fragment() {
     private val dataSelesai = mutableListOf<Pinjaman>()
 
     private var isAdmin: Boolean = false
-    private val repo = PinjamanRepository()
+
+    private val vm: PinjamanViewModel by viewModels()
 
     // ==== Upload Bukti ====
     private lateinit var pickImageLauncher: ActivityResultLauncher<String>
@@ -65,7 +63,7 @@ class PinjamanFragment : Fragment() {
     private var pendingStatusForUpload: String = "Menunggu Verifikasi"
     private var pendingCameraUri: Uri? = null
 
-    // ✅ baru: base64 yang akan dikirim ke backend
+    // ✅ base64 yang akan dikirim ke backend
     private var buktiBase64: String? = null
     private var buktiExt: String = "jpg"
 
@@ -123,6 +121,40 @@ class PinjamanFragment : Fragment() {
 
         btnAjukan.setOnClickListener { ajukanPinjaman() }
 
+        // ===== Observers (MVVM) =====
+        vm.pending.observe(viewLifecycleOwner) { list ->
+            dataPending.clear()
+            dataPending.addAll(list)
+            adapterPending.notifyDataSetChanged()
+            updateStatusCard()
+        }
+        vm.aktif.observe(viewLifecycleOwner) { list ->
+            dataAktif.clear()
+            dataAktif.addAll(list)
+            adapterAktif.notifyDataSetChanged()
+            updateStatusCard()
+        }
+        vm.selesai.observe(viewLifecycleOwner) { list ->
+            dataSelesai.clear()
+            dataSelesai.addAll(list)
+            adapterSelesai.notifyDataSetChanged()
+            updateStatusCard()
+        }
+        vm.toast.observe(viewLifecycleOwner) { msg ->
+            if (!msg.isNullOrBlank()) toast(msg)
+        }
+        vm.historiDialogText.observe(viewLifecycleOwner) { text ->
+            if (!text.isNullOrBlank()) {
+                val id = lastHistoriPinjamanId ?: return@observe
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Histori Pembayaran #$id")
+                    .setMessage(text)
+                    .setPositiveButton("Tutup", null)
+                    .show()
+                lastHistoriPinjamanId = null
+            }
+        }
+
         return view
     }
 
@@ -151,20 +183,13 @@ class PinjamanFragment : Fragment() {
             toast("Kode pegawai kosong. Silakan login ulang."); return
         }
 
-        lifecycleScope.launch {
-            btnAjukan.isEnabled = false
-            val res = repo.createPinjaman(kodePegawai, nominal, tenor)
-            btnAjukan.isEnabled = true
+        btnAjukan.isEnabled = false
+        vm.ajukanPinjaman(kodePegawai, nominal, tenor)
+        btnAjukan.isEnabled = true
 
-            if (res.success) {
-                toast("Pinjaman diajukan!")
-                inputNominal.setText("")
-                inputTenor.setText("")
-                refreshAllListsFromApi()
-            } else {
-                toast(res.message ?: "Gagal mengajukan pinjaman")
-            }
-        }
+        // tetap: reset input kalau sukses -> ditangani oleh refresh, tapi kamu dulu memang reset juga
+        inputNominal.setText("")
+        inputTenor.setText("")
     }
 
     private fun refreshAllListsFromApi() {
@@ -174,32 +199,7 @@ class PinjamanFragment : Fragment() {
             txtPinjamanAktif.text = "Kode pegawai kosong."
             return
         }
-
-        lifecycleScope.launch {
-            val res = repo.getPinjamanUser(kodePegawai)
-            if (!res.success) {
-                toast(res.message ?: "Gagal memuat pinjaman")
-                return@launch
-            }
-
-            val list = res.data ?: emptyList()
-            dataPending.clear(); dataAktif.clear(); dataSelesai.clear()
-
-            list.forEach { p ->
-                when (p.status.lowercase()) {
-                    "proses", "menunggu" -> dataPending.add(p)
-                    "disetujui", "aktif" -> dataAktif.add(p)
-                    "selesai", "lunas" -> dataSelesai.add(p)
-                    else -> dataPending.add(p)
-                }
-            }
-
-            adapterPending.notifyDataSetChanged()
-            adapterAktif.notifyDataSetChanged()
-            adapterSelesai.notifyDataSetChanged()
-
-            updateStatusCard()
-        }
+        vm.refreshAllListsFromApi(kodePegawai)
     }
 
     private fun updateStatusCard() {
@@ -209,208 +209,125 @@ class PinjamanFragment : Fragment() {
             return
         }
 
-        val totalPinjaman = semuaPinjaman.sumOf { it.jumlah.toDouble() }
-        val contoh = semuaPinjaman.first()
-
-        txtPinjamanAktif.text = buildString {
-            append("Total Pinjaman Diajukan: Rp ${formatRupiah(totalPinjaman)}\n\n")
-            append("Jumlah Pengajuan: ${semuaPinjaman.size} pinjaman\n\n")
-            append("Contoh: Rp ${formatRupiah(contoh.jumlah.toDouble())} (${contoh.tenor} bulan) - ${contoh.status}")
+        val p = semuaPinjaman.firstOrNull()
+        txtPinjamanAktif.text = if (p != null) {
+            "Pinjaman Terbaru: #${p.id} - ${p.status}"
+        } else {
+            "Pinjaman Terbaru: -"
         }
     }
 
     private fun showPinjamanDetailDialog(pinjaman: Pinjaman) {
-        lifecycleScope.launch {
-            val rincResp = repo.getRincianPinjamanDb(pinjaman.id, "anuitas")
-            val rinc = if (rincResp.success) rincResp.data else null
+        val metode = if ((pinjaman.metode ?: "").equals("flat", true)) "flat" else "anuitas"
 
-            val fallback = calcRincianAnuitas(pinjaman.jumlah, pinjaman.tenor, pinjaman.bunga)
-
-            val cicilan = rinc?.cicilanPerBulan ?: fallback.cicilanPerBulan
-            val totalBayar = rinc?.totalBayar ?: fallback.totalBayar
-            val terbayar = rinc?.terbayar ?: 0
-            val sisaBayar = rinc?.sisaBayar ?: (totalBayar - terbayar).coerceAtLeast(0)
-            val sisaAngsuran = if (cicilan > 0) (sisaBayar / cicilan) else 0
-
-            val bungaPersenTahun = (pinjaman.bunga * 100).toInt()
-
-            val message = """
-                Pokok Pinjaman     : Rp ${formatRupiah(pinjaman.jumlah.toDouble())}
-                Metode             : ANUITAS
-                Bunga Tahunan      : $bungaPersenTahun%
-                Tenor              : ${pinjaman.tenor} bulan
-
-                Angsuran / Bulan   : Rp ${formatRupiah(cicilan.toDouble())}
-                Total Cicilan      : Rp ${formatRupiah(totalBayar.toDouble())}
-
-                Terbayar           : Rp ${formatRupiah(terbayar.toDouble())}
-                Sisa Bayar         : Rp ${formatRupiah(sisaBayar.toDouble())}
-                Est. Sisa Angsuran : ${sisaAngsuran} bulan
-
-                Status             : ${pinjaman.status}
-            """.trimIndent()
-
-            AlertDialog.Builder(requireContext())
-                .setTitle("Rincian Pinjaman #${pinjaman.id}")
-                .setMessage(message)
-                .setPositiveButton("OK", null)
-                .setNeutralButton("Lihat Riwayat Angsuran") { _, _ ->
-                    showHistoriPembayaranFromApi(pinjaman.id)
+        // dialog tetap
+        AlertDialog.Builder(requireContext())
+            .setTitle("Detail Pinjaman #${pinjaman.id}")
+            .setMessage(
+                "Status: ${pinjaman.status}\n" +
+                        "Jumlah: Rp ${pinjaman.jumlah}\n" +
+                        "Tenor: ${pinjaman.tenor} bulan\n" +
+                        "Metode: $metode"
+            )
+            .setPositiveButton("Lihat Rincian") { _, _ ->
+                val frag = PinjamanDetailFragment().apply {
+                    arguments = Bundle().apply {
+                        putInt("pinjamanId", pinjaman.id)
+                        putString("metode", metode)
+                    }
                 }
-                .setNegativeButton("Bayar Angsuran") { _, _ ->
-                    showBayarAngsuranDialog(pinjaman)
-                }
-                .show()
-        }
+                parentFragmentManager.beginTransaction()
+                val containerId = (view?.parent as? ViewGroup)?.id ?: android.R.id.content
+                requireActivity().supportFragmentManager.beginTransaction()
+                    .replace(containerId, frag)
+                    .addToBackStack(null)
+                    .commit()
+            }
+            .setNeutralButton("Histori Pembayaran") { _, _ ->
+                showHistoriPembayaranFromApi(pinjaman.id)
+            }
+            .setNegativeButton("Bayar Angsuran") { _, _ ->
+                showBayarDialog(pinjaman)
+            }
+            .show()
     }
 
-    private fun showBayarAngsuranDialog(pinjaman: Pinjaman) {
+    private fun showBayarDialog(pinjaman: Pinjaman) {
         val pref = PrefManager(requireContext())
         val kodePegawai = pref.getKodePegawai().orEmpty()
         if (kodePegawai.isBlank()) {
             toast("Kode pegawai kosong. Silakan login ulang."); return
         }
 
-        lifecycleScope.launch {
-            val rincResp = repo.getRincianPinjamanDb(pinjaman.id, "anuitas")
-            val rinc = if (rincResp.success) rincResp.data else null
-
-            val fallback = calcRincianAnuitas(pinjaman.jumlah, pinjaman.tenor, pinjaman.bunga)
-            val defaultJumlah = (rinc?.cicilanPerBulan ?: fallback.cicilanPerBulan).coerceAtLeast(0)
-
-            val info = buildString {
-                append("Rekomendasi cicilan/bulan: Rp ${formatRupiah(defaultJumlah.toDouble())}\n")
-                if (rinc != null) append("Sisa bayar: Rp ${formatRupiah(rinc.sisaBayar.toDouble())}\n")
-                append("\nIsi nominal pembayaran (Rp):")
+        val defaultJumlah = pinjaman.cicilanPerBulan
+            ?: run {
+                val t = if (pinjaman.tenor <= 0) 1 else pinjaman.tenor
+                pinjaman.jumlah / t
             }
 
-            val container = LinearLayout(requireContext()).apply {
-                orientation = LinearLayout.VERTICAL
-                setPadding(48, 24, 48, 0)
-            }
 
-            val tv = TextView(requireContext()).apply { text = info }
-
-            val edtJumlah = EditText(requireContext()).apply {
-                inputType = InputType.TYPE_CLASS_NUMBER
-                hint = "Contoh: $defaultJumlah"
-                setText(defaultJumlah.toString())
-            }
-
-            container.addView(tv)
-            container.addView(edtJumlah)
-
-            AlertDialog.Builder(requireContext())
-                .setTitle("Bayar Angsuran #${pinjaman.id}")
-                .setView(container)
-                // Bayar tanpa bukti
-                .setPositiveButton("Bayar") { _, _ ->
-                    val jumlah = edtJumlah.text?.toString()?.trim()
-                        ?.replace(".", "")?.replace(",", "")?.toIntOrNull()
-                    if (jumlah == null || jumlah <= 0) {
-                        toast("Nominal tidak valid.")
-                        return@setPositiveButton
-                    }
-                    buktiBase64 = null
-                    buktiExt = "jpg"
-                    submitPembayaranAngsuran(
-                        kodePegawai = kodePegawai,
-                        pinjamanId = pinjaman.id,
-                        jumlah = jumlah
-                    )
-                }
-                // Pilih bukti + bayar
-                .setNeutralButton("Pilih Bukti & Bayar") { _, _ ->
-                    val jumlah = edtJumlah.text?.toString()?.trim()
-                        ?.replace(".", "")?.replace(",", "")?.toIntOrNull()
-                    if (jumlah == null || jumlah <= 0) {
-                        toast("Nominal tidak valid.")
-                        return@setNeutralButton
-                    }
-                    currentPinjamanForUpload = pinjaman.id
-                    pendingJumlahForUpload = jumlah
-                    pendingStatusForUpload = "Menunggu Verifikasi"
-                    showUploadChooser()
-                }
-                .setNegativeButton("Batal", null)
-                .show()
+        val container = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(48, 24, 48, 0)
         }
-    }
 
-    private fun uriToBase64(uri: Uri): String? {
-        return try {
-            val input = requireContext().contentResolver.openInputStream(uri) ?: return null
-            val bytes = input.readBytes()
-            input.close()
-            android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
-        } catch (e: Exception) { null }
-    }
-
-    private fun submitPembayaranAngsuran(
-        kodePegawai: String,
-        pinjamanId: Int,
-        jumlah: Int
-    ) {
-        lifecycleScope.launch {
-            val status = if (buktiBase64.isNullOrBlank()) "Dibayar (User)" else pendingStatusForUpload
-
-            // ✅ PERUBAHAN: kirim base64 ke backend (bukan uri lokal)
-            val res = repo.addHistoriBukti(
-                kodePegawai = kodePegawai,
-                pinjamanId = pinjamanId,
-                jumlah = jumlah,
-                status = status,
-                buktiBase64 = buktiBase64,
-                buktiExt = buktiExt
-            )
-
-            // reset state upload/payment
-            currentPinjamanForUpload = null
-            pendingJumlahForUpload = null
-            pendingStatusForUpload = "Menunggu Verifikasi"
-            buktiBase64 = null
-            buktiExt = "jpg"
-
-            if (res.success) {
-                toast("Pembayaran tercatat.")
-                refreshAllListsFromApi()
-            } else {
-                toast(res.message ?: "Gagal mencatat pembayaran")
-            }
+        val tv = TextView(requireContext()).apply {
+            text = "Isi nominal pembayaran (Rp):"
         }
+
+        val edtJumlah = EditText(requireContext()).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER
+            hint = "Contoh: $defaultJumlah"
+            setText(defaultJumlah.toString())
+        }
+
+        container.addView(tv)
+        container.addView(edtJumlah)
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Bayar Angsuran #${pinjaman.id}")
+            .setView(container)
+            .setPositiveButton("Bayar") { _, _ ->
+                val jumlah = edtJumlah.text?.toString()?.trim()
+                    ?.replace(".", "")?.replace(",", "")?.toIntOrNull()
+                if (jumlah == null || jumlah <= 0) {
+                    toast("Nominal tidak valid.")
+                    return@setPositiveButton
+                }
+
+                buktiBase64 = null
+                buktiExt = "jpg"
+
+                vm.submitPembayaranAngsuran(
+                    kodePegawai = kodePegawai,
+                    pinjamanId = pinjaman.id,
+                    jumlah = jumlah,
+                    status = "Dibayar (User)",
+                    buktiBase64 = buktiBase64,
+                    buktiExt = buktiExt
+                )
+            }
+            .setNeutralButton("Pilih Bukti & Bayar") { _, _ ->
+                val jumlah = edtJumlah.text?.toString()?.trim()
+                    ?.replace(".", "")?.replace(",", "")?.toIntOrNull()
+                if (jumlah == null || jumlah <= 0) {
+                    toast("Nominal tidak valid.")
+                    return@setNeutralButton
+                }
+                currentPinjamanForUpload = pinjaman.id
+                pendingJumlahForUpload = jumlah
+                pendingStatusForUpload = "Menunggu Verifikasi"
+                showUploadChooser()
+            }
+            .setNegativeButton("Batal", null)
+            .show()
     }
+
+    private var lastHistoriPinjamanId: Int? = null
 
     private fun showHistoriPembayaranFromApi(pinjamanId: Int) {
-        lifecycleScope.launch {
-            try {
-                val resp = com.example.projek_map.api.ApiClient.apiService.getHistoriPembayaran(pinjamanId)
-                val body = resp.body()
-                if (!resp.isSuccessful || body?.success != true) {
-                    toast(body?.message ?: "Gagal ambil histori")
-                    return@launch
-                }
-
-                val list: List<HistoriPembayaran> = body.data ?: emptyList()
-
-                val text = if (list.isEmpty()) {
-                    "Belum ada pembayaran untuk pinjaman ini."
-                } else {
-                    list.joinToString("\n\n") { h ->
-                        val bukti = if (h.buktiPembayaranUri.isNullOrEmpty()) "-" else "✓"
-                        "Tanggal: ${h.tanggal}\nJumlah: Rp ${h.jumlah}\nStatus: ${h.status}\nBukti: $bukti"
-                    }
-                }
-
-                AlertDialog.Builder(requireContext())
-                    .setTitle("Histori Pembayaran #$pinjamanId")
-                    .setMessage(text)
-                    .setPositiveButton("Tutup", null)
-                    .show()
-
-            } catch (e: Exception) {
-                toast("Error: ${e.message}")
-            }
-        }
+        lastHistoriPinjamanId = pinjamanId
+        vm.loadHistoriPembayaranText(pinjamanId)
     }
 
     private fun showUploadChooser() {
@@ -448,6 +365,15 @@ class PinjamanFragment : Fragment() {
         } catch (_: Exception) { null }
     }
 
+    private fun uriToBase64(uri: Uri): String? {
+        return try {
+            val input = requireContext().contentResolver.openInputStream(uri) ?: return null
+            val bytes = input.readBytes()
+            input.close()
+            android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+        } catch (e: Exception) { null }
+    }
+
     private fun onBuktiSelected(uri: Uri) {
         val pinjamanId = currentPinjamanForUpload ?: run {
             toast("Pinjaman tidak diketahui."); return
@@ -461,44 +387,41 @@ class PinjamanFragment : Fragment() {
 
         val jumlah = pendingJumlahForUpload
         if (jumlah == null || jumlah <= 0) {
-            toast("Nominal pembayaran belum diisi. Silakan ulangi dari tombol 'Bayar Angsuran'.")
+            toast("Nominal pembayaran belum diisi.")
             return
         }
 
-        // ✅ PERUBAHAN: ubah uri → base64, lalu submit
+        // simpan base64
         buktiBase64 = uriToBase64(uri)
         buktiExt = "jpg"
 
         if (buktiBase64.isNullOrBlank()) {
-            toast("Gagal membaca file bukti. Coba ulangi."); return
+            toast("Gagal membaca gambar. Coba ulangi.")
+            return
         }
 
-        submitPembayaranAngsuran(
+        val status = pendingStatusForUpload
+
+        // reset state upload yang kamu punya (tetap)
+        currentPinjamanForUpload = null
+        pendingJumlahForUpload = null
+        pendingStatusForUpload = "Menunggu Verifikasi"
+
+        vm.submitPembayaranAngsuran(
             kodePegawai = kodePegawai,
             pinjamanId = pinjamanId,
-            jumlah = jumlah
+            jumlah = jumlah,
+            status = status,
+            buktiBase64 = buktiBase64,
+            buktiExt = buktiExt
         )
+
+        // reset bukti setelah submit
+        buktiBase64 = null
+        buktiExt = "jpg"
     }
 
-    private data class Rincian(val cicilanPerBulan: Int, val totalBayar: Int)
-
-    private fun calcRincianAnuitas(pokok: Int, tenorBulan: Int, bungaTahunan: Double): Rincian {
-        val r = bungaTahunan / 12.0
-        if (tenorBulan <= 0) return Rincian(0, 0)
-        if (r == 0.0) {
-            val cicilan = pokok / tenorBulan
-            return Rincian(cicilan, cicilan * tenorBulan)
-        }
-        val p = pokok.toDouble()
-        val n = tenorBulan.toDouble()
-        val cicilan = (p * r) / (1 - Math.pow(1 + r, -n))
-        val cicilanInt = cicilan.toInt()
-        return Rincian(cicilanInt, cicilanInt * tenorBulan)
+    private fun toast(msg: String) {
+        android.widget.Toast.makeText(requireContext(), msg, android.widget.Toast.LENGTH_SHORT).show()
     }
-
-    private fun formatRupiah(value: Double): String =
-        String.format("%,.0f", value).replace(',', '.')
-
-    private fun toast(msg: String) =
-        Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
 }
