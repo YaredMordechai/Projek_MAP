@@ -4077,6 +4077,7 @@ int id jumpToEnd 0x7f09013c
 int id jumpToStart 0x7f09013d
 int id labeled 0x7f09013e
 int id layout 0x7f09013f
+int id layoutAdminActions 0x7f0902d5
 int id layoutJenisSimpanan 0x7f090140
 int id layoutJumlah 0x7f090141
 int id layoutPembayaranContainer 0x7f090142

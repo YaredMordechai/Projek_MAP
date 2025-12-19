@@ -21,8 +21,8 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
-import com.example.projek_map.data.SimpananRepository
 import com.example.projek_map.api.HistoriSimpanan
+import com.example.projek_map.data.SimpananRepository
 import com.example.projek_map.ui.adapters.HistoriSimpananAdapter
 import com.example.projek_map.ui.viewmodels.SimpananViewModel
 import com.example.projek_map.utils.PrefManager
@@ -31,8 +31,12 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import com.google.android.material.textfield.TextInputEditText
 import java.io.File
+import android.util.Base64
 
 class SimpananFragment : Fragment() {
+
+    private var buktiBase64: String? = null
+    private var buktiExt: String = "jpg"
 
     private lateinit var tvTotalSaldo: TextView
     private lateinit var rvHistori: RecyclerView
@@ -83,6 +87,26 @@ class SimpananFragment : Fragment() {
     ) { granted ->
         if (granted) launchCamera()
         else Toast.makeText(requireContext(), "Izin kamera ditolak", Toast.LENGTH_SHORT).show()
+    }
+
+    // ✅ CUMA SATU uriToBase64 (hapus yang dobel)
+    private fun uriToBase64(uri: Uri): String? {
+        return try {
+            val bytes = requireContext().contentResolver.openInputStream(uri)?.use { it.readBytes() }
+                ?: return null
+            Base64.encodeToString(bytes, Base64.NO_WRAP)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    private fun guessExtFromUri(uri: Uri): String {
+        val type = requireContext().contentResolver.getType(uri) ?: return "jpg"
+        return when (type.lowercase()) {
+            "image/png" -> "png"
+            "image/jpeg", "image/jpg" -> "jpg"
+            else -> "jpg"
+        }
     }
 
     override fun onCreateView(
@@ -138,18 +162,32 @@ class SimpananFragment : Fragment() {
 
         btnSetor.setOnClickListener {
             val jenis = dropdownJenis.text.toString().trim()
-            val jumlah = inputJumlah.text?.toString()?.toDoubleOrNull()
             val kodePegawai = prefManager.getKodePegawai() ?: "EMP001"
 
             if (jenis.isEmpty()) {
                 Toast.makeText(requireContext(), "Pilih jenis simpanan", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            if (jumlah == null || jumlah <= 0) {
-                Toast.makeText(requireContext(), "Masukkan jumlah valid", Toast.LENGTH_SHORT).show()
+
+            val jumlah: Double = inputJumlah.text?.toString()?.toDoubleOrNull()
+                ?: run {
+                    Toast.makeText(requireContext(), "Masukkan jumlah valid", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+            if (jumlah <= 0) {
+                Toast.makeText(requireContext(), "Jumlah harus > 0", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
+            // bukti wajib untuk setor (server kamu mewajibkan buktiBase64)
+            if (buktiBase64.isNullOrBlank()) {
+                Toast.makeText(requireContext(), "Upload bukti pembayaran dulu", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // ✅ ViewModel TIDAK pakai param buktiBase64/buktiExt lagi
+            // bukti sudah disimpan via viewModel.setBuktiBase64(...)
             viewModel.setor(
                 kodePegawai = kodePegawai,
                 jenis = jenis,
@@ -221,10 +259,32 @@ class SimpananFragment : Fragment() {
                 viewModel.clearMessage()
             }
 
-            // popup
-            if (!st.popupTitle.isNullOrEmpty() && !st.popupMessage.isNullOrEmpty()) {
-                showPopup(st.popupTitle, st.popupMessage)
+            // popup (kalau ada)
+            val t = st.popupTitle
+            val m = st.popupMessage
+            if (!t.isNullOrBlank() && !m.isNullOrBlank()) {
+                showPopup(t, m)
                 viewModel.clearMessage()
+            }
+
+            // =====================================
+            // ✅ RESET FORM SETELAH SETOR BERHASIL
+            // =====================================
+            if (st.resetForm) {
+                // reset input
+                resetForm()
+
+                // reset bukti lokal
+                buktiBase64 = null
+                buktiExt = "jpg"
+                buktiUri = null
+
+                // reset preview
+                ivBuktiPreview.setImageDrawable(null)
+                ivBuktiPreview.visibility = View.GONE
+
+                // matikan flag reset supaya tidak loop
+                viewModel.clearResetFlag()
             }
         }
     }
@@ -247,8 +307,23 @@ class SimpananFragment : Fragment() {
         ivBuktiPreview.visibility = View.VISIBLE
         ivBuktiPreview.setImageURI(uri)
 
-        val kodePegawai = prefManager.getKodePegawai() ?: "EMP001"
-        viewModel.uploadBukti(kodePegawai = kodePegawai, uri = uri.toString())
+        val base64 = uriToBase64(uri)
+        if (base64.isNullOrBlank()) {
+            Toast.makeText(requireContext(), "Gagal membaca file bukti", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val ext = guessExtFromUri(uri)
+
+        // ✅ simpan juga ke variabel lokal (untuk validasi btnSetor)
+        buktiBase64 = base64
+        buktiExt = ext
+
+        // ✅ simpan ke ViewModel (yang dipakai saat setor)
+        viewModel.setBuktiBase64(base64, ext)
+
+        // optional info
+        Toast.makeText(requireContext(), "Bukti dari $source siap digunakan", Toast.LENGTH_SHORT).show()
     }
 
     private fun resetForm() {

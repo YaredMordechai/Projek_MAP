@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,6 +28,9 @@ public final class ItemPengumumanBinding implements ViewBinding {
   public final Button btnEdit;
 
   @NonNull
+  public final LinearLayout layoutAdminActions;
+
+  @NonNull
   public final TextView tvIsi;
 
   @NonNull
@@ -36,11 +40,12 @@ public final class ItemPengumumanBinding implements ViewBinding {
   public final TextView tvTanggal;
 
   private ItemPengumumanBinding(@NonNull CardView rootView, @NonNull Button btnDelete,
-      @NonNull Button btnEdit, @NonNull TextView tvIsi, @NonNull TextView tvJudul,
-      @NonNull TextView tvTanggal) {
+      @NonNull Button btnEdit, @NonNull LinearLayout layoutAdminActions, @NonNull TextView tvIsi,
+      @NonNull TextView tvJudul, @NonNull TextView tvTanggal) {
     this.rootView = rootView;
     this.btnDelete = btnDelete;
     this.btnEdit = btnEdit;
+    this.layoutAdminActions = layoutAdminActions;
     this.tvIsi = tvIsi;
     this.tvJudul = tvJudul;
     this.tvTanggal = tvTanggal;
@@ -85,6 +90,12 @@ public final class ItemPengumumanBinding implements ViewBinding {
         break missingId;
       }
 
+      id = R.id.layoutAdminActions;
+      LinearLayout layoutAdminActions = ViewBindings.findChildViewById(rootView, id);
+      if (layoutAdminActions == null) {
+        break missingId;
+      }
+
       id = R.id.tvIsi;
       TextView tvIsi = ViewBindings.findChildViewById(rootView, id);
       if (tvIsi == null) {
@@ -103,8 +114,8 @@ public final class ItemPengumumanBinding implements ViewBinding {
         break missingId;
       }
 
-      return new ItemPengumumanBinding((CardView) rootView, btnDelete, btnEdit, tvIsi, tvJudul,
-          tvTanggal);
+      return new ItemPengumumanBinding((CardView) rootView, btnDelete, btnEdit, layoutAdminActions,
+          tvIsi, tvJudul, tvTanggal);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

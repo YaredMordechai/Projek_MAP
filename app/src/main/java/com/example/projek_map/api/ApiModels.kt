@@ -54,17 +54,16 @@ data class HistoriPembayaran(
     val buktiPembayaranUri: String? = null
 )
 
-// === SIMPANAN TRANSAKSI (SETOR / TARIK) ===
 data class SimpananTransaksiRequest(
     val kodePegawai: String,
     val jenisInput: String,
     val jumlah: Double,
     val keterangan: String,
-
-    // ✅ BARU (setoran anggota wajib bukti)
-    val buktiBase64: String? = null,
-    val buktiExt: String? = "jpg"
+    val buktiBase64: String? = null, // ✅ BARU
+    val buktiExt: String? = null     // ✅ BARU
 )
+
+
 
 
 // === BUKTI PEMBAYARAN ANGGOTA (upload bukti simpanan) ===
