@@ -27,7 +27,7 @@ class KelolaPembayaranAngsuranFragment : Fragment() {
     private lateinit var tvEmpty: TextView
     private lateinit var adapter: HistoriPembayaranAdapter
 
-    // List tampilan (bisa dimodifikasi lalu notifyDataSetChanged)
+    // List tampilan
     private val display = mutableListOf<HistoriPembayaran>()
     private val rupiah = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
 
@@ -37,7 +37,6 @@ class KelolaPembayaranAngsuranFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        // 🔹 PAKAI layout fragment_kelola_pinjaman (yang sudah disisipi blok pembayaran)
         val v = inflater.inflate(R.layout.fragment_kelola_pinjaman, container, false)
 
         rvHistori = v.findViewById(R.id.rvHistoriPembayaran)
@@ -45,7 +44,18 @@ class KelolaPembayaranAngsuranFragment : Fragment() {
         tvEmpty = v.findViewById(R.id.tvEmptyPembayaran)
 
         rvHistori.layoutManager = LinearLayoutManager(requireContext())
-        adapter = HistoriPembayaranAdapter(display)
+
+        // ✅ pasang adapter dengan callback ACC/Tolak
+        adapter = HistoriPembayaranAdapter(
+            display,
+            onApprove = { item ->
+                viewModel.decidePembayaran(item.id, true)
+            },
+            onReject = { item ->
+                viewModel.decidePembayaran(item.id, false)
+            }
+        )
+
         rvHistori.adapter = adapter
 
         btnCatat.setOnClickListener { showCatatDialog() }
@@ -63,7 +73,8 @@ class KelolaPembayaranAngsuranFragment : Fragment() {
 
     private fun setupObservers() {
         viewModel.historiList.observe(viewLifecycleOwner) { list ->
-            val sorted = (list ?: emptyList()).sortedByDescending { it.tanggal }
+            val sorted = (list ?: emptyList())
+                .sortedByDescending { it.tanggal }
 
             display.clear()
             display.addAll(sorted)
@@ -83,6 +94,27 @@ class KelolaPembayaranAngsuranFragment : Fragment() {
 
     private fun refresh() {
         viewModel.refresh()
+    }
+
+    // ✅ konfirmasi sebelum ACC/Tolak
+    private fun confirmDecide(item: HistoriPembayaran, approve: Boolean) {
+        val title = if (approve) "ACC Pembayaran" else "Tolak Pembayaran"
+        val actionText = if (approve) "ACC" else "Tolak"
+
+        AlertDialog.Builder(requireContext())
+            .setTitle(title)
+            .setMessage(
+                "ID Histori: ${item.id}\n" +
+                        "Kode: ${item.kodePegawai}\n" +
+                        "Pinjaman: ${item.pinjamanId}\n" +
+                        "Jumlah: Rp ${item.jumlah}\n\n" +
+                        "Yakin ingin $actionText?"
+            )
+            .setPositiveButton(actionText) { _, _ ->
+                viewModel.decidePembayaran(item.id, approve)
+            }
+            .setNegativeButton("Batal", null)
+            .show()
     }
 
     private fun showCatatDialog() {

@@ -1,7 +1,7 @@
 package com.example.projek_map.ui.fragments
 
-import android.app.AlertDialog
 import android.Manifest
+import android.app.AlertDialog
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
@@ -52,6 +52,10 @@ class PinjamanFragment : Fragment() {
     private lateinit var adapterAktif: PinjamanAdapter
     private lateinit var adapterSelesai: PinjamanAdapter
 
+    // ✅ untuk dialog histori + info sisa bayar
+    private var lastHistoriPinjamanId: Int? = null
+    private var lastPinjamanForHistori: Pinjaman? = null
+
     private val dataPending = mutableListOf<Pinjaman>()
     private val dataAktif = mutableListOf<Pinjaman>()
     private val dataSelesai = mutableListOf<Pinjaman>()
@@ -69,7 +73,7 @@ class PinjamanFragment : Fragment() {
     private var pendingStatusForUpload: String = "Menunggu Verifikasi"
     private var pendingCameraUri: Uri? = null
 
-    // ✅ base64 yang akan dikirim ke backend
+    // base64 yang akan dikirim ke backend
     private var buktiBase64: String? = null
     private var buktiExt: String = "jpg"
 
@@ -78,7 +82,10 @@ class PinjamanFragment : Fragment() {
     private val notifChannelId = "pinjaman_decision_channel"
     private val rupiah = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         val view = inflater.inflate(R.layout.fragment_pinjaman, container, false)
 
         // Launchers
@@ -152,7 +159,7 @@ class PinjamanFragment : Fragment() {
             updateStatusCard()
         }
 
-        // ✅ ini kuncinya: cek perubahan status untuk notifikasi keputusan
+        // cek perubahan status untuk notifikasi keputusan
         vm.allPinjaman.observe(viewLifecycleOwner) { all ->
             if (!isAdmin) handleDecisionNotifications(all)
         }
@@ -160,15 +167,37 @@ class PinjamanFragment : Fragment() {
         vm.toast.observe(viewLifecycleOwner) { msg ->
             if (!msg.isNullOrBlank()) toast(msg)
         }
+
+        // ✅ Dialog histori + info sisa bayar
         vm.historiDialogText.observe(viewLifecycleOwner) { text ->
             if (!text.isNullOrBlank()) {
                 val id = lastHistoriPinjamanId ?: return@observe
+                val pinjaman = lastPinjamanForHistori
+
+                val infoSisa = if (pinjaman != null) {
+                    val pokok = pinjaman.jumlah
+                    val bunga = pinjaman.bunga
+                    val totalTagihan = (pokok + (pokok * bunga)).toInt()
+                    val terbayar = pinjaman.angsuranTerbayar
+                    val sisa = (totalTagihan - terbayar).coerceAtLeast(0)
+
+                    fun rupiahInt(x: Int) =
+                        "Rp " + String.format("%,d", x).replace(',', '.')
+
+                    "\n\n---\n" +
+                            "Total Tagihan : ${rupiahInt(totalTagihan)}\n" +
+                            "Sudah Dibayar : ${rupiahInt(terbayar)}\n" +
+                            "Sisa Bayar    : ${rupiahInt(sisa)}"
+                } else ""
+
                 AlertDialog.Builder(requireContext())
                     .setTitle("Histori Pembayaran #$id")
-                    .setMessage(text)
+                    .setMessage(text + infoSisa)
                     .setPositiveButton("Tutup", null)
                     .show()
+
                 lastHistoriPinjamanId = null
+                lastPinjamanForHistori = null
             }
         }
 
@@ -186,7 +215,6 @@ class PinjamanFragment : Fragment() {
 
         val prefs = requireContext().getSharedPreferences(statusCachePrefsName, Context.MODE_PRIVATE)
         val editor = prefs.edit()
-
         val decidedNow = mutableListOf<String>()
 
         for (p in all) {
@@ -201,26 +229,22 @@ class PinjamanFragment : Fragment() {
             val oldIsPending = oldLower == "proses" || oldLower == "menunggu"
             val newIsDecision = newLower == "disetujui" || newLower == "ditolak"
 
-            // trigger hanya kalau sebelumnya pending, sekarang jadi keputusan
             if (oldStatus != null && oldIsPending && newIsDecision) {
                 val jumlahText = try { rupiah.format(p.jumlah) } catch (_: Exception) { "Rp ${p.jumlah}" }
                 decidedNow.add("Pinjaman #$id ($jumlahText) $newStatus")
             }
 
-            // update cache selalu
             editor.putString(key, newStatus)
         }
 
         editor.apply()
 
         if (decidedNow.isNotEmpty()) {
-            // 1) Notif Android (ringkas biar gak spam)
             showLocalNotification(
                 title = "Keputusan Pinjaman",
                 message = "Ada ${decidedNow.size} keputusan baru. Buka menu Pinjaman untuk detail."
             )
 
-            // 2) Dialog detail di dalam app
             AlertDialog.Builder(requireContext())
                 .setTitle("Update Keputusan Pinjaman")
                 .setMessage(decidedNow.joinToString("\n\n"))
@@ -242,7 +266,7 @@ class PinjamanFragment : Fragment() {
         }
 
         val notif = NotificationCompat.Builder(requireContext(), notifChannelId)
-            .setSmallIcon(R.drawable.ic_notification) // kalau ini gak ada, ganti icon yang ada di projectmu
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(title)
             .setContentText(message)
             .setStyle(NotificationCompat.BigTextStyle().bigText(message))
@@ -250,6 +274,13 @@ class PinjamanFragment : Fragment() {
             .build()
 
         nm.notify((System.currentTimeMillis() % 100000).toInt(), notif)
+    }
+
+    // ✅ versi yang benar (pakai Pinjaman, bukan Int)
+    private fun showHistoriPembayaranFromApi(pinjaman: Pinjaman) {
+        lastHistoriPinjamanId = pinjaman.id
+        lastPinjamanForHistori = pinjaman
+        vm.loadHistoriPembayaranText(pinjaman.id)
     }
 
     private fun ajukanPinjaman() {
@@ -305,6 +336,7 @@ class PinjamanFragment : Fragment() {
         }
     }
 
+    // ✅ Hapus tombol "Lihat Rincian" (sesuai request kamu)
     private fun showPinjamanDetailDialog(pinjaman: Pinjaman) {
         val metode = if ((pinjaman.metode ?: "").equals("flat", true)) "flat" else "anuitas"
 
@@ -316,29 +348,17 @@ class PinjamanFragment : Fragment() {
                         "Tenor: ${pinjaman.tenor} bulan\n" +
                         "Metode: $metode"
             )
-            .setPositiveButton("Lihat Rincian") { _, _ ->
-                val frag = PinjamanDetailFragment().apply {
-                    arguments = Bundle().apply {
-                        putInt("pinjamanId", pinjaman.id)
-                        putString("metode", metode)
-                    }
-                }
-                parentFragmentManager.beginTransaction()
-                val containerId = (view?.parent as? ViewGroup)?.id ?: android.R.id.content
-                requireActivity().supportFragmentManager.beginTransaction()
-                    .replace(containerId, frag)
-                    .addToBackStack(null)
-                    .commit()
-            }
             .setNeutralButton("Histori Pembayaran") { _, _ ->
-                showHistoriPembayaranFromApi(pinjaman.id)
+                showHistoriPembayaranFromApi(pinjaman)
             }
-            .setNegativeButton("Bayar Angsuran") { _, _ ->
+            .setPositiveButton("Bayar Angsuran") { _, _ ->
                 showBayarDialog(pinjaman)
             }
+            .setNegativeButton("Tutup", null)
             .show()
     }
 
+    // ✅ bayar wajib upload bukti
     private fun showBayarDialog(pinjaman: Pinjaman) {
         val pref = PrefManager(requireContext())
         val kodePegawai = pref.getKodePegawai().orEmpty()
@@ -346,11 +366,10 @@ class PinjamanFragment : Fragment() {
             toast("Kode pegawai kosong. Silakan login ulang."); return
         }
 
-        val defaultJumlah = pinjaman.cicilanPerBulan
-            ?: run {
-                val t = if (pinjaman.tenor <= 0) 1 else pinjaman.tenor
-                pinjaman.jumlah / t
-            }
+        val defaultJumlah = pinjaman.cicilanPerBulan ?: run {
+            val t = if (pinjaman.tenor <= 0) 1 else pinjaman.tenor
+            pinjaman.jumlah / t
+        }
 
         val container = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
@@ -373,7 +392,7 @@ class PinjamanFragment : Fragment() {
         AlertDialog.Builder(requireContext())
             .setTitle("Bayar Angsuran #${pinjaman.id}")
             .setView(container)
-            .setPositiveButton("Bayar") { _, _ ->
+            .setPositiveButton("Pilih Bukti & Kirim") { _, _ ->
                 val jumlah = edtJumlah.text?.toString()?.trim()
                     ?.replace(".", "")?.replace(",", "")?.toIntOrNull()
                 if (jumlah == null || jumlah <= 0) {
@@ -381,25 +400,6 @@ class PinjamanFragment : Fragment() {
                     return@setPositiveButton
                 }
 
-                buktiBase64 = null
-                buktiExt = "jpg"
-
-                vm.submitPembayaranAngsuran(
-                    kodePegawai = kodePegawai,
-                    pinjamanId = pinjaman.id,
-                    jumlah = jumlah,
-                    status = "Dibayar (User)",
-                    buktiBase64 = buktiBase64,
-                    buktiExt = buktiExt
-                )
-            }
-            .setNeutralButton("Pilih Bukti & Bayar") { _, _ ->
-                val jumlah = edtJumlah.text?.toString()?.trim()
-                    ?.replace(".", "")?.replace(",", "")?.toIntOrNull()
-                if (jumlah == null || jumlah <= 0) {
-                    toast("Nominal tidak valid.")
-                    return@setNeutralButton
-                }
                 currentPinjamanForUpload = pinjaman.id
                 pendingJumlahForUpload = jumlah
                 pendingStatusForUpload = "Menunggu Verifikasi"
@@ -407,13 +407,6 @@ class PinjamanFragment : Fragment() {
             }
             .setNegativeButton("Batal", null)
             .show()
-    }
-
-    private var lastHistoriPinjamanId: Int? = null
-
-    private fun showHistoriPembayaranFromApi(pinjamanId: Int) {
-        lastHistoriPinjamanId = pinjamanId
-        vm.loadHistoriPembayaranText(pinjamanId)
     }
 
     private fun showUploadChooser() {
@@ -448,7 +441,9 @@ class PinjamanFragment : Fragment() {
             val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
             val imageFile = File(dir, "IMG_BUKTI_${time}.jpg")
             FileProvider.getUriForFile(requireContext(), "com.example.projek_map.fileprovider", imageFile)
-        } catch (_: Exception) { null }
+        } catch (_: Exception) {
+            null
+        }
     }
 
     private fun uriToBase64(uri: Uri): String? {
@@ -457,7 +452,9 @@ class PinjamanFragment : Fragment() {
             val bytes = input.readBytes()
             input.close()
             android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
-        } catch (e: Exception) { null }
+        } catch (_: Exception) {
+            null
+        }
     }
 
     private fun onBuktiSelected(uri: Uri) {
@@ -487,10 +484,12 @@ class PinjamanFragment : Fragment() {
 
         val status = pendingStatusForUpload
 
+        // reset state
         currentPinjamanForUpload = null
         pendingJumlahForUpload = null
         pendingStatusForUpload = "Menunggu Verifikasi"
 
+        // submit
         vm.submitPembayaranAngsuran(
             kodePegawai = kodePegawai,
             pinjamanId = pinjamanId,

@@ -63,9 +63,6 @@ data class SimpananTransaksiRequest(
     val buktiExt: String? = null     // ✅ BARU
 )
 
-
-
-
 // === BUKTI PEMBAYARAN ANGGOTA (upload bukti simpanan) ===
 data class BuktiPembayaranAnggotaRequest(
     val kodePegawai: String,
@@ -250,10 +247,24 @@ data class SimpananPending(
     val buktiUrl: String? = null
 )
 
+data class AngsuranPendingCreateRequest(
+    val kodePegawai: String,
+    val pinjamanId: Int,
+    val jumlah: Int,
+    val buktiBase64: String,
+    val buktiExt: String? = "jpg"
+)
+
 data class SimpananPendingDecideRequest(
+    val id: Int,
+    val action: String )
+
+data class HistoriPembayaranDecideRequest(
     val id: Int,
     val action: String // "approve" | "reject"
 )
+
+
 
 
 data class User(

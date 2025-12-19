@@ -112,12 +112,12 @@
         "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\fragment_pinjaman.xml"
     },
     {
-        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-debug-48:\\layout_item_anggota_summary.xml.flat",
-        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\item_anggota_summary.xml"
-    },
-    {
         "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-debug-48:\\drawable_ic_launcher_background.xml.flat",
         "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\drawable\\ic_launcher_background.xml"
+    },
+    {
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-debug-48:\\layout_item_anggota_summary.xml.flat",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\item_anggota_summary.xml"
     },
     {
         "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-debug-48:\\xml_data_extraction_rules.xml.flat",
@@ -144,12 +144,12 @@
         "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\drawable\\ic_cicilan.xml"
     },
     {
-        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-debug-48:\\layout_kelola_kas_fragment.xml.flat",
-        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\kelola_kas_fragment.xml"
-    },
-    {
         "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-debug-48:\\layout_dialog_add_pengumuman.xml.flat",
         "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\dialog_add_pengumuman.xml"
+    },
+    {
+        "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-debug-48:\\layout_kelola_kas_fragment.xml.flat",
+        "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\kelola_kas_fragment.xml"
     },
     {
         "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-debug-48:\\layout_item_kas_transaksi.xml.flat",
@@ -272,10 +272,6 @@
         "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\fragment_profil.xml"
     },
     {
-        "merged": "com.example.projek_map.app-debug-48:/layout_item_pengumuman.xml.flat",
-        "source": "com.example.projek_map.app-main-50:/layout/item_pengumuman.xml"
-    },
-    {
         "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-debug-48:\\mipmap-anydpi-v26_ic_launcher_round.xml.flat",
         "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\mipmap-anydpi-v26\\ic_launcher_round.xml"
     },
@@ -298,6 +294,10 @@
     {
         "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-debug-48:\\anim_fade_in_zoom.xml.flat",
         "source": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\anim\\fade_in_zoom.xml"
+    },
+    {
+        "merged": "com.example.projek_map.app-debug-48:/layout_dialog_histori_pembayaran.xml.flat",
+        "source": "com.example.projek_map.app-main-50:/layout/dialog_histori_pembayaran.xml"
     },
     {
         "merged": "C:\\Users\\ASUS\\.gradle\\daemon\\8.13\\com.example.projek_map.app-debug-48:\\drawable_bg_spinner.xml.flat",

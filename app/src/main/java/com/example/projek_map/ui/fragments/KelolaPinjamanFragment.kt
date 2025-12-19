@@ -83,8 +83,13 @@ class KelolaPinjamanFragment : Fragment() {
         tvEmpty = v.findViewById(R.id.tvEmptyPembayaran)
 
         rvHistori.layoutManager = LinearLayoutManager(requireContext())
-        adapterHistori = HistoriPembayaranAdapter(displayHistori)
+        adapterHistori = HistoriPembayaranAdapter(
+            displayHistori,
+            onApprove = { item -> confirmDecide(item, true) },
+            onReject = { item -> confirmDecide(item, false) }
+        )
         rvHistori.adapter = adapterHistori
+
 
         btnCatat.setOnClickListener { showCatatDialog() }
 
@@ -98,6 +103,57 @@ class KelolaPinjamanFragment : Fragment() {
 
         return v
     }
+
+    private fun confirmDecide(item: HistoriPembayaran, approve: Boolean) {
+        val title = if (approve) "ACC Pembayaran" else "Tolak Pembayaran"
+        val btn = if (approve) "ACC" else "Tolak"
+
+        AlertDialog.Builder(requireContext())
+            .setTitle(title)
+            .setMessage(
+                "Histori ID: ${item.id}\n" +
+                        "Kode: ${item.kodePegawai}\n" +
+                        "Pinjaman: ${item.pinjamanId}\n" +
+                        "Jumlah: Rp ${item.jumlah}\n\n" +
+                        "Yakin?"
+            )
+            .setPositiveButton(btn) { _, _ ->
+                decideHistori(item.id, approve)
+            }
+            .setNegativeButton("Batal", null)
+            .show()
+    }
+
+    private fun decideHistori(historiId: Int, approve: Boolean) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val action = if (approve) "approve" else "reject"
+                val res = ApiClient.apiService.decideHistoriPembayaran(
+                    com.example.projek_map.api.HistoriPembayaranDecideRequest(
+                        id = historiId,
+                        action = action
+                    )
+                )
+
+                val body = res.body()
+                val ok = res.isSuccessful && body?.success == true
+
+                Toast.makeText(
+                    requireContext(),
+                    body?.message ?: if (ok) "Berhasil" else "Gagal",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                if (ok) {
+                    refreshHistori()
+                    loadPinjamanAdmin()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Server error: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
 
     override fun onResume() {
         super.onResume()

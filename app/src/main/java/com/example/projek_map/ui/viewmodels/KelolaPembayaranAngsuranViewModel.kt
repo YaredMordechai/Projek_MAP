@@ -42,6 +42,27 @@ class KelolaPembayaranAngsuranViewModel : ViewModel() {
         }
     }
 
+    fun decidePembayaran(historiId: Int, approve: Boolean) {
+        viewModelScope.launch {
+            try {
+                val action = if (approve) "approve" else "reject"
+                val resp = repo.decideHistoriPembayaran(
+                    com.example.projek_map.api.HistoriPembayaranDecideRequest(historiId, action)
+                )
+
+                if (resp.isSuccessful && resp.body()?.success == true) {
+                    _toast.value = if (approve) "Pembayaran di-ACC." else "Pembayaran ditolak."
+                    refresh()
+                } else {
+                    _toast.value = resp.body()?.message ?: "Gagal memproses keputusan"
+                }
+            } catch (e: Exception) {
+                _toast.value = "Server error: ${e.message}"
+            }
+        }
+    }
+
+
     fun catatPembayaranAdmin(kodePegawai: String, pinjamanId: Int, jumlah: Int) {
         viewModelScope.launch {
             try {

@@ -140,6 +140,7 @@ id inputNominalPinjaman
 id inputTenor
 id ivBuktiPreview
 id layoutAdminActions
+id layoutAksiAdmin
 id layoutJenisSimpanan
 id layoutJumlah
 id layoutPembayaranContainer

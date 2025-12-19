@@ -6,13 +6,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.projek_map.R
-import com.example.projek_map.api.HistoriPembayaran   // ✅ PENTING: pakai api
+import com.example.projek_map.api.HistoriPembayaran
+import com.google.android.material.button.MaterialButton
 
 class HistoriPembayaranAdapter(
-    private val data: List<HistoriPembayaran>
+    private val data: List<HistoriPembayaran>,
+    private val onApprove: ((HistoriPembayaran) -> Unit)? = null,
+    private val onReject: ((HistoriPembayaran) -> Unit)? = null
 ) : RecyclerView.Adapter<HistoriPembayaranAdapter.ViewHolder>() {
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -22,6 +26,11 @@ class HistoriPembayaranAdapter(
         val txtStatus: TextView = view.findViewById(R.id.txtStatus)
         val imgBukti: ImageView = view.findViewById(R.id.imgBuktiPembayaran)
         val imgPaymentIcon: ImageView = view.findViewById(R.id.imgPaymentIcon)
+
+        // ✅ baru
+        val layoutAksiAdmin: LinearLayout = view.findViewById(R.id.layoutAksiAdmin)
+        val btnApprove: MaterialButton = view.findViewById(R.id.btnApprove)
+        val btnReject: MaterialButton = view.findViewById(R.id.btnReject)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -76,6 +85,19 @@ class HistoriPembayaranAdapter(
             if (!pembayaran.buktiPembayaranUri.isNullOrEmpty())
                 "${pembayaran.status}  •  Bukti: ✓"
             else pembayaran.status
+
+        // ✅ ===== Aksi Admin (ACC / Tolak) =====
+        val isPending = pembayaran.status.contains("Menunggu", true)
+
+        val canShowActions = isPending && onApprove != null && onReject != null
+        holder.layoutAksiAdmin.visibility = if (canShowActions) View.VISIBLE else View.GONE
+
+        holder.btnApprove.setOnClickListener {
+            onApprove?.invoke(pembayaran)
+        }
+        holder.btnReject.setOnClickListener {
+            onReject?.invoke(pembayaran)
+        }
     }
 
     override fun getItemCount(): Int = data.size

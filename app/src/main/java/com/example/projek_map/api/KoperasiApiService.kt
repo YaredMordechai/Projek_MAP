@@ -67,6 +67,12 @@ interface KoperasiApiService {
         @Body req: SimpananPendingDecideRequest
     ): Response<ApiResponse<Any>>
 
+    @POST("histori_pembayaran_decide.php")
+    suspend fun decideHistoriPembayaran(
+        @Body req: HistoriPembayaranDecideRequest
+    ): Response<ApiResponse<Boolean>>
+
+
 
     // =========================
     // HISTORI SIMPANAN
