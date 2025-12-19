@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.2
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Dec 17, 2025 at 11:47 AM
--- Server version: 8.0.30
--- PHP Version: 8.1.10
+-- Waktu pembuatan: 19 Des 2025 pada 10.10
+-- Versi server: 8.0.30
+-- Versi PHP: 8.1.10
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -24,7 +24,7 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `admins`
+-- Struktur dari tabel `admins`
 --
 
 CREATE TABLE `admins` (
@@ -36,7 +36,7 @@ CREATE TABLE `admins` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `admins`
+-- Dumping data untuk tabel `admins`
 --
 
 INSERT INTO `admins` (`kodePegawai`, `email`, `password`, `nama`, `role`) VALUES
@@ -46,7 +46,7 @@ INSERT INTO `admins` (`kodePegawai`, `email`, `password`, `nama`, `role`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `bukti_pembayaran_anggota`
+-- Struktur dari tabel `bukti_pembayaran_anggota`
 --
 
 CREATE TABLE `bukti_pembayaran_anggota` (
@@ -57,16 +57,22 @@ CREATE TABLE `bukti_pembayaran_anggota` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `bukti_pembayaran_anggota`
+-- Dumping data untuk tabel `bukti_pembayaran_anggota`
 --
 
 INSERT INTO `bukti_pembayaran_anggota` (`id`, `kodePegawai`, `uri`, `tanggal`) VALUES
-(1, 'EMP002', 'content://com.example.projek_map.fileprovider/cache_images/bukti_6519085491984063085.jpg', '2025-12-17');
+(1, 'EMP002', 'content://com.example.projek_map.fileprovider/cache_images/bukti_6519085491984063085.jpg', '2025-12-17'),
+(2, 'EMP001', 'content://com.example.projek_map.fileprovider/cache_images/bukti_8206125871901158565.jpg', '2025-12-17'),
+(3, 'EMP001', 'content://com.example.projek_map.fileprovider/cache_images/bukti_5160128920914141361.jpg', '2025-12-17'),
+(4, 'EMP001', 'content://com.example.projek_map.fileprovider/cache_images/bukti_6855221375101875140.jpg', '2025-12-17'),
+(5, 'EMP001', 'content://com.example.projek_map.fileprovider/cache_images/bukti_7220600425205535326.jpg', '2025-12-17'),
+(6, 'EMP001', 'content://com.example.projek_map.fileprovider/cache_images/bukti_5801251572833313092.jpg', '2025-12-17'),
+(7, 'EMP001', 'content://com.example.projek_map.fileprovider/cache_images/bukti_6372776075628697619.jpg', '2025-12-19');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `decision_notifications`
+-- Struktur dari tabel `decision_notifications`
 --
 
 CREATE TABLE `decision_notifications` (
@@ -80,7 +86,7 @@ CREATE TABLE `decision_notifications` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `decision_notifications`
+-- Dumping data untuk tabel `decision_notifications`
 --
 
 INSERT INTO `decision_notifications` (`id`, `kodePegawai`, `pinjamanId`, `decision`, `jumlah`, `tanggal`, `is_read`) VALUES
@@ -98,12 +104,13 @@ INSERT INTO `decision_notifications` (`id`, `kodePegawai`, `pinjamanId`, `decisi
 (12, 'EMP003', 13, 'disetujui', 11000000, '2025-12-17', 0),
 (13, 'EMP001', 19, 'disetujui', 100000, '2025-12-17', 1),
 (14, 'EMP001', 18, 'disetujui', 5000000, '2025-12-17', 1),
-(15, 'EMP001', 17, 'ditolak', 10000000, '2025-12-17', 1);
+(15, 'EMP001', 17, 'ditolak', 10000000, '2025-12-17', 1),
+(16, 'EMP001', 20, 'disetujui', 1200001, '2025-12-17', 1);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `due_reminders`
+-- Struktur dari tabel `due_reminders`
 --
 
 CREATE TABLE `due_reminders` (
@@ -118,7 +125,7 @@ CREATE TABLE `due_reminders` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `histori_pembayaran`
+-- Struktur dari tabel `histori_pembayaran`
 --
 
 CREATE TABLE `histori_pembayaran` (
@@ -132,7 +139,7 @@ CREATE TABLE `histori_pembayaran` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `histori_pembayaran`
+-- Dumping data untuk tabel `histori_pembayaran`
 --
 
 INSERT INTO `histori_pembayaran` (`id`, `kodePegawai`, `pinjamanId`, `tanggal`, `jumlah`, `status`, `buktiPembayaranUri`) VALUES
@@ -142,12 +149,21 @@ INSERT INTO `histori_pembayaran` (`id`, `kodePegawai`, `pinjamanId`, `tanggal`, 
 (4, 'EMP002', 2, '2025-07-05', 250000, 'Belum Lunas', NULL),
 (5, 'EMP001', 3, '2025-12-15', 120000, 'Dibayar (Admin)', NULL),
 (6, 'EMP001', 9, '2025-12-16', 70340, 'Menunggu Verifikasi', 'content://com.example.projek_map.fileprovider/pictures/IMG_BUKTI_20251216_211842.jpg'),
-(7, 'EMP003', 10, '2025-12-17', 15000, 'Dibayar (User)', NULL);
+(7, 'EMP003', 10, '2025-12-17', 15000, 'Dibayar (User)', NULL),
+(8, 'EMP001', 8, '2025-12-19', 123456, 'Dibayar (User)', NULL),
+(9, 'EMP001', 8, '2025-12-19', 123456, 'Dibayar (User)', NULL),
+(10, 'EMP001', 9, '2025-12-19', 10000, 'Dibayar (User)', NULL),
+(11, 'EMP001', 9, '2025-12-19', 1000, 'Dibayar (User)', NULL),
+(12, 'EMP001', 9, '2025-12-19', 68333, 'Dibayar (User)', NULL),
+(13, 'EMP001', 19, '2025-12-19', 14285, 'Dibayar (User)', NULL),
+(14, 'EMP001', 19, '2025-12-19', 100000, 'Dibayar (User)', NULL),
+(15, 'EMP001', 18, '2025-12-19', 1250000, 'Dibayar (Verified)', 'http://10.0.2.2/koperasi_api/uploads/pinjaman_20251219_093355_d40eeeda.jpg'),
+(16, 'EMP001', 18, '2025-12-19', 1250000, 'Dibayar (Verified)', 'http://10.0.2.2/koperasi_api/uploads/pinjaman_20251219_100856_a4dcb654.jpg');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `histori_simpanan`
+-- Struktur dari tabel `histori_simpanan`
 --
 
 CREATE TABLE `histori_simpanan` (
@@ -160,7 +176,7 @@ CREATE TABLE `histori_simpanan` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `histori_simpanan`
+-- Dumping data untuk tabel `histori_simpanan`
 --
 
 INSERT INTO `histori_simpanan` (`id`, `kodePegawai`, `tanggal`, `jenis`, `jumlah`, `keterangan`) VALUES
@@ -171,12 +187,16 @@ INSERT INTO `histori_simpanan` (`id`, `kodePegawai`, `tanggal`, `jenis`, `jumlah
 (5, 'EMP001', '2025-12-14', 'Setoran Sukarela', 15000.00, '-'),
 (6, 'EMP001', '2025-12-15', 'Setoran Pokok', 100000.00, '-'),
 (7, 'EMP002', '2025-12-15', 'Setoran Sukarela', 321123.00, '-'),
-(8, 'EMP004', '2025-12-16', 'Setoran Pokok', 100000.00, '-');
+(8, 'EMP004', '2025-12-16', 'Setoran Pokok', 100000.00, '-'),
+(9, 'EMP001', '2025-12-17', 'Penarikan Sukarela', -100000.00, '-'),
+(10, 'EMP001', '2025-12-19', 'Setoran Sukarela', 1201020.00, '-'),
+(11, 'EMP001', '2025-12-19', 'Penarikan Sukarela', -120000.00, '-'),
+(12, 'EMP001', '2025-12-19', 'Penarikan Sukarela', -120000.00, '-');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `kas_transaksi`
+-- Struktur dari tabel `kas_transaksi`
 --
 
 CREATE TABLE `kas_transaksi` (
@@ -189,7 +209,7 @@ CREATE TABLE `kas_transaksi` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `kas_transaksi`
+-- Dumping data untuk tabel `kas_transaksi`
 --
 
 INSERT INTO `kas_transaksi` (`id`, `tanggal`, `jenis`, `kategori`, `deskripsi`, `jumlah`) VALUES
@@ -201,7 +221,7 @@ INSERT INTO `kas_transaksi` (`id`, `tanggal`, `jenis`, `kategori`, `deskripsi`, 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `pengaturan_koperasi`
+-- Struktur dari tabel `pengaturan_koperasi`
 --
 
 CREATE TABLE `pengaturan_koperasi` (
@@ -213,7 +233,7 @@ CREATE TABLE `pengaturan_koperasi` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `pengumuman`
+-- Struktur dari tabel `pengumuman`
 --
 
 CREATE TABLE `pengumuman` (
@@ -224,7 +244,7 @@ CREATE TABLE `pengumuman` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `pengumuman`
+-- Dumping data untuk tabel `pengumuman`
 --
 
 INSERT INTO `pengumuman` (`id`, `judul`, `isi`, `tanggal`) VALUES
@@ -236,7 +256,7 @@ INSERT INTO `pengumuman` (`id`, `judul`, `isi`, `tanggal`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `pinjaman`
+-- Struktur dari tabel `pinjaman`
 --
 
 CREATE TABLE `pinjaman` (
@@ -253,7 +273,7 @@ CREATE TABLE `pinjaman` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `pinjaman`
+-- Dumping data untuk tabel `pinjaman`
 --
 
 INSERT INTO `pinjaman` (`id`, `kodePegawai`, `jumlah`, `tenor`, `status`, `approved_by`, `approved_at`, `reject_reason`, `bunga`, `angsuranTerbayar`) VALUES
@@ -264,8 +284,8 @@ INSERT INTO `pinjaman` (`id`, `kodePegawai`, `jumlah`, `tenor`, `status`, `appro
 (5, 'EMP003', 1000000, 12, 'Ditolak', 'ADM001', '2025-12-15 13:45:11', NULL, 0.1000, 0),
 (6, 'EMP001', 10000000, 12, 'Ditolak', 'ADM001', '2025-12-15 04:41:41', NULL, 0.1000, 0),
 (7, 'EMP001', 123456, 0, 'Ditolak', 'ADM001', '2025-12-15 05:02:47', NULL, 0.1000, 0),
-(8, 'EMP001', 123456, 0, 'Disetujui', 'ADM001', '2025-12-15 05:02:45', NULL, 0.1000, 0),
-(9, 'EMP001', 410000, 6, 'Disetujui', 'ADM001', '2025-12-15 13:45:07', NULL, 0.1000, 70340),
+(8, 'EMP001', 123456, 0, 'Lunas', 'ADM001', '2025-12-15 05:02:45', NULL, 0.1000, 246912),
+(9, 'EMP001', 410000, 6, 'Disetujui', 'ADM001', '2025-12-15 13:45:07', NULL, 0.1000, 149673),
 (10, 'EMP003', 5000000, 12, 'Disetujui', 'ADM001', '2025-12-15 14:47:19', NULL, 0.1000, 15000),
 (11, 'EMP003', 1000000000, 12, 'Disetujui', 'ADM001', '2025-12-16 10:01:11', NULL, 0.1000, 0),
 (12, 'EMP002', 1100000, 3, 'Disetujui', 'ADM001', '2025-12-17 08:16:25', NULL, 0.1000, 0),
@@ -274,13 +294,14 @@ INSERT INTO `pinjaman` (`id`, `kodePegawai`, `jumlah`, `tenor`, `status`, `appro
 (15, 'EMP002', 1400000, 7, 'Disetujui', 'ADM001', '2025-12-17 11:18:44', NULL, 0.1000, 0),
 (16, 'EMP001', 1999000, 3, 'Ditolak', 'ADM001', '2025-12-17 11:01:46', NULL, 0.1000, 0),
 (17, 'EMP001', 10000000, 2, 'Ditolak', 'ADM001', '2025-12-17 11:43:12', NULL, 0.1000, 0),
-(18, 'EMP001', 5000000, 4, 'Disetujui', 'ADM001', '2025-12-17 11:43:09', NULL, 0.1000, 0),
-(19, 'EMP001', 100000, 7, 'Disetujui', 'ADM001', '2025-12-17 11:43:04', NULL, 0.1000, 0);
+(18, 'EMP001', 5000000, 4, 'Disetujui', 'ADM001', '2025-12-17 11:43:09', NULL, 0.1000, 2500000),
+(19, 'EMP001', 100000, 7, 'Lunas', 'ADM001', '2025-12-17 11:43:04', NULL, 0.1000, 114285),
+(20, 'EMP001', 1200001, 3, 'Disetujui', 'ADM001', '2025-12-17 12:30:23', NULL, 0.1000, 0);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `pinjaman_angsuran_jadwal`
+-- Struktur dari tabel `pinjaman_angsuran_jadwal`
 --
 
 CREATE TABLE `pinjaman_angsuran_jadwal` (
@@ -296,7 +317,7 @@ CREATE TABLE `pinjaman_angsuran_jadwal` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `pinjaman_jadwal`
+-- Struktur dari tabel `pinjaman_jadwal`
 --
 
 CREATE TABLE `pinjaman_jadwal` (
@@ -313,7 +334,7 @@ CREATE TABLE `pinjaman_jadwal` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `pinjaman_rincian`
+-- Struktur dari tabel `pinjaman_rincian`
 --
 
 CREATE TABLE `pinjaman_rincian` (
@@ -329,7 +350,7 @@ CREATE TABLE `pinjaman_rincian` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `pinjaman_rincian`
+-- Dumping data untuk tabel `pinjaman_rincian`
 --
 
 INSERT INTO `pinjaman_rincian` (`pinjamanId`, `cicilanPerBulan`, `totalBunga`, `totalBayar`, `totalPokok`, `terbayar`, `sisaBayar`, `sisaPokok`, `angsuranDibayar`) VALUES
@@ -339,7 +360,7 @@ INSERT INTO `pinjaman_rincian` (`pinjamanId`, `cicilanPerBulan`, `totalBunga`, `
 -- --------------------------------------------------------
 
 --
--- Table structure for table `settings`
+-- Struktur dari tabel `settings`
 --
 
 CREATE TABLE `settings` (
@@ -350,7 +371,7 @@ CREATE TABLE `settings` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `settings`
+-- Dumping data untuk tabel `settings`
 --
 
 INSERT INTO `settings` (`id`, `bungaPersen`, `dendaPersenPerHari`, `updated_at`) VALUES
@@ -359,7 +380,7 @@ INSERT INTO `settings` (`id`, `bungaPersen`, `dendaPersenPerHari`, `updated_at`)
 -- --------------------------------------------------------
 
 --
--- Table structure for table `simpanan`
+-- Struktur dari tabel `simpanan`
 --
 
 CREATE TABLE `simpanan` (
@@ -370,11 +391,11 @@ CREATE TABLE `simpanan` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `simpanan`
+-- Dumping data untuk tabel `simpanan`
 --
 
 INSERT INTO `simpanan` (`kodePegawai`, `simpananPokok`, `simpananWajib`, `simpananSukarela`) VALUES
-('EMP001', 600000.00, 200000.00, 415000.00),
+('EMP001', 600000.00, 200000.00, 1276020.00),
 ('EMP002', 500000.00, 250000.00, 471123.00),
 ('EMP003', 0.00, 0.00, 0.00),
 ('EMP004', 100000.00, 0.00, 0.00);
@@ -382,7 +403,7 @@ INSERT INTO `simpanan` (`kodePegawai`, `simpananPokok`, `simpananWajib`, `simpan
 -- --------------------------------------------------------
 
 --
--- Table structure for table `simpanan_pending`
+-- Struktur dari tabel `simpanan_pending`
 --
 
 CREATE TABLE `simpanan_pending` (
@@ -397,16 +418,18 @@ CREATE TABLE `simpanan_pending` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data for table `simpanan_pending`
+-- Dumping data untuk tabel `simpanan_pending`
 --
 
 INSERT INTO `simpanan_pending` (`id`, `kodePegawai`, `jenisInput`, `jumlah`, `keterangan`, `tanggal`, `statusVerifikasi`, `buktiUrl`) VALUES
-(1, 'EMP001', 'Simpanan Sukarela', 100000.00, '-', '2025-12-17', 'Menunggu Verifikasi', 'http://10.0.2.2/koperasi_api/uploads/simpanan_20251216_181442_55b53553.jpg');
+(1, 'EMP001', 'Simpanan Sukarela', 100000.00, '-', '2025-12-17', 'Ditolak', 'http://10.0.2.2/koperasi_api/uploads/simpanan_20251216_181442_55b53553.jpg'),
+(4, 'EMP001', 'Simpanan Sukarela', 12010.00, '-', '2025-12-19', 'Menunggu Verifikasi', 'http://10.0.2.2/koperasi_api/uploads/simpanan_20251219_084514_27b6f193.jpg'),
+(5, 'EMP001', 'Simpanan Sukarela', 120000.00, '-', '2025-12-19', 'Menunggu Verifikasi', 'http://10.0.2.2/koperasi_api/uploads/simpanan_20251219_084549_f4abd996.jpg');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `transaksi_simpanan`
+-- Struktur dari tabel `transaksi_simpanan`
 --
 
 CREATE TABLE `transaksi_simpanan` (
@@ -418,7 +441,7 @@ CREATE TABLE `transaksi_simpanan` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `transaksi_simpanan`
+-- Dumping data untuk tabel `transaksi_simpanan`
 --
 
 INSERT INTO `transaksi_simpanan` (`id`, `kodePegawai`, `jenis`, `jumlah`, `tanggal`) VALUES
@@ -432,7 +455,7 @@ INSERT INTO `transaksi_simpanan` (`id`, `kodePegawai`, `jenis`, `jumlah`, `tangg
 -- --------------------------------------------------------
 
 --
--- Table structure for table `users`
+-- Struktur dari tabel `users`
 --
 
 CREATE TABLE `users` (
@@ -444,7 +467,7 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `users`
+-- Dumping data untuk tabel `users`
 --
 
 INSERT INTO `users` (`kodePegawai`, `email`, `password`, `nama`, `statusKeanggotaan`) VALUES
@@ -459,21 +482,21 @@ INSERT INTO `users` (`kodePegawai`, `email`, `password`, `nama`, `statusKeanggot
 --
 
 --
--- Indexes for table `admins`
+-- Indeks untuk tabel `admins`
 --
 ALTER TABLE `admins`
   ADD PRIMARY KEY (`kodePegawai`),
   ADD UNIQUE KEY `email` (`email`);
 
 --
--- Indexes for table `bukti_pembayaran_anggota`
+-- Indeks untuk tabel `bukti_pembayaran_anggota`
 --
 ALTER TABLE `bukti_pembayaran_anggota`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_bukti_kodePegawai` (`kodePegawai`);
 
 --
--- Indexes for table `decision_notifications`
+-- Indeks untuk tabel `decision_notifications`
 --
 ALTER TABLE `decision_notifications`
   ADD PRIMARY KEY (`id`),
@@ -481,7 +504,7 @@ ALTER TABLE `decision_notifications`
   ADD KEY `idx_decision_pinjamanId` (`pinjamanId`);
 
 --
--- Indexes for table `due_reminders`
+-- Indeks untuk tabel `due_reminders`
 --
 ALTER TABLE `due_reminders`
   ADD PRIMARY KEY (`id`),
@@ -490,7 +513,7 @@ ALTER TABLE `due_reminders`
   ADD KEY `idx_due_dueDate` (`dueDate`);
 
 --
--- Indexes for table `histori_pembayaran`
+-- Indeks untuk tabel `histori_pembayaran`
 --
 ALTER TABLE `histori_pembayaran`
   ADD PRIMARY KEY (`id`),
@@ -498,236 +521,236 @@ ALTER TABLE `histori_pembayaran`
   ADD KEY `idx_histpay_pinjamanId` (`pinjamanId`);
 
 --
--- Indexes for table `histori_simpanan`
+-- Indeks untuk tabel `histori_simpanan`
 --
 ALTER TABLE `histori_simpanan`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_histsimp_kodePegawai` (`kodePegawai`);
 
 --
--- Indexes for table `kas_transaksi`
+-- Indeks untuk tabel `kas_transaksi`
 --
 ALTER TABLE `kas_transaksi`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_kas_tanggal` (`tanggal`);
 
 --
--- Indexes for table `pengaturan_koperasi`
+-- Indeks untuk tabel `pengaturan_koperasi`
 --
 ALTER TABLE `pengaturan_koperasi`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `pengumuman`
+-- Indeks untuk tabel `pengumuman`
 --
 ALTER TABLE `pengumuman`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_pengumuman_tanggal` (`tanggal`);
 
 --
--- Indexes for table `pinjaman`
+-- Indeks untuk tabel `pinjaman`
 --
 ALTER TABLE `pinjaman`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_pinjaman_kodePegawai` (`kodePegawai`);
 
 --
--- Indexes for table `pinjaman_angsuran_jadwal`
+-- Indeks untuk tabel `pinjaman_angsuran_jadwal`
 --
 ALTER TABLE `pinjaman_angsuran_jadwal`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_jadwal_pinjamanId` (`pinjamanId`);
 
 --
--- Indexes for table `pinjaman_jadwal`
+-- Indeks untuk tabel `pinjaman_jadwal`
 --
 ALTER TABLE `pinjaman_jadwal`
   ADD PRIMARY KEY (`id`),
   ADD KEY `pinjaman_id` (`pinjaman_id`);
 
 --
--- Indexes for table `pinjaman_rincian`
+-- Indeks untuk tabel `pinjaman_rincian`
 --
 ALTER TABLE `pinjaman_rincian`
   ADD PRIMARY KEY (`pinjamanId`);
 
 --
--- Indexes for table `settings`
+-- Indeks untuk tabel `settings`
 --
 ALTER TABLE `settings`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `simpanan`
+-- Indeks untuk tabel `simpanan`
 --
 ALTER TABLE `simpanan`
   ADD PRIMARY KEY (`kodePegawai`);
 
 --
--- Indexes for table `simpanan_pending`
+-- Indeks untuk tabel `simpanan_pending`
 --
 ALTER TABLE `simpanan_pending`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `transaksi_simpanan`
+-- Indeks untuk tabel `transaksi_simpanan`
 --
 ALTER TABLE `transaksi_simpanan`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_transsimp_kodePegawai` (`kodePegawai`);
 
 --
--- Indexes for table `users`
+-- Indeks untuk tabel `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`kodePegawai`),
   ADD UNIQUE KEY `email` (`email`);
 
 --
--- AUTO_INCREMENT for dumped tables
+-- AUTO_INCREMENT untuk tabel yang dibuang
 --
 
 --
--- AUTO_INCREMENT for table `bukti_pembayaran_anggota`
+-- AUTO_INCREMENT untuk tabel `bukti_pembayaran_anggota`
 --
 ALTER TABLE `bukti_pembayaran_anggota`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
--- AUTO_INCREMENT for table `decision_notifications`
+-- AUTO_INCREMENT untuk tabel `decision_notifications`
 --
 ALTER TABLE `decision_notifications`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
--- AUTO_INCREMENT for table `due_reminders`
+-- AUTO_INCREMENT untuk tabel `due_reminders`
 --
 ALTER TABLE `due_reminders`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `histori_pembayaran`
+-- AUTO_INCREMENT untuk tabel `histori_pembayaran`
 --
 ALTER TABLE `histori_pembayaran`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
--- AUTO_INCREMENT for table `histori_simpanan`
+-- AUTO_INCREMENT untuk tabel `histori_simpanan`
 --
 ALTER TABLE `histori_simpanan`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
--- AUTO_INCREMENT for table `kas_transaksi`
+-- AUTO_INCREMENT untuk tabel `kas_transaksi`
 --
 ALTER TABLE `kas_transaksi`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
--- AUTO_INCREMENT for table `pengumuman`
+-- AUTO_INCREMENT untuk tabel `pengumuman`
 --
 ALTER TABLE `pengumuman`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- AUTO_INCREMENT for table `pinjaman`
+-- AUTO_INCREMENT untuk tabel `pinjaman`
 --
 ALTER TABLE `pinjaman`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
--- AUTO_INCREMENT for table `pinjaman_angsuran_jadwal`
+-- AUTO_INCREMENT untuk tabel `pinjaman_angsuran_jadwal`
 --
 ALTER TABLE `pinjaman_angsuran_jadwal`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `pinjaman_jadwal`
+-- AUTO_INCREMENT untuk tabel `pinjaman_jadwal`
 --
 ALTER TABLE `pinjaman_jadwal`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `simpanan_pending`
+-- AUTO_INCREMENT untuk tabel `simpanan_pending`
 --
 ALTER TABLE `simpanan_pending`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- AUTO_INCREMENT for table `transaksi_simpanan`
+-- AUTO_INCREMENT untuk tabel `transaksi_simpanan`
 --
 ALTER TABLE `transaksi_simpanan`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
--- Constraints for dumped tables
+-- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)
 --
 
 --
--- Constraints for table `bukti_pembayaran_anggota`
+-- Ketidakleluasaan untuk tabel `bukti_pembayaran_anggota`
 --
 ALTER TABLE `bukti_pembayaran_anggota`
   ADD CONSTRAINT `fk_bukti_anggota_user` FOREIGN KEY (`kodePegawai`) REFERENCES `users` (`kodePegawai`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `decision_notifications`
+-- Ketidakleluasaan untuk tabel `decision_notifications`
 --
 ALTER TABLE `decision_notifications`
   ADD CONSTRAINT `fk_decision_pinjaman` FOREIGN KEY (`pinjamanId`) REFERENCES `pinjaman` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_decision_user` FOREIGN KEY (`kodePegawai`) REFERENCES `users` (`kodePegawai`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `due_reminders`
+-- Ketidakleluasaan untuk tabel `due_reminders`
 --
 ALTER TABLE `due_reminders`
   ADD CONSTRAINT `fk_due_pinjaman` FOREIGN KEY (`pinjamanId`) REFERENCES `pinjaman` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_due_user` FOREIGN KEY (`kodePegawai`) REFERENCES `users` (`kodePegawai`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `histori_pembayaran`
+-- Ketidakleluasaan untuk tabel `histori_pembayaran`
 --
 ALTER TABLE `histori_pembayaran`
   ADD CONSTRAINT `fk_histpay_pinjaman` FOREIGN KEY (`pinjamanId`) REFERENCES `pinjaman` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_histpay_user` FOREIGN KEY (`kodePegawai`) REFERENCES `users` (`kodePegawai`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `histori_simpanan`
+-- Ketidakleluasaan untuk tabel `histori_simpanan`
 --
 ALTER TABLE `histori_simpanan`
   ADD CONSTRAINT `fk_histsimp_user` FOREIGN KEY (`kodePegawai`) REFERENCES `users` (`kodePegawai`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `pinjaman`
+-- Ketidakleluasaan untuk tabel `pinjaman`
 --
 ALTER TABLE `pinjaman`
   ADD CONSTRAINT `fk_pinjaman_user` FOREIGN KEY (`kodePegawai`) REFERENCES `users` (`kodePegawai`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `pinjaman_angsuran_jadwal`
+-- Ketidakleluasaan untuk tabel `pinjaman_angsuran_jadwal`
 --
 ALTER TABLE `pinjaman_angsuran_jadwal`
   ADD CONSTRAINT `fk_jadwal_pinjaman` FOREIGN KEY (`pinjamanId`) REFERENCES `pinjaman` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `pinjaman_jadwal`
+-- Ketidakleluasaan untuk tabel `pinjaman_jadwal`
 --
 ALTER TABLE `pinjaman_jadwal`
   ADD CONSTRAINT `pinjaman_jadwal_ibfk_1` FOREIGN KEY (`pinjaman_id`) REFERENCES `pinjaman` (`id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `pinjaman_rincian`
+-- Ketidakleluasaan untuk tabel `pinjaman_rincian`
 --
 ALTER TABLE `pinjaman_rincian`
   ADD CONSTRAINT `fk_rincian_pinjaman` FOREIGN KEY (`pinjamanId`) REFERENCES `pinjaman` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `simpanan`
+-- Ketidakleluasaan untuk tabel `simpanan`
 --
 ALTER TABLE `simpanan`
   ADD CONSTRAINT `fk_simpanan_user` FOREIGN KEY (`kodePegawai`) REFERENCES `users` (`kodePegawai`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `transaksi_simpanan`
+-- Ketidakleluasaan untuk tabel `transaksi_simpanan`
 --
 ALTER TABLE `transaksi_simpanan`
   ADD CONSTRAINT `fk_transsimp_user` FOREIGN KEY (`kodePegawai`) REFERENCES `users` (`kodePegawai`) ON DELETE CASCADE ON UPDATE CASCADE;
