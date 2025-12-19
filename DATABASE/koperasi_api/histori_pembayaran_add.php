@@ -27,20 +27,20 @@ $status      = trim($data["status"] ?? "Dibayar (Admin)");
 $tanggalBody = trim($data["tanggal"] ?? "");
 $useTanggal  = ($tanggalBody !== "") ? $tanggalBody : null;
 
-$buktiUri    = $data["buktiPembayaranUri"] ?? null;   // fallback lama
-$buktiBase64 = $data["buktiBase64"] ?? null;          // baru
-$buktiExt    = $data["buktiExt"] ?? "jpg";            // baru (jpg/png)
+$buktiUri    = $data["buktiPembayaranUri"] ?? null;
+$buktiBase64 = $data["buktiBase64"] ?? null;
+$buktiExt    = $data["buktiExt"] ?? "jpg";
 
 if ($kodePegawai === "" || $pinjamanId <= 0 || $jumlah <= 0) {
   echo json_encode(["success"=>false, "message"=>"Data tidak lengkap"]);
   exit;
 }
 
+// ✅ helper
 function save_base64_image($base64, $ext) {
   $ext = strtolower(trim($ext));
   if (!in_array($ext, ["jpg","jpeg","png"])) $ext = "jpg";
 
-  // buang prefix "data:image/..;base64," kalau ada
   if (strpos($base64, "base64,") !== false) {
     $base64 = substr($base64, strpos($base64, "base64,") + 7);
   }
@@ -56,7 +56,6 @@ function save_base64_image($base64, $ext) {
   $ok = file_put_contents($path, $bin);
   if ($ok === false) return null;
 
-  // URL publik (sesuaikan host kalau perlu)
   $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https" : "http";
   $host = $_SERVER['HTTP_HOST'] ?? "localhost";
   $base = rtrim(dirname($_SERVER['SCRIPT_NAME']), "/\\");
@@ -89,6 +88,7 @@ try {
     exit;
   }
 
+  // ✅ INSERT histori
   if ($useTanggal) {
     $stmt = $pdo->prepare("
       INSERT INTO histori_pembayaran (kodePegawai, pinjamanId, tanggal, jumlah, status, buktiPembayaranUri)
@@ -103,6 +103,17 @@ try {
     $stmt->execute([$kodePegawai, $pinjamanId, $jumlah, $status, $buktiUri]);
   }
 
+  // ✅ PENDING? → stop di sini (JANGAN update pinjaman)
+  $stLower = strtolower($status);
+  $isPending = (strpos($stLower, "menunggu") !== false);
+
+  if ($isPending) {
+    $pdo->commit();
+    echo json_encode(["success"=>true, "message"=>"Pembayaran berhasil dikirim, menunggu verifikasi admin", "data"=>true]);
+    exit;
+  }
+
+  // ✅ selain pending → update pinjaman (seperti sebelumnya)
   $newTerbayar = intval($pinj["angsuranTerbayar"]) + $jumlah;
 
   $pokok = intval($pinj["jumlah"]);
