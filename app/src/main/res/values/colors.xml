@@ -24,4 +24,16 @@
     <color name="green_800">#2E7D32</color>
     <color name="green_900">#1B5E20</color>
 
+    <!-- App palette (kept close to existing greens) -->
+    <color name="app_primary">#4CAF50</color>
+    <color name="app_primary_dark">#2E7D32</color>
+    <color name="app_secondary">#66BB6A</color>
+    <color name="app_background">#F5FFF8</color>
+    <color name="app_surface">#FFFFFF</color>
+    <color name="app_on_primary">#FFFFFF</color>
+    <color name="app_text_primary">#1B5E20</color>
+    <color name="app_text_secondary">#757575</color>
+    <color name="app_outline">#C8E6C9</color>
+    <color name="app_error">#C62828</color>
+
 </resources>

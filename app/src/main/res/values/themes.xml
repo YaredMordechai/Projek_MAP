@@ -1,9 +1,41 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.Projek_MAP" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
+        <!-- Core colors (kept close to your existing green palette) -->
+        <item name="colorPrimary">@color/app_primary</item>
+        <item name="colorOnPrimary">@color/app_on_primary</item>
+        <item name="colorSecondary">@color/app_secondary</item>
+        <item name="colorBackground">@color/app_background</item>
+        <item name="colorSurface">@color/app_surface</item>
+        <item name="colorError">@color/app_error</item>
+
+        <!-- Status bar / nav bar -->
+        <item name="android:statusBarColor">@color/app_background</item>
+        <item name="android:navigationBarColor">@color/app_surface</item>
+        <item name="android:windowLightStatusBar">true</item>
+
+        <!-- Default shapes (biar radius konsisten) -->
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.ProjekMAP.Small</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.ProjekMAP.Medium</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.ProjekMAP.Large</item>
     </style>
 
     <style name="Theme.Projek_MAP" parent="Base.Theme.Projek_MAP" />
+
+    <!-- Shape system -->
+    <style name="ShapeAppearance.ProjekMAP.Small" parent="ShapeAppearance.Material3.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">10dp</item>
+    </style>
+
+    <style name="ShapeAppearance.ProjekMAP.Medium" parent="ShapeAppearance.Material3.MediumComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">12dp</item>
+    </style>
+
+    <style name="ShapeAppearance.ProjekMAP.Large" parent="ShapeAppearance.Material3.LargeComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
 </resources>
