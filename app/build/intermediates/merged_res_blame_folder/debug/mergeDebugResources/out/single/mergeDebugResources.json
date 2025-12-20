@@ -1,5 +1,9 @@
 [
     {
+        "merged": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-debug-48:\\drawable_ic_kas.xml.flat",
+        "source": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\drawable\\ic_kas.xml"
+    },
+    {
         "merged": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-debug-48:\\mipmap-xhdpi_ic_logo_app.webp.flat",
         "source": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\mipmap-xhdpi\\ic_logo_app.webp"
     },
@@ -84,6 +88,10 @@
         "source": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\mipmap-mdpi\\ic_launcher.webp"
     },
     {
+        "merged": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-debug-48:\\drawable_ic_ml.xml.flat",
+        "source": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\drawable\\ic_ml.xml"
+    },
+    {
         "merged": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-debug-48:\\layout_fragment_pinjaman_detail.xml.flat",
         "source": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\fragment_pinjaman_detail.xml"
     },
@@ -126,10 +134,6 @@
     {
         "merged": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-debug-48:\\drawable_bg_card.xml.flat",
         "source": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\drawable\\bg_card.xml"
-    },
-    {
-        "merged": "com.example.projek_map.app-debug-48:/drawable_ic_kas.xml.flat",
-        "source": "com.example.projek_map.app-main-50:/drawable/ic_kas.xml"
     },
     {
         "merged": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-debug-48:\\layout_fragment_laporan.xml.flat",
@@ -208,12 +212,12 @@
         "source": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\item_transaksi_simpanan.xml"
     },
     {
-        "merged": "com.example.projek_map.app-debug-48:/layout_fragment_dashboard.xml.flat",
-        "source": "com.example.projek_map.app-main-50:/layout/fragment_dashboard.xml"
-    },
-    {
         "merged": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-debug-48:\\mipmap-xxxhdpi_ic_launcher_round.webp.flat",
         "source": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\mipmap-xxxhdpi\\ic_launcher_round.webp"
+    },
+    {
+        "merged": "com.example.projek_map.app-debug-48:/layout_fragment_laporan.xml.flat",
+        "source": "com.example.projek_map.app-main-50:/layout/fragment_laporan.xml"
     },
     {
         "merged": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-debug-48:\\mipmap-anydpi-v26_ic_launcher.xml.flat",
@@ -370,10 +374,6 @@
     {
         "merged": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-debug-48:\\menu_bottom_nav_menu.xml.flat",
         "source": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\menu\\bottom_nav_menu.xml"
-    },
-    {
-        "merged": "com.example.projek_map.app-debug-48:/drawable_ic_ml.xml.flat",
-        "source": "com.example.projek_map.app-main-50:/drawable/ic_ml.xml"
     },
     {
         "merged": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-debug-48:\\layout_dialog_catat_pembayaran.xml.flat",

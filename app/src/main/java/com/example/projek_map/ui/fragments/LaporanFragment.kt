@@ -18,13 +18,17 @@ import com.example.projek_map.utils.PrefManager
 import com.example.projek_map.ui.viewmodels.LaporanViewModel
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.components.Description
+import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.mikephil.charting.utils.ColorTemplate
 import java.text.NumberFormat
 import java.util.Calendar
 import java.util.Locale
+import kotlin.math.abs
 
 class LaporanFragment : Fragment() {
 
@@ -39,6 +43,9 @@ class LaporanFragment : Fragment() {
 
     private var monthlySimpanan: List<Double> = List(12) { 0.0 }
     private var monthlyAngsuran: List<Double> = List(12) { 0.0 }
+
+    // Snapshot pinjaman aktif (bukan per bulan, sesuai opsi paling gampang)
+    private var lastTotalPinjamanAktif: Double = 0.0
 
     private val rupiah = NumberFormat.getCurrencyInstance(Locale("in", "ID"))
 
@@ -119,9 +126,33 @@ class LaporanFragment : Fragment() {
 
     private fun setupChart() {
         val desc = Description()
-        desc.text = "Rekap Keuangan Bulanan"
+        desc.text = ""
         chartRekapKeuangan.description = desc
         chartRekapKeuangan.setFitBars(true)
+
+        // Biar gak perlu zoom-zoom lagi
+        chartRekapKeuangan.setScaleEnabled(false)
+        chartRekapKeuangan.setPinchZoom(false)
+        chartRekapKeuangan.isDoubleTapToZoomEnabled = false
+
+        chartRekapKeuangan.axisRight.isEnabled = false
+        chartRekapKeuangan.axisLeft.axisMinimum = 0f
+        chartRekapKeuangan.legend.isEnabled = false
+
+        // Format rupiah ringkas di sumbu Y
+        chartRekapKeuangan.axisLeft.valueFormatter = object : ValueFormatter() {
+            override fun getFormattedValue(value: Float): String {
+                return formatRupiahShort(value.toDouble())
+            }
+        }
+
+        // Label sumbu X: Simpanan, Pinjaman, Angsuran
+        chartRekapKeuangan.xAxis.apply {
+            position = XAxis.XAxisPosition.BOTTOM
+            setDrawGridLines(false)
+            granularity = 1f
+            valueFormatter = IndexAxisValueFormatter(listOf("Simpanan", "Pinjaman", "Angsuran"))
+        }
     }
 
     private fun loadLaporanFromApi(bulan: Int, tahun: Int) {
@@ -168,11 +199,20 @@ class LaporanFragment : Fragment() {
 
             monthlySimpanan = simpananMonthly
             monthlyAngsuran = angsuranMonthly
+            lastTotalPinjamanAktif = totalPinjaman
 
-            // 5) Update UI (label bebas, ini aku samain sama maksud tampilan kamu)
-            txtTotalSimpanan.text = "Total Simpanan: ${rupiah.format(totalSimpanan)}"
-            txtTotalPinjaman.text = "Total Pinjaman Aktif: ${rupiah.format(totalPinjaman)}"
-            txtTotalAngsuran.text = "Total Angsuran Dibayar: ${rupiah.format(totalAngsuran)}"
+            // Nilai yang ditampilkan di laporan BULAN TERPILIH
+            val idx = spinnerBulan.selectedItemPosition
+            val simpananBulanIni = monthlySimpanan.getOrNull(idx) ?: 0.0
+            val angsuranBulanIni = monthlyAngsuran.getOrNull(idx) ?: totalAngsuran
+
+            // 5) Update UI (Di XML sudah ada labelnya, jadi di sini cukup angka)
+            // Simpanan: pakai nilai BULAN TERPILIH (biar tidak "tetap sama" tiap bulan)
+            txtTotalSimpanan.text = formatRupiahShort(simpananBulanIni)
+            // Pinjaman: snapshot aktif (sesuai opsi paling gampang)
+            txtTotalPinjaman.text = formatRupiahShort(totalPinjaman)
+            // Angsuran: nilai BULAN TERPILIH
+            txtTotalAngsuran.text = formatRupiahShort(angsuranBulanIni)
 
             renderChart()
         } catch (_: Exception) {
@@ -180,23 +220,43 @@ class LaporanFragment : Fragment() {
         }
     }
 
-
     private fun renderChart() {
         val entries = ArrayList<BarEntry>()
         val idx = spinnerBulan.selectedItemPosition
-        val s = monthlySimpanan.getOrNull(idx) ?: 0.0
-        val a = monthlyAngsuran.getOrNull(idx) ?: 0.0
+        val simpananBulanIni = monthlySimpanan.getOrNull(idx) ?: 0.0
+        val angsuranBulanIni = monthlyAngsuran.getOrNull(idx) ?: 0.0
+        val pinjamanAktif = lastTotalPinjamanAktif
 
-        entries.add(BarEntry(0f, s.toFloat()))
-        entries.add(BarEntry(1f, a.toFloat()))
+        entries.add(BarEntry(0f, simpananBulanIni.toFloat()))
+        entries.add(BarEntry(1f, pinjamanAktif.toFloat()))
+        entries.add(BarEntry(2f, angsuranBulanIni.toFloat()))
 
         val dataSet = BarDataSet(entries, "Rekap").apply {
             colors = ColorTemplate.MATERIAL_COLORS.toList()
+            valueFormatter = object : ValueFormatter() {
+                override fun getFormattedValue(value: Float): String {
+                    return formatRupiahShort(value.toDouble())
+                }
+            }
         }
         val barData = BarData(dataSet)
         barData.barWidth = 0.5f
 
         chartRekapKeuangan.data = barData
         chartRekapKeuangan.invalidate()
+    }
+
+    /**
+     * Format ringkas:
+     * - Rp 1,2 JT
+     * - Rp 950 RB
+     */
+    private fun formatRupiahShort(v: Double): String {
+        val value = abs(v)
+        return when {
+            value >= 1_000_000 -> "Rp ${String.format("%.1f", value / 1_000_000).replace('.', ',')} JT"
+            value >= 1_000 -> "Rp ${String.format("%.0f", value / 1_000).replace('.', ',')} RB"
+            else -> "Rp ${String.format("%.0f", value).replace('.', ',')}"
+        }
     }
 }

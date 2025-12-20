@@ -196,9 +196,9 @@
             android:padding="16dp">
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Grafik Rekap Simpanan &amp; Pinjaman"
+                android:text="Grafik Rekap"
                 android:textStyle="bold"
                 android:textColor="@color/green_900"
                 android:textSize="16sp"
@@ -207,8 +207,8 @@
             <com.github.mikephil.charting.charts.BarChart
                 android:id="@+id/chartRekapKeuangan"
                 android:layout_width="match_parent"
-                android:layout_height="300dp"
-                android:layout_marginTop="16dp"
+                android:layout_height="175dp"
+                android:layout_marginTop="5dp"
                 android:background="@drawable/bg_card_shadow"
                 android:nestedScrollingEnabled="false" />
 

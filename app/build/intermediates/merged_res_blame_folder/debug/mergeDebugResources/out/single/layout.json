@@ -140,16 +140,16 @@
         "source": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\fragment_profil.xml"
     },
     {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/fragment_dashboard.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/fragment_dashboard.xml"
-    },
-    {
         "merged": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\fragment_simpanan.xml",
         "source": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\fragment_simpanan.xml"
     },
     {
         "merged": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\item_histori_simpanan.xml",
         "source": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\item_histori_simpanan.xml"
+    },
+    {
+        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/fragment_laporan.xml",
+        "source": "com.example.projek_map.app-main-50:/layout/fragment_laporan.xml"
     },
     {
         "merged": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\fragment_dashboard.xml",
