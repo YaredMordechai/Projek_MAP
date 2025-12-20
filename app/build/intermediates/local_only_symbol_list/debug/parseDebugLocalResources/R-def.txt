@@ -48,10 +48,12 @@ drawable ic_dashboard
 drawable ic_delete
 drawable ic_edit
 drawable ic_group
+drawable ic_kas
 drawable ic_laporan
 drawable ic_launcher_background
 drawable ic_launcher_foreground
 drawable ic_logout
+drawable ic_ml
 drawable ic_notification
 drawable ic_payment
 drawable ic_people

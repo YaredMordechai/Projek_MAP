@@ -14,7 +14,7 @@ import androidx.cardview.widget.CardView;
 import androidx.viewbinding.ViewBinding;
 import androidx.viewbinding.ViewBindings;
 import com.example.projek_map.R;
-import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.charts.BarChart;
 import com.google.android.material.button.MaterialButton;
 import java.lang.NullPointerException;
 import java.lang.Override;
@@ -52,7 +52,7 @@ public final class FragmentDashboardBinding implements ViewBinding {
   public final CardView cardSimpanan;
 
   @NonNull
-  public final LineChart chartKeuangan;
+  public final BarChart chartKeuangan;
 
   @NonNull
   public final GridLayout gridMenu;
@@ -73,9 +73,9 @@ public final class FragmentDashboardBinding implements ViewBinding {
       @NonNull MaterialButton btnKirimPengumuman, @NonNull CardView cardGrafikKeuangan,
       @NonNull CardView cardKas, @NonNull CardView cardLaporan, @NonNull CardView cardLaporanAdmin,
       @NonNull CardView cardML, @NonNull CardView cardPinjaman, @NonNull CardView cardProfil,
-      @NonNull CardView cardSimpanan, @NonNull LineChart chartKeuangan,
-      @NonNull GridLayout gridMenu, @NonNull ImageView imgProfile, @NonNull TextView tvKasTitle,
-      @NonNull TextView tvUserId, @NonNull TextView tvWelcome) {
+      @NonNull CardView cardSimpanan, @NonNull BarChart chartKeuangan, @NonNull GridLayout gridMenu,
+      @NonNull ImageView imgProfile, @NonNull TextView tvKasTitle, @NonNull TextView tvUserId,
+      @NonNull TextView tvWelcome) {
     this.rootView = rootView;
     this.btnKirimPengumuman = btnKirimPengumuman;
     this.cardGrafikKeuangan = cardGrafikKeuangan;
@@ -176,7 +176,7 @@ public final class FragmentDashboardBinding implements ViewBinding {
       }
 
       id = R.id.chartKeuangan;
-      LineChart chartKeuangan = ViewBindings.findChildViewById(rootView, id);
+      BarChart chartKeuangan = ViewBindings.findChildViewById(rootView, id);
       if (chartKeuangan == null) {
         break missingId;
       }

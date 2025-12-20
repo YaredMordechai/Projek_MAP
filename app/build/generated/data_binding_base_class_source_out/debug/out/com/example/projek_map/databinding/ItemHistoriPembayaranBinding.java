@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.viewbinding.ViewBinding;
 import androidx.viewbinding.ViewBindings;
 import com.example.projek_map.R;
+import com.google.android.material.button.MaterialButton;
 import java.lang.NullPointerException;
 import java.lang.Override;
 import java.lang.String;
@@ -21,10 +22,19 @@ public final class ItemHistoriPembayaranBinding implements ViewBinding {
   private final LinearLayout rootView;
 
   @NonNull
+  public final MaterialButton btnApprove;
+
+  @NonNull
+  public final MaterialButton btnReject;
+
+  @NonNull
   public final ImageView imgBuktiPembayaran;
 
   @NonNull
   public final ImageView imgPaymentIcon;
+
+  @NonNull
+  public final LinearLayout layoutAksiAdmin;
 
   @NonNull
   public final TextView tvJumlah;
@@ -39,12 +49,16 @@ public final class ItemHistoriPembayaranBinding implements ViewBinding {
   public final TextView txtStatus;
 
   private ItemHistoriPembayaranBinding(@NonNull LinearLayout rootView,
+      @NonNull MaterialButton btnApprove, @NonNull MaterialButton btnReject,
       @NonNull ImageView imgBuktiPembayaran, @NonNull ImageView imgPaymentIcon,
-      @NonNull TextView tvJumlah, @NonNull TextView tvStatus, @NonNull TextView tvTanggal,
-      @NonNull TextView txtStatus) {
+      @NonNull LinearLayout layoutAksiAdmin, @NonNull TextView tvJumlah, @NonNull TextView tvStatus,
+      @NonNull TextView tvTanggal, @NonNull TextView txtStatus) {
     this.rootView = rootView;
+    this.btnApprove = btnApprove;
+    this.btnReject = btnReject;
     this.imgBuktiPembayaran = imgBuktiPembayaran;
     this.imgPaymentIcon = imgPaymentIcon;
+    this.layoutAksiAdmin = layoutAksiAdmin;
     this.tvJumlah = tvJumlah;
     this.tvStatus = tvStatus;
     this.tvTanggal = tvTanggal;
@@ -78,6 +92,18 @@ public final class ItemHistoriPembayaranBinding implements ViewBinding {
     // This is done to optimize the compiled bytecode for size and performance.
     int id;
     missingId: {
+      id = R.id.btnApprove;
+      MaterialButton btnApprove = ViewBindings.findChildViewById(rootView, id);
+      if (btnApprove == null) {
+        break missingId;
+      }
+
+      id = R.id.btnReject;
+      MaterialButton btnReject = ViewBindings.findChildViewById(rootView, id);
+      if (btnReject == null) {
+        break missingId;
+      }
+
       id = R.id.imgBuktiPembayaran;
       ImageView imgBuktiPembayaran = ViewBindings.findChildViewById(rootView, id);
       if (imgBuktiPembayaran == null) {
@@ -87,6 +113,12 @@ public final class ItemHistoriPembayaranBinding implements ViewBinding {
       id = R.id.imgPaymentIcon;
       ImageView imgPaymentIcon = ViewBindings.findChildViewById(rootView, id);
       if (imgPaymentIcon == null) {
+        break missingId;
+      }
+
+      id = R.id.layoutAksiAdmin;
+      LinearLayout layoutAksiAdmin = ViewBindings.findChildViewById(rootView, id);
+      if (layoutAksiAdmin == null) {
         break missingId;
       }
 
@@ -114,8 +146,9 @@ public final class ItemHistoriPembayaranBinding implements ViewBinding {
         break missingId;
       }
 
-      return new ItemHistoriPembayaranBinding((LinearLayout) rootView, imgBuktiPembayaran,
-          imgPaymentIcon, tvJumlah, tvStatus, tvTanggal, txtStatus);
+      return new ItemHistoriPembayaranBinding((LinearLayout) rootView, btnApprove, btnReject,
+          imgBuktiPembayaran, imgPaymentIcon, layoutAksiAdmin, tvJumlah, tvStatus, tvTanggal,
+          txtStatus);
     }
     String missingId = rootView.getResources().getResourceName(id);
     throw new NullPointerException("Missing required view with ID: ".concat(missingId));

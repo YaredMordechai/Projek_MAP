@@ -17,19 +17,23 @@ import com.example.projek_map.R
 import com.example.projek_map.api.ApiClient
 import com.example.projek_map.utils.AlarmReceiver
 import com.example.projek_map.utils.PrefManager
-import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.components.Description
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.mikephil.charting.utils.ColorTemplate
 import kotlinx.coroutines.launch
 import java.util.Calendar
+import kotlin.math.abs
 
 class DashboardFragment : Fragment() {
 
     private var isAdmin: Boolean = false
-    private lateinit var chartKeuangan: LineChart
+    private lateinit var chartKeuangan: BarChart
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -114,11 +118,11 @@ class DashboardFragment : Fragment() {
                 .commit()
         }
 
-        // ====== PROFIL / ML sesuai role ======
+        // (profilTitleView dipakai di logic lama kamu, aku biarkan pola yang sama)
         val profilTitleView = findFirstTextView(cardProfil)
 
         if (isAdmin) {
-            // ADMIN: cardProfil tetap Kelola Pengguna/Anggota
+            // ADMIN: cardProfil jadi "Kelola Pengguna"
             profilTitleView?.text = "Kelola Pengguna"
             cardProfil.setOnClickListener {
                 val fragment = KelolaAnggotaFragment().apply {
@@ -180,28 +184,50 @@ class DashboardFragment : Fragment() {
         // 🔔 Jadwal notifikasi jatuh tempo
         scheduleDailyJatuhTempo(requireContext(), 9, 0)
 
-        // === Grafik Keuangan (ambil dari API) ===
+        // === Grafik Keuangan (rekap bar chart, tanpa zoom) ===
+        setupChartStyle()
+
         if (isAdmin) {
-            setupChartAdminPlaceholder()
+            setupChartAdminFromApi()
         } else {
             setupChartUserFromApi(kodePegawai)
         }
     }
 
-    private fun setupChartAdminPlaceholder() {
-        val entries = (0..11).map { i -> Entry(i.toFloat(), 0f) }
-        val ds = LineDataSet(entries, "Admin Chart").apply {
-            color = ColorTemplate.MATERIAL_COLORS[0]
-            setCircleColor(ColorTemplate.MATERIAL_COLORS[0])
-        }
-        chartKeuangan.data = LineData(ds)
+    private fun setupChartStyle() {
         chartKeuangan.description = Description().apply { text = "" }
-        chartKeuangan.invalidate()
+        chartKeuangan.setFitBars(true)
+
+        // Matikan zoom biar dosen kamu tidak nyuruh “coba zoom” lagi
+        chartKeuangan.setScaleEnabled(false)
+        chartKeuangan.setPinchZoom(false)
+        chartKeuangan.isDoubleTapToZoomEnabled = false
+
+        chartKeuangan.axisRight.isEnabled = false
+        chartKeuangan.axisLeft.axisMinimum = 0f
+
+        // Format angka ringkas di axis Y
+        val axisFmt = object : ValueFormatter() {
+            override fun getFormattedValue(value: Float): String {
+                return formatRupiahShort(value.toDouble())
+            }
+        }
+        chartKeuangan.axisLeft.valueFormatter = axisFmt
+
+        // X label: Simpanan, Pinjaman
+        chartKeuangan.xAxis.apply {
+            position = XAxis.XAxisPosition.BOTTOM
+            setDrawGridLines(false)
+            granularity = 1f
+            valueFormatter = IndexAxisValueFormatter(listOf("Simpanan", "Pinjaman"))
+        }
+
+        chartKeuangan.legend.isEnabled = false
     }
 
     private fun setupChartUserFromApi(kodePegawai: String) {
         if (kodePegawai.isBlank()) {
-            setupChartEmpty("Kode pegawai kosong")
+            renderBarChart(0.0, 0.0, "Kode pegawai kosong")
             return
         }
 
@@ -217,41 +243,90 @@ class DashboardFragment : Fragment() {
                         (s.simpananPokok ?: 0.0) + (s.simpananWajib ?: 0.0) + (s.simpananSukarela ?: 0.0)
                     } ?: 0.0
 
-                val totalPinjaman =
-                    pinjamanResp.body()?.data?.sumOf { it.jumlah.toDouble() } ?: 0.0
+                // Total pinjaman AKTIF saja (status != lunas)
+                val totalPinjamanAktif =
+                    pinjamanResp.body()?.data
+                        ?.filter { it.status.lowercase() != "lunas" }
+                        ?.sumOf { it.jumlah.toDouble() }
+                        ?: 0.0
 
-                val entriesSimpanan = (0..11).map { i -> Entry(i.toFloat(), totalSimpanan.toFloat()) }
-                val entriesPinjaman = (0..11).map { i -> Entry(i.toFloat(), totalPinjaman.toFloat()) }
-
-                val dsSimpanan = LineDataSet(entriesSimpanan, "Total Simpanan").apply {
-                    color = ColorTemplate.MATERIAL_COLORS[0]
-                    setCircleColor(ColorTemplate.MATERIAL_COLORS[0])
-                }
-
-                val dsPinjaman = LineDataSet(entriesPinjaman, "Total Pinjaman").apply {
-                    color = ColorTemplate.MATERIAL_COLORS[1]
-                    setCircleColor(ColorTemplate.MATERIAL_COLORS[1])
-                }
-
-                chartKeuangan.data = LineData(dsSimpanan, dsPinjaman)
-                chartKeuangan.description = Description().apply { text = "" }
-                chartKeuangan.invalidate()
+                renderBarChart(totalSimpanan, totalPinjamanAktif, "")
 
             } catch (e: Exception) {
-                setupChartEmpty(e.message ?: "Gagal ambil data")
+                renderBarChart(0.0, 0.0, e.message ?: "Gagal ambil data")
             }
         }
     }
 
-    private fun setupChartEmpty(reason: String) {
-        val entries = (0..11).map { i -> Entry(i.toFloat(), 0f) }
-        val ds = LineDataSet(entries, reason).apply {
-            color = ColorTemplate.MATERIAL_COLORS[2]
-            setCircleColor(ColorTemplate.MATERIAL_COLORS[2])
+    private fun setupChartAdminFromApi() {
+        lifecycleScope.launch {
+            try {
+                val api = ApiClient.apiService
+                val resp = api.getLaporanAdmin()
+                val data = resp.body()?.data
+
+                val totalSimpananAll = data?.totalSimpananAll ?: 0.0
+                val totalPinjamanAll = data?.totalPinjamanAll ?: 0.0
+
+                renderBarChart(totalSimpananAll, totalPinjamanAll, "")
+
+            } catch (e: Exception) {
+                renderBarChart(0.0, 0.0, e.message ?: "Gagal ambil data admin")
+            }
         }
-        chartKeuangan.data = LineData(ds)
-        chartKeuangan.description = Description().apply { text = "" }
+    }
+
+    private fun renderBarChart(totalSimpanan: Double, totalPinjaman: Double, label: String) {
+        val entries = arrayListOf(
+            BarEntry(0f, totalSimpanan.toFloat()),
+            BarEntry(1f, totalPinjaman.toFloat())
+        )
+
+        val dataSet = BarDataSet(entries, label.ifBlank { "Rekap" }).apply {
+            colors = listOf(
+                ColorTemplate.MATERIAL_COLORS[0],
+                ColorTemplate.MATERIAL_COLORS[1]
+            )
+            valueFormatter = object : ValueFormatter() {
+                override fun getFormattedValue(value: Float): String {
+                    return formatRupiahShort(value.toDouble())
+                }
+            }
+        }
+
+        chartKeuangan.data = BarData(dataSet).apply {
+            barWidth = 0.55f
+        }
+
         chartKeuangan.invalidate()
+    }
+
+    /**
+     * Format ringkas:
+     * - Rp 1,2 JT
+     * - Rp 32,7 JT
+     * - Rp 950 RB
+     */
+    private fun formatRupiahShort(v: Double): String {
+        val value = abs(v)
+
+        return when {
+            value >= 1_000_000_000 -> {
+                val num = value / 1_000_000_000.0
+                "Rp ${String.format("%.1f", num).replace('.', ',')} M"
+            }
+            value >= 1_000_000 -> {
+                val num = value / 1_000_000.0
+                "Rp ${String.format("%.1f", num).replace('.', ',')} JT"
+            }
+            value >= 1_000 -> {
+                val num = value / 1_000.0
+                "Rp ${String.format("%.0f", num)} RB"
+            }
+            else -> {
+                "Rp ${String.format("%.0f", value)}"
+            }
+        }
     }
 
     private fun setCardTitle(card: CardView, title: String) {
