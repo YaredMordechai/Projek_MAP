@@ -3,9 +3,9 @@
 
 // === DB Config ===
 $host = "localhost";
-$user = "root";   // default XAMPP
-$pass = "";       // default XAMPP kosong
-$db   = "koperasi_db";
+$user = "kopa2939_koperasi_user";   // default XAMPP
+$pass = "Abl00abl";       // default XAMPP kosong
+$db   = "kopa2939_koperasi_db";
 
 // Matikan error HTML ke output (biar JSON gak rusak)
 ini_set('display_errors', 0);
