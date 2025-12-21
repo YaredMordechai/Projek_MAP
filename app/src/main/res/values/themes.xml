@@ -6,7 +6,6 @@
         <item name="colorPrimary">@color/app_primary</item>
         <item name="colorOnPrimary">@color/app_on_primary</item>
         <item name="colorSecondary">@color/app_secondary</item>
-        <item name="colorBackground">@color/app_background</item>
         <item name="colorSurface">@color/app_surface</item>
         <item name="colorError">@color/app_error</item>
 

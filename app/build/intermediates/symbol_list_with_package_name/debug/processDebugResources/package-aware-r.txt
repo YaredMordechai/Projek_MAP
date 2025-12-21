@@ -1563,6 +1563,16 @@ color accent_material_dark
 color accent_material_light
 color androidx_core_ripple_material_light
 color androidx_core_secondary_text_default_material_light
+color app_background
+color app_error
+color app_on_primary
+color app_outline
+color app_primary
+color app_primary_dark
+color app_secondary
+color app_surface
+color app_text_primary
+color app_text_secondary
 color background_floating_material_dark
 color background_floating_material_light
 color background_material_dark
@@ -4412,6 +4422,7 @@ id tvKodeAnggota
 id tvKodePegawai
 id tvLabaBersih
 id tvLabaRugiBersih
+id tvLogin
 id tvNama
 id tvNamaAnggota
 id tvNamaPemohon
@@ -5334,6 +5345,9 @@ style ShapeAppearance_MaterialComponents_LargeComponent
 style ShapeAppearance_MaterialComponents_MediumComponent
 style ShapeAppearance_MaterialComponents_SmallComponent
 style ShapeAppearance_MaterialComponents_Tooltip
+style ShapeAppearance_ProjekMAP_Large
+style ShapeAppearance_ProjekMAP_Medium
+style ShapeAppearance_ProjekMAP_Small
 style ShapeAppearanceOverlay_Material3_Button
 style ShapeAppearanceOverlay_Material3_Chip
 style ShapeAppearanceOverlay_Material3_Corner_Bottom

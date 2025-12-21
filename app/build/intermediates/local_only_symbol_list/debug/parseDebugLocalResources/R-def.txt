@@ -6,6 +6,16 @@ anim slide_in_right
 anim slide_out_left
 anim slide_out_right
 array jenis_simpanan_filter
+color app_background
+color app_error
+color app_on_primary
+color app_outline
+color app_primary
+color app_primary_dark
+color app_secondary
+color app_surface
+color app_text_primary
+color app_text_secondary
 color black
 color green_100
 color green_200
@@ -212,6 +222,7 @@ id tvKodeAnggota
 id tvKodePegawai
 id tvLabaBersih
 id tvLabaRugiBersih
+id tvLogin
 id tvNama
 id tvNamaAnggota
 id tvNamaPemohon
@@ -312,6 +323,9 @@ string logout
 string open
 string profil
 style Base.Theme.Projek_MAP
+style ShapeAppearance.ProjekMAP.Large
+style ShapeAppearance.ProjekMAP.Medium
+style ShapeAppearance.ProjekMAP.Small
 style Theme.Projek_MAP
 xml backup_rules
 xml data_extraction_rules

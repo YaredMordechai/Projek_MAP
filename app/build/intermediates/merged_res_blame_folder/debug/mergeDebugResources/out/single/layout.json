@@ -16,6 +16,10 @@
         "source": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\fragment_laporan.xml"
     },
     {
+        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/activity_main.xml",
+        "source": "com.example.projek_map.app-main-50:/layout/activity_main.xml"
+    },
+    {
         "merged": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\fragment_laporan_bulanan.xml",
         "source": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\fragment_laporan_bulanan.xml"
     },
@@ -146,10 +150,6 @@
     {
         "merged": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\item_histori_simpanan.xml",
         "source": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-main-50:\\layout\\item_histori_simpanan.xml"
-    },
-    {
-        "merged": "com.example.projek_map.app-mergeDebugResources-47:/layout/fragment_laporan.xml",
-        "source": "com.example.projek_map.app-main-50:/layout/fragment_laporan.xml"
     },
     {
         "merged": "C:\\Users\\tommy\\.gradle\\daemon\\8.13\\com.example.projek_map.app-mergeDebugResources-47:\\layout\\fragment_dashboard.xml",

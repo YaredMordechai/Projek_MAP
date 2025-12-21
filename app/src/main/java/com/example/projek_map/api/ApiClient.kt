@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 object ApiClient {
 
     // Emulator Android Studio
-    private const val BASE_URL = "http://10.0.2.2/koperasi_api/"
+    private const val BASE_URL = "http://koperasidbmapkelompok6.cyou/koperasi_api/"
 
     // ===== logging bawaan (request + response body) =====
     private val logging = HttpLoggingInterceptor().apply {
