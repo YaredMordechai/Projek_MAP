@@ -52,10 +52,11 @@ Aplikasi SimPin menggunakan backend berbasis PHP REST API dengan database MySQL 
    http://koperasidbmapkelompok6.cyou/koperasi_api/ping.php
 - Cek Koneksi Database:
    http://koperasidbmapkelompok6.cyou/koperasi_api/db_test.php
+
 Total terdapat 18 tabel pada database yang digunakan untuk mendukung seluruh fitur aplikasi.
 
 
-**DESKRIPSI DINGKAT APLIKASI**
+**DESKRIPSI SINGKAT APLIKASI**
   SimPin adalah aplikasi mobile berbasis Android yang dirancang untuk mensimulasikan sistem koperasi simpan pinjam secara digital.
 Aplikasi ini dikembangkan sebagai proyek mata kuliah Mobile Application Programming, dengan tujuan untuk memberikan gambaran bagaimana pengelolaan data anggota,
 transaksi simpanan, pengajuan pinjaman, serta laporan keuangan dapat dilakukan secara efisien dan transparan melalui perangkat mobile.
