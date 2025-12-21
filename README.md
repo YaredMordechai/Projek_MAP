@@ -3,7 +3,7 @@
 **NAMA, NIM, DAN TUGAS ANGGOTA KELOMPOK:**
 1.	David Lin	(00000078135) :	Mengerjakan fitur User/Anggota, Mengimplementasikan native Android features (kamera/galeri dan internal storage), dan membantu Menerapkan arsitektur Model–View–ViewModel (MVVM).
    
-3.	Hito Kawiswara (00000068451) :	Mengerjakan fitur Admin/Pengurus, membantu pengembangan bagian User, membantu mengimplementasikan native Android features (kamera/galeri dan internal storage).serta membuat Video Demo Aplikasi untuk UAS.
+3.	Hito Kawiswara (00000068541) :	Mengerjakan fitur Admin/Pengurus, membantu pengembangan bagian User, membantu mengimplementasikan native Android features (kamera/galeri dan internal storage).serta membuat Video Demo Aplikasi untuk UAS.
    
 4.	Tommy Viriya Irawan	(00000089265) :	Mengerjakan fitur User/Anggota, membantu pengembangan Admin, Melakukan Migrasi dari data dummy ke Database MySQL online yang diakses melalui PHP REST API, Menerapkan arsitektur Model–View–ViewModel (MVVM) secara menyeluruh, dan menyusun Laporan.
    
